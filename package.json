@@ -1,0 +1,19 @@
+{
+  "name": "cube",
+  "version": "0.0.1",
+  "description": "3D library written with JavaScript ES6",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/quietshu/cube"
+  },
+  "author": "Shu Ding <ds303077135@gmail.com>",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/quietshu/cube/issues"
+  },
+  "homepage": "https://github.com/quietshu/cube"
+}
