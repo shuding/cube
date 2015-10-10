@@ -15,5 +15,9 @@
   "bugs": {
     "url": "https://github.com/quietshu/cube/issues"
   },
-  "homepage": "https://github.com/quietshu/cube"
+  "homepage": "https://github.com/quietshu/cube",
+  "dependencies": {
+    "babel": "^5.8.23",
+    "babelify": "^6.3.0"
+  }
 }

@@ -4,7 +4,13 @@
  */
 
 class Scene {
+    constructor() {
 
+    }
+
+    * eachObject() {
+
+    }
 }
 
 export default Scene;

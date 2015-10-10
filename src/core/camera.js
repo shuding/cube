@@ -65,6 +65,7 @@ class Camera {
             };
             pixel = genPixel.next();
         }
+
     }
 }
 

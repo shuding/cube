@@ -31,6 +31,8 @@ class Raytracer {
         let genRay = this.camera.eachRay();
         let pixel  = genRay.next();
 
+        this.scene = scene;
+
         while (!pixel.done) {
             this.output.draw(pixel.value.x, pixel.value.y, this.trace(pixel.value.ray));
         }
