@@ -6,7 +6,7 @@
 import "babel/polyfill";
 
 import Camera from './core/camera';
-import Color from './core/color';
+import Color, {colors} from './core/color';
 import Ray from './core/ray';
 import Scene from './core/scene';
 
@@ -20,18 +20,21 @@ import Vector from './object/vector';
 
 import Linescanner from './renderer/linescanner';
 import Raytracer from './renderer/raytracer';
+import Bresenham from './drawer/line';
 
 export default {
-    Camera:      Camera,
-    Color:       Color,
-    Ray:         Ray,
-    Scene:       Scene,
-    Canvas:      Canvas,
-    Interface:   Interface,
-    Face:        Face,
-    Line:        Line,
-    Plane:       Plane,
-    Vector:      Vector,
+    Camera: Camera,
+    Color: Color,
+    colors: colors,
+    Ray: Ray,
+    Scene: Scene,
+    Canvas: Canvas,
+    Interface: Interface,
+    Face: Face,
+    Line: Line,
+    Plane: Plane,
+    Vector: Vector,
     Linescanner: Linescanner,
-    Raytracer:   Raytracer
+    Raytracer: Raytracer,
+    Bresenham: Bresenham
 };

@@ -12,6 +12,8 @@ class Color {
     }
 }
 
-export var white = new Color(255, 255, 255, 255);
-export var black = new Color(0, 0, 0, 255);
+export var colors = {
+    white : new Color(255, 255, 255, 255),
+    black : new Color(0, 0, 0, 255)
+};
 export default Color;

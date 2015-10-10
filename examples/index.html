@@ -7,7 +7,23 @@
   <title></title>
 </head>
 <body>
-
+  <canvas id="myCanvas" width="800" height="600" style="border:1px solid #d3d3d3;">
+    Your browser does not support the HTML5 canvas tag.
+  </canvas>
   <script src="../bundle.js"></script>
+  <script type="text/javascript">
+    htmlcanvas = document.getElementById('myCanvas');
+    canvas = new cube.Canvas(htmlcanvas);
+    lineDrawer = new cube.Bresenham(canvas);
+    lineDrawer.draw(400, 300, 700, 400, cube.colors.black);
+    lineDrawer.draw(400, 300, 700, 200, cube.colors.black);
+    lineDrawer.draw(400, 300, 400, 600, cube.colors.black);
+    lineDrawer.draw(400, 300, 500, 700, cube.colors.black);
+    lineDrawer.draw(400, 300, 150, 50, cube.colors.black);
+    lineDrawer.draw(400, 300, 100, 500, cube.colors.black);
+    lineDrawer.draw(400, 300, 300, 100, cube.colors.black);
+    lineDrawer.draw(400, 300, 500, 100, cube.colors.black);
+    lineDrawer.updateCanvas();
+  </script>
 </body>
 </html>

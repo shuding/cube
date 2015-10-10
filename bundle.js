@@ -4253,7 +4253,7 @@ module.exports = require('./modules/$.core');
 );
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":202}],187:[function(require,module,exports){
+},{"_process":203}],187:[function(require,module,exports){
 module.exports = require("./lib/polyfill");
 
 },{"./lib/polyfill":1}],188:[function(require,module,exports){
@@ -4441,10 +4441,11 @@ var Color = function Color(r, g, b, a) {
     this.a = a;
 };
 
-var white = new Color(255, 255, 255, 255);
-exports.white = white;
-var black = new Color(0, 0, 0, 255);
-exports.black = black;
+var colors = {
+    white: new Color(255, 255, 255, 255),
+    black: new Color(0, 0, 0, 255)
+};
+exports.colors = colors;
 exports["default"] = Color;
 
 },{}],191:[function(require,module,exports){
@@ -4529,6 +4530,150 @@ module.exports = exports["default"];
 
 },{}],193:[function(require,module,exports){
 /**
+ * Created by ziyang on 15/10/10.
+ * <carbon941030@gmai.com>
+ */
+
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+    value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var _interfaceCanvas = require('../interface/canvas');
+
+var _interfaceCanvas2 = _interopRequireDefault(_interfaceCanvas);
+
+var Bresenham = (function () {
+    function Bresenham(canvas) {
+        _classCallCheck(this, Bresenham);
+
+        this.cvs = canvas;
+    }
+
+    _createClass(Bresenham, [{
+        key: 'draw',
+        value: function draw(x0, y0, x1, y1, color) {
+            var dx = x1 - x0;
+            var dy = y1 - y0;
+            var x = x0;
+            var y = y0;
+            var D;
+            if (dx > 0 && dy >= 0) {
+                if (dx > dy) {
+                    D = -dx;
+                    for (; x <= x1; ++x) {
+                        this.cvs.setPoint(x, y, color);
+                        D += 2 * dy;
+                        if (D >= 0) {
+                            y++;
+                            D -= 2 * dx;
+                        }
+                    }
+                } else {
+                    D = -dy;
+                    for (; y <= y1; ++y) {
+                        this.cvs.setPoint(x, y, color);
+                        D += 2 * dx;
+                        if (D >= 0) {
+                            x++;
+                            D -= 2 * dy;
+                        }
+                    }
+                }
+            } else if (dx <= 0 && dy > 0) {
+                dx = -dx;
+                if (dx > dy) {
+                    D = -dx;
+                    for (; x >= x1; --x) {
+                        this.cvs.setPoint(x, y, color);
+                        D += 2 * dy;
+                        if (D >= 0) {
+                            y++;
+                            D -= 2 * dx;
+                        }
+                    }
+                } else {
+                    D = -dy;
+                    for (; y <= y1; ++y) {
+                        this.cvs.setPoint(x, y, color);
+                        D += 2 * dx;
+                        if (D >= 0) {
+                            x--;
+                            D -= 2 * dy;
+                        }
+                    }
+                }
+            } else if (dx < 0 && dy <= 0) {
+                dx = -dx;
+                dy = -dy;
+                if (dx > dy) {
+                    D = -dx;
+                    for (; x >= x1; --x) {
+                        this.cvs.setPoint(x, y, color);
+                        D += 2 * dy;
+                        if (D >= 0) {
+                            y--;
+                            D -= 2 * dx;
+                        }
+                    }
+                } else {
+                    D = -dy;
+                    for (; y >= y1; --y) {
+                        this.cvs.setPoint(x, y, color);
+                        D += 2 * dx;
+                        if (D >= 0) {
+                            x--;
+                            D -= 2 * dy;
+                        }
+                    }
+                }
+            } else {
+                dy = -dy;
+                if (dx > dy) {
+                    D = -dx;
+                    for (; x <= x1; ++x) {
+                        this.cvs.setPoint(x, y, color);
+                        D += 2 * dy;
+                        if (D >= 0) {
+                            y--;
+                            D -= 2 * dx;
+                        }
+                    }
+                } else {
+                    D = -dy;
+                    for (; y >= y1; --y) {
+                        this.cvs.setPoint(x, y, color);
+                        D += 2 * dx;
+                        if (D >= 0) {
+                            x++;
+                            D -= 2 * dy;
+                        }
+                    }
+                }
+            }
+        }
+    }, {
+        key: 'updateCanvas',
+        value: function updateCanvas() {
+            this.cvs.updateCanvas();
+        }
+    }]);
+
+    return Bresenham;
+})();
+
+exports['default'] = Bresenham;
+module.exports = exports['default'];
+
+},{"../interface/canvas":195}],194:[function(require,module,exports){
+/**
  * Created by shuding on 10/8/15.
  * <ds303077135@gmail.com>
  */
@@ -4591,9 +4736,14 @@ var _rendererRaytracer = require('./renderer/raytracer');
 
 var _rendererRaytracer2 = _interopRequireDefault(_rendererRaytracer);
 
+var _drawerLine = require('./drawer/line');
+
+var _drawerLine2 = _interopRequireDefault(_drawerLine);
+
 exports['default'] = {
     Camera: _coreCamera2['default'],
     Color: _coreColor2['default'],
+    colors: _coreColor.colors,
     Ray: _coreRay2['default'],
     Scene: _coreScene2['default'],
     Canvas: _interfaceCanvas2['default'],
@@ -4603,11 +4753,12 @@ exports['default'] = {
     Plane: _objectPlane2['default'],
     Vector: _objectVector2['default'],
     Linescanner: _rendererLinescanner2['default'],
-    Raytracer: _rendererRaytracer2['default']
+    Raytracer: _rendererRaytracer2['default'],
+    Bresenham: _drawerLine2['default']
 };
 module.exports = exports['default'];
 
-},{"./core/camera":189,"./core/color":190,"./core/ray":191,"./core/scene":192,"./interface/canvas":194,"./interface/index":195,"./object/face":196,"./object/line":197,"./object/plane":198,"./object/vector":199,"./renderer/linescanner":200,"./renderer/raytracer":201,"babel/polyfill":188}],194:[function(require,module,exports){
+},{"./core/camera":189,"./core/color":190,"./core/ray":191,"./core/scene":192,"./drawer/line":193,"./interface/canvas":195,"./interface/index":196,"./object/face":197,"./object/line":198,"./object/plane":199,"./object/vector":200,"./renderer/linescanner":201,"./renderer/raytracer":202,"babel/polyfill":188}],195:[function(require,module,exports){
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
@@ -4635,12 +4786,14 @@ var Canvas = (function () {
     }
 
     _createClass(Canvas, [{
-        key: "set",
-        value: function set(x, y, color) {
-            this.imgData.data[(y * this.width + x) * 4] = color.r;
-            this.imgData.data[(y * this.width + x) * 4 + 1] = color.g;
-            this.imgData.data[(y * this.width + x) * 4 + 2] = color.b;
-            this.imgData.data[(y * this.width + x) * 4 + 3] = color.a;
+        key: "setPoint",
+        value: function setPoint(x, y, color) {
+            var index = (y * this.width + x) * 4;
+
+            this.imgData.data[index] = color.r;
+            this.imgData.data[index + 1] = color.g;
+            this.imgData.data[index + 2] = color.b;
+            this.imgData.data[index + 3] = color.a;
         }
     }, {
         key: "updateCanvas",
@@ -4655,7 +4808,7 @@ var Canvas = (function () {
 exports["default"] = Canvas;
 module.exports = exports["default"];
 
-},{}],195:[function(require,module,exports){
+},{}],196:[function(require,module,exports){
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
@@ -4687,7 +4840,7 @@ var Output = (function () {
 exports["default"] = Output;
 module.exports = exports["default"];
 
-},{}],196:[function(require,module,exports){
+},{}],197:[function(require,module,exports){
 /**
  * Created by shuding on 10/8/15.
  * <ds303077135@gmail.com>
@@ -4719,7 +4872,7 @@ function Face(a, b, c) {
 exports["default"] = Face;
 module.exports = exports["default"];
 
-},{}],197:[function(require,module,exports){
+},{}],198:[function(require,module,exports){
 /**
  * Created by shuding on 10/8/15.
  * <ds303077135@gmail.com>
@@ -4749,7 +4902,7 @@ function Line(a, b) {
 exports["default"] = Line;
 module.exports = exports["default"];
 
-},{}],198:[function(require,module,exports){
+},{}],199:[function(require,module,exports){
 "use strict";
 
 /**
@@ -4757,7 +4910,7 @@ module.exports = exports["default"];
  * <ds303077135@gmail.com>
  */
 
-},{}],199:[function(require,module,exports){
+},{}],200:[function(require,module,exports){
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
@@ -4861,7 +5014,7 @@ var Vector = (function () {
 exports['default'] = Vector;
 module.exports = exports['default'];
 
-},{}],200:[function(require,module,exports){
+},{}],201:[function(require,module,exports){
 "use strict";
 
 /**
@@ -4869,7 +5022,7 @@ module.exports = exports['default'];
  * <ds303077135@gmail.com>
  */
 
-},{}],201:[function(require,module,exports){
+},{}],202:[function(require,module,exports){
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
@@ -4935,7 +5088,7 @@ var Raytracer = (function () {
 exports["default"] = Raytracer;
 module.exports = exports["default"];
 
-},{}],202:[function(require,module,exports){
+},{}],203:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -4968,7 +5121,9 @@ function drainQueue() {
         currentQueue = queue;
         queue = [];
         while (++queueIndex < len) {
-            currentQueue[queueIndex].run();
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
         }
         queueIndex = -1;
         len = queue.length;
@@ -5020,12 +5175,11 @@ process.binding = function (name) {
     throw new Error('process.binding is not supported');
 };
 
-// TODO(shtylman)
 process.cwd = function () { return '/' };
 process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 process.umask = function() { return 0; };
 
-},{}]},{},[193])(193)
+},{}]},{},[194])(194)
 });
