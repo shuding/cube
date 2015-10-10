@@ -4,6 +4,7 @@
   "description": "3D library written with JavaScript ES6",
   "main": "src/index.js",
   "scripts": {
+    "build": "browserify src/index.js -t babelify --outfile bundle.js -s cube",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
