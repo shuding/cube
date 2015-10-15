@@ -18,7 +18,7 @@ class Vector {
     }
 
     det(v) {
-        return this.y * v.z - this.z * v.y - this.x * v.z + this.z * v.x + this.x * v.y - this.y * v.x;
+        return new Vector(this.y * v.z - this.z * v.y, - this.x * v.z + this.z * v.x, this.x * v.y - this.y * v.x);
     }
 
     add(v) {
@@ -64,10 +64,22 @@ class Vector {
     normalize() {
         this.mulBy(1 / this.length());
         this.len = 1;
+        return this;
     }
 
     clone() {
         return Object.assign({}, this);
+    }
+
+    /**
+     * Get projection
+     * @param {Plane} p
+     */
+    projection(p) {
+        let v = this.minus(p.p);
+        let len = v.dot(p.n);
+        let vDelta = p.n.mul(len);
+        return this.minus(vDelta);
     }
 }
 

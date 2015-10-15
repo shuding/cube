@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title></title>
+</head>
+<body>
+<canvas id="myCanvas" width="800" height="600" style="border:1px solid #d3d3d3;">
+  Your browser does not support the HTML5 canvas tag.
+</canvas>
+<script src="../bundle.js"></script>
+<script type="text/javascript">
+  htmlcanvas = document.getElementById('myCanvas');
+  canvas = new cube.Canvas(htmlcanvas);
+
+  v1 = new cube.Vector(300, 500, 1);
+  v2 = new cube.Vector(100, 100, 1);
+  line = new cube.Line(v1, v2);
+
+  scene = new cube.Scene(line);
+
+  // mapper = cube.mapperFromSize(800, 600, canvas);
+
+  // or specific viewport
+  camera = new cube.Camera(new cube.Vector(0, 0, 0), [
+      new cube.Vector(0, 600, -1),
+      new cube.Vector(800, 600, -1),
+      new cube.Vector(0, 0, -2),
+      new cube.Vector(800, 0, -2)
+  ]);
+  mapper = new cube.Mapper(camera, canvas);
+
+  mapper.render(scene);
+</script>
+</body>
+</html>

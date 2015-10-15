@@ -4,7 +4,14 @@
  */
 
 class Color {
-    constructor (r, g, b, a) {
+    /**
+     * Color constructor
+     * @param {Number} r Red [0..255]
+     * @param {Number} g Green [0..255]
+     * @param {Number} b Blue [0..255]
+     * @param {Number} a Alpha [0, 1]
+     */
+    constructor(r, g, b, a) {
         this.r = r;
         this.g = g;
         this.b = b;
@@ -13,7 +20,7 @@ class Color {
 }
 
 export var colors = {
-    white : new Color(255, 255, 255, 255),
-    black : new Color(0, 0, 0, 255)
+    white: new Color(255, 255, 255, 1),
+    black: new Color(0, 0, 0, 1)
 };
 export default Color;

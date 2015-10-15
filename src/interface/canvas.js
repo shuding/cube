@@ -19,7 +19,7 @@ class Canvas {
         this.imgData.data[index]     = color.r;
         this.imgData.data[index + 1] = color.g;
         this.imgData.data[index + 2] = color.b;
-        this.imgData.data[index + 3] = color.a;
+        this.imgData.data[index + 3] = ~~(color.a * 255);
     }
 
     updateCanvas() {

@@ -3,7 +3,7 @@
  * <ds303077135@gmail.com>
  */
 
-import Color, {white, black} from './color';
+import Color, {colors} from './color';
 
 class Ray {
     /**

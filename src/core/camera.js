@@ -19,8 +19,8 @@ class Camera {
         this.pxWidth  = width;
         this.pxHeight = height;
 
-        let r2l = screen.tr.minus(screen.tl);
-        let b2t = screen.bl.minus(screen.tl);
+        let r2l = screen[1].minus(screen[0]);
+        let b2t = screen[2].minus(screen[0]);
 
         this.width  = r2l.length();
         this.height = b2t.length();
@@ -55,17 +55,13 @@ class Camera {
      * Generator for each pixel's coordinate and the ray from camera to this pixel
      */
     * eachRay() {
-        let genPixel = this.eachPixel();
-        let pixel    = genPixel.next();
-        while (!pixel.done) {
+        for (let pixel of this.eachPixel()) {
             yield {
-                x:   pixel.value.x,
-                y:   pixel.value.y,
-                ray: new Ray(this.eye, pixel.value.v.clone().minusBy(this.eye))
+                x:   pixel.x,
+                y:   pixel.y,
+                ray: new Ray(this.eye, pixel.v.clone().minusBy(this.eye))
             };
-            pixel = genPixel.next();
         }
-
     }
 }
 

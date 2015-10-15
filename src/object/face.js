@@ -10,10 +10,18 @@ class Face {
      * @param {Vector} b
      * @param {Vector} c
      */
-    constructor (a, b, c) {
+    constructor(a, b, c) {
         this.a = a;
         this.b = b;
         this.c = c;
+    }
+
+    projection() {
+        return new Face(
+            this.a.projection(...arguments),
+            this.b.projection(...arguments),
+            this.c.projection(...arguments)
+        );
     }
 }
 

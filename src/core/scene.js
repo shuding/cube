@@ -4,12 +4,18 @@
  */
 
 class Scene {
-    constructor() {
+    constructor(...objects) {
+        this.objects = objects;
+    }
 
+    addObject(obj) {
+        this.objects.push(obj);
     }
 
     * eachObject() {
-
+        for (let i = 0; i < this.objects.length; ++i) {
+            yield this.objects[i];
+        }
     }
 }
 

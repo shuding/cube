@@ -15,17 +15,19 @@ import Interface from './interface/index';
 
 import Face from './object/face';
 import Line from './object/line';
-import Plane from './object/plane';
+import Plane, {planeFromScreen} from './object/plane';
 import Vector from './object/vector';
 
 import Linescanner from './renderer/linescanner';
 import Raytracer from './renderer/raytracer';
+import Mapper, {mapperFromSize} from './renderer/mapper';
+
 import Bresenham from './drawer/line';
 
 export default {
+// classes
     Camera: Camera,
     Color: Color,
-    colors: colors,
     Ray: Ray,
     Scene: Scene,
     Canvas: Canvas,
@@ -36,5 +38,11 @@ export default {
     Vector: Vector,
     Linescanner: Linescanner,
     Raytracer: Raytracer,
-    Bresenham: Bresenham
+    Mapper: Mapper,
+    Bresenham: Bresenham,
+// methods
+    mapperFromSize: mapperFromSize,
+    planeFromScreen: planeFromScreen,
+// constants
+    colors: colors
 };

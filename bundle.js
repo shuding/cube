@@ -4253,7 +4253,7 @@ module.exports = require('./modules/$.core');
 );
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":203}],187:[function(require,module,exports){
+},{"_process":204}],187:[function(require,module,exports){
 module.exports = require("./lib/polyfill");
 
 },{"./lib/polyfill":1}],188:[function(require,module,exports){
@@ -4301,8 +4301,8 @@ var Camera = (function () {
         this.pxWidth = width;
         this.pxHeight = height;
 
-        var r2l = screen.tr.minus(screen.tl);
-        var b2t = screen.bl.minus(screen.tl);
+        var r2l = screen[1].minus(screen[0]);
+        var b2t = screen[2].minus(screen[0]);
 
         this.width = r2l.length();
         this.height = b2t.length();
@@ -4379,36 +4379,75 @@ var Camera = (function () {
     }, {
         key: 'eachRay',
         value: regeneratorRuntime.mark(function eachRay() {
-            var genPixel, pixel;
+            var _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, pixel;
+
             return regeneratorRuntime.wrap(function eachRay$(context$2$0) {
                 while (1) switch (context$2$0.prev = context$2$0.next) {
                     case 0:
-                        genPixel = this.eachPixel();
-                        pixel = genPixel.next();
+                        _iteratorNormalCompletion = true;
+                        _didIteratorError = false;
+                        _iteratorError = undefined;
+                        context$2$0.prev = 3;
+                        _iterator = this.eachPixel()[Symbol.iterator]();
 
-                    case 2:
-                        if (pixel.done) {
-                            context$2$0.next = 8;
+                    case 5:
+                        if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
+                            context$2$0.next = 12;
                             break;
                         }
 
-                        context$2$0.next = 5;
+                        pixel = _step.value;
+                        context$2$0.next = 9;
                         return {
-                            x: pixel.value.x,
-                            y: pixel.value.y,
-                            ray: new _ray2['default'](this.eye, pixel.value.v.clone().minusBy(this.eye))
+                            x: pixel.x,
+                            y: pixel.y,
+                            ray: new _ray2['default'](this.eye, pixel.v.clone().minusBy(this.eye))
                         };
 
-                    case 5:
-                        pixel = genPixel.next();
-                        context$2$0.next = 2;
+                    case 9:
+                        _iteratorNormalCompletion = true;
+                        context$2$0.next = 5;
                         break;
 
-                    case 8:
+                    case 12:
+                        context$2$0.next = 18;
+                        break;
+
+                    case 14:
+                        context$2$0.prev = 14;
+                        context$2$0.t0 = context$2$0['catch'](3);
+                        _didIteratorError = true;
+                        _iteratorError = context$2$0.t0;
+
+                    case 18:
+                        context$2$0.prev = 18;
+                        context$2$0.prev = 19;
+
+                        if (!_iteratorNormalCompletion && _iterator['return']) {
+                            _iterator['return']();
+                        }
+
+                    case 21:
+                        context$2$0.prev = 21;
+
+                        if (!_didIteratorError) {
+                            context$2$0.next = 24;
+                            break;
+                        }
+
+                        throw _iteratorError;
+
+                    case 24:
+                        return context$2$0.finish(21);
+
+                    case 25:
+                        return context$2$0.finish(18);
+
+                    case 26:
                     case 'end':
                         return context$2$0.stop();
                 }
-            }, eachRay, this);
+            }, eachRay, this, [[3, 14, 18, 26], [19,, 21, 25]]);
         })
     }]);
 
@@ -4432,7 +4471,15 @@ Object.defineProperty(exports, "__esModule", {
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Color = function Color(r, g, b, a) {
+var Color =
+/**
+ * Color constructor
+ * @param {Number} r Red [0..255]
+ * @param {Number} g Green [0..255]
+ * @param {Number} b Blue [0..255]
+ * @param {Number} a Alpha [0, 1]
+ */
+function Color(r, g, b, a) {
     _classCallCheck(this, Color);
 
     this.r = r;
@@ -4442,8 +4489,8 @@ var Color = function Color(r, g, b, a) {
 };
 
 var colors = {
-    white: new Color(255, 255, 255, 255),
-    black: new Color(0, 0, 0, 255)
+    white: new Color(255, 255, 255, 1),
+    black: new Color(0, 0, 0, 1)
 };
 exports.colors = colors;
 exports["default"] = Color;
@@ -4476,7 +4523,7 @@ var Ray =
  * @param {Color} c color of the ray source
  */
 function Ray(s, t) {
-  var c = arguments.length <= 2 || arguments[2] === undefined ? _color.white : arguments[2];
+  var c = arguments.length <= 2 || arguments[2] === undefined ? white : arguments[2];
 
   _classCallCheck(this, Ray);
 
@@ -4507,14 +4554,43 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Scene = (function () {
     function Scene() {
         _classCallCheck(this, Scene);
+
+        for (var _len = arguments.length, objects = Array(_len), _key = 0; _key < _len; _key++) {
+            objects[_key] = arguments[_key];
+        }
+
+        this.objects = objects;
     }
 
     _createClass(Scene, [{
+        key: "addObject",
+        value: function addObject(obj) {
+            this.objects.push(obj);
+        }
+    }, {
         key: "eachObject",
         value: regeneratorRuntime.mark(function eachObject() {
+            var i;
             return regeneratorRuntime.wrap(function eachObject$(context$2$0) {
                 while (1) switch (context$2$0.prev = context$2$0.next) {
                     case 0:
+                        i = 0;
+
+                    case 1:
+                        if (!(i < this.objects.length)) {
+                            context$2$0.next = 7;
+                            break;
+                        }
+
+                        context$2$0.next = 4;
+                        return this.objects[i];
+
+                    case 4:
+                        ++i;
+                        context$2$0.next = 1;
+                        break;
+
+                    case 7:
                     case "end":
                         return context$2$0.stop();
                 }
@@ -4736,14 +4812,18 @@ var _rendererRaytracer = require('./renderer/raytracer');
 
 var _rendererRaytracer2 = _interopRequireDefault(_rendererRaytracer);
 
+var _rendererMapper = require('./renderer/mapper');
+
+var _rendererMapper2 = _interopRequireDefault(_rendererMapper);
+
 var _drawerLine = require('./drawer/line');
 
 var _drawerLine2 = _interopRequireDefault(_drawerLine);
 
 exports['default'] = {
+    // classes
     Camera: _coreCamera2['default'],
     Color: _coreColor2['default'],
-    colors: _coreColor.colors,
     Ray: _coreRay2['default'],
     Scene: _coreScene2['default'],
     Canvas: _interfaceCanvas2['default'],
@@ -4754,11 +4834,17 @@ exports['default'] = {
     Vector: _objectVector2['default'],
     Linescanner: _rendererLinescanner2['default'],
     Raytracer: _rendererRaytracer2['default'],
-    Bresenham: _drawerLine2['default']
+    Mapper: _rendererMapper2['default'],
+    Bresenham: _drawerLine2['default'],
+    // methods
+    mapperFromSize: _rendererMapper.mapperFromSize,
+    planeFromScreen: _objectPlane.planeFromScreen,
+    // constants
+    colors: _coreColor.colors
 };
 module.exports = exports['default'];
 
-},{"./core/camera":189,"./core/color":190,"./core/ray":191,"./core/scene":192,"./drawer/line":193,"./interface/canvas":195,"./interface/index":196,"./object/face":197,"./object/line":198,"./object/plane":199,"./object/vector":200,"./renderer/linescanner":201,"./renderer/raytracer":202,"babel/polyfill":188}],195:[function(require,module,exports){
+},{"./core/camera":189,"./core/color":190,"./core/ray":191,"./core/scene":192,"./drawer/line":193,"./interface/canvas":195,"./interface/index":196,"./object/face":197,"./object/line":198,"./object/plane":199,"./object/vector":200,"./renderer/linescanner":201,"./renderer/mapper":202,"./renderer/raytracer":203,"babel/polyfill":188}],195:[function(require,module,exports){
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
@@ -4793,7 +4879,7 @@ var Canvas = (function () {
             this.imgData.data[index] = color.r;
             this.imgData.data[index + 1] = color.g;
             this.imgData.data[index + 2] = color.b;
-            this.imgData.data[index + 3] = color.a;
+            this.imgData.data[index + 3] = ~ ~(color.a * 255);
         }
     }, {
         key: "updateCanvas",
@@ -4849,25 +4935,40 @@ module.exports = exports["default"];
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+    value: true
 });
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Face =
-/**
- * Constructor of the Face class
- * @param {Vector} a
- * @param {Vector} b
- * @param {Vector} c
- */
-function Face(a, b, c) {
-  _classCallCheck(this, Face);
+var Face = (function () {
+    /**
+     * Constructor of the Face class
+     * @param {Vector} a
+     * @param {Vector} b
+     * @param {Vector} c
+     */
 
-  this.a = a;
-  this.b = b;
-  this.c = c;
-};
+    function Face(a, b, c) {
+        _classCallCheck(this, Face);
+
+        this.a = a;
+        this.b = b;
+        this.c = c;
+    }
+
+    _createClass(Face, [{
+        key: "projection",
+        value: function projection() {
+            var _a, _b, _c;
+
+            return new Face((_a = this.a).projection.apply(_a, arguments), (_b = this.b).projection.apply(_b, arguments), (_c = this.c).projection.apply(_c, arguments));
+        }
+    }]);
+
+    return Face;
+})();
 
 exports["default"] = Face;
 module.exports = exports["default"];
@@ -4881,34 +4982,74 @@ module.exports = exports["default"];
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+    value: true
 });
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Line =
-/**
- * Constructor of the Line class
- * @param {Vector} a
- * @param {Vector} b
- */
-function Line(a, b) {
-  _classCallCheck(this, Line);
+var Line = (function () {
+    /**
+     * Constructor of the Line class
+     * @param {Vector} a
+     * @param {Vector} b
+     */
 
-  this.a = a;
-  this.b = b;
-};
+    function Line(a, b) {
+        _classCallCheck(this, Line);
+
+        this.a = a;
+        this.b = b;
+    }
+
+    _createClass(Line, [{
+        key: "projection",
+        value: function projection() {
+            var _a, _b;
+
+            return new Line((_a = this.a).projection.apply(_a, arguments), (_b = this.b).projection.apply(_b, arguments));
+        }
+    }]);
+
+    return Line;
+})();
 
 exports["default"] = Line;
 module.exports = exports["default"];
 
 },{}],199:[function(require,module,exports){
-"use strict";
-
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
  */
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Plane =
+/**
+ * The Plane constructor
+ * @param {Vector} p Origin point
+ * @param {Vector} n The normal vector
+ */
+function Plane(p, n) {
+    _classCallCheck(this, Plane);
+
+    this.p = p;
+    this.n = n;
+};
+
+var planeFromScreen = function planeFromScreen(screen) {
+    return new Plane(screen[0], screen[1].minus(screen[0]).det(screen[2].minus(screen[0])).normalize());
+};
+exports.planeFromScreen = planeFromScreen;
+exports["default"] = Plane;
 
 },{}],200:[function(require,module,exports){
 /**
@@ -4946,7 +5087,7 @@ var Vector = (function () {
     }, {
         key: 'det',
         value: function det(v) {
-            return this.y * v.z - this.z * v.y - this.x * v.z + this.z * v.x + this.x * v.y - this.y * v.x;
+            return new Vector(this.y * v.z - this.z * v.y, -this.x * v.z + this.z * v.x, this.x * v.y - this.y * v.x);
         }
     }, {
         key: 'add',
@@ -5000,11 +5141,25 @@ var Vector = (function () {
         value: function normalize() {
             this.mulBy(1 / this.length());
             this.len = 1;
+            return this;
         }
     }, {
         key: 'clone',
         value: function clone() {
             return Object.assign({}, this);
+        }
+
+        /**
+         * Get projection
+         * @param {Plane} p
+         */
+    }, {
+        key: 'projection',
+        value: function projection(p) {
+            var v = this.minus(p.p);
+            var len = v.dot(p.n);
+            var vDelta = p.n.mul(len);
+            return this.minus(vDelta);
         }
     }]);
 
@@ -5023,6 +5178,118 @@ module.exports = exports['default'];
  */
 
 },{}],202:[function(require,module,exports){
+/**
+ * Created by shuding on 10/15/15.
+ * <ds303077135@gmail.com>
+ */
+
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+    value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var _coreCamera = require('../core/camera');
+
+var _coreCamera2 = _interopRequireDefault(_coreCamera);
+
+var _objectPlane = require('../object/plane');
+
+var _objectLine = require('../object/line');
+
+var _objectLine2 = _interopRequireDefault(_objectLine);
+
+var _objectVector = require('../object/vector');
+
+var _objectVector2 = _interopRequireDefault(_objectVector);
+
+var _drawerLine = require('../drawer/line');
+
+var _drawerLine2 = _interopRequireDefault(_drawerLine);
+
+var _coreColor = require('../core/color');
+
+/**
+ * Mapper is a renderer which has no eye origin position, or says
+ * it has a infinite perspective.
+ */
+
+var Mapper = (function () {
+    /**
+     * Constructor of the Mapper class
+     * @param {Camera} camera Camera class from core/camera
+     * @param {Output} output Output class from interface/index
+     */
+
+    function Mapper(camera, output) {
+        _classCallCheck(this, Mapper);
+
+        this.camera = camera;
+        this.output = output;
+    }
+
+    /**
+     * Render particular scene with camera to output
+     * @param {Scene} scene
+     */
+
+    _createClass(Mapper, [{
+        key: 'render',
+        value: function render(scene) {
+            var screenPlane = (0, _objectPlane.planeFromScreen)(this.camera.screen);
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
+
+            try {
+                for (var _iterator = scene.eachObject()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                    var obj = _step.value;
+
+                    var objProject = obj.projection(screenPlane);
+                    switch (objProject.constructor.name) {
+                        case 'Line':
+                            var bresenham = new _drawerLine2['default'](this.output);
+                            bresenham.draw(objProject.a.x, objProject.a.y, objProject.b.x, objProject.b.y, _coreColor.colors.black);
+                            break;
+                    }
+                }
+            } catch (err) {
+                _didIteratorError = true;
+                _iteratorError = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion && _iterator['return']) {
+                        _iterator['return']();
+                    }
+                } finally {
+                    if (_didIteratorError) {
+                        throw _iteratorError;
+                    }
+                }
+            }
+
+            this.output.updateCanvas();
+        }
+    }]);
+
+    return Mapper;
+})();
+
+var mapperFromSize = function mapperFromSize(width, height, output) {
+    var camera = new _coreCamera2['default'](new _objectVector2['default'](0, 0, 0), [new _objectVector2['default'](0, height, 0), new _objectVector2['default'](width, height, 0), new _objectVector2['default'](0, -height, 0), new _objectVector2['default'](width, -height, 0)]);
+    return new Mapper(camera, output);
+};
+
+exports.mapperFromSize = mapperFromSize;
+exports['default'] = Mapper;
+
+},{"../core/camera":189,"../core/color":190,"../drawer/line":193,"../object/line":198,"../object/plane":199,"../object/vector":200}],203:[function(require,module,exports){
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
@@ -5088,7 +5355,7 @@ var Raytracer = (function () {
 exports["default"] = Raytracer;
 module.exports = exports["default"];
 
-},{}],203:[function(require,module,exports){
+},{}],204:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -5121,9 +5388,7 @@ function drainQueue() {
         currentQueue = queue;
         queue = [];
         while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
+            currentQueue[queueIndex].run();
         }
         queueIndex = -1;
         len = queue.length;
@@ -5175,6 +5440,7 @@ process.binding = function (name) {
     throw new Error('process.binding is not supported');
 };
 
+// TODO(shtylman)
 process.cwd = function () { return '/' };
 process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');

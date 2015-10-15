@@ -9,11 +9,17 @@ class Line {
      * @param {Vector} a
      * @param {Vector} b
      */
-    constructor (a, b) {
+    constructor(a, b) {
         this.a = a;
         this.b = b;
     }
 
+    projection() {
+        return new Line(
+            this.a.projection(...arguments),
+            this.b.projection(...arguments)
+        );
+    }
 }
 
 export default Line;
