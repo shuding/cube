@@ -4253,7 +4253,7 @@ module.exports = require('./modules/$.core');
 );
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":204}],187:[function(require,module,exports){
+},{"_process":206}],187:[function(require,module,exports){
 module.exports = require("./lib/polyfill");
 
 },{"./lib/polyfill":1}],188:[function(require,module,exports){
@@ -4795,7 +4795,7 @@ Object.defineProperty(exports, '__esModule', {
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-require("babel/polyfill");
+require('babel/polyfill');
 
 var _coreCamera = require('./core/camera');
 
@@ -4824,6 +4824,14 @@ var _interfaceIndex2 = _interopRequireDefault(_interfaceIndex);
 var _objectFace = require('./object/face');
 
 var _objectFace2 = _interopRequireDefault(_objectFace);
+
+var _objectFace4 = require('./object/face4');
+
+var _objectFace42 = _interopRequireDefault(_objectFace4);
+
+var _objectCuboid = require('./object/cuboid');
+
+var _objectCuboid2 = _interopRequireDefault(_objectCuboid);
 
 var _objectLine = require('./object/line');
 
@@ -4862,6 +4870,8 @@ exports['default'] = {
     Canvas: _interfaceCanvas2['default'],
     Interface: _interfaceIndex2['default'],
     Face: _objectFace2['default'],
+    Face4: _objectFace42['default'],
+    Cuboid: _objectCuboid2['default'],
     Line: _objectLine2['default'],
     Plane: _objectPlane2['default'],
     Vector: _objectVector2['default'],
@@ -4877,7 +4887,7 @@ exports['default'] = {
 };
 module.exports = exports['default'];
 
-},{"./core/camera":189,"./core/color":190,"./core/ray":191,"./core/scene":192,"./drawer/line":193,"./interface/canvas":195,"./interface/index":196,"./object/face":197,"./object/line":198,"./object/plane":199,"./object/vector":200,"./renderer/linescanner":201,"./renderer/mapper":202,"./renderer/raytracer":203,"babel/polyfill":188}],195:[function(require,module,exports){
+},{"./core/camera":189,"./core/color":190,"./core/ray":191,"./core/scene":192,"./drawer/line":193,"./interface/canvas":195,"./interface/index":196,"./object/cuboid":197,"./object/face":198,"./object/face4":199,"./object/line":200,"./object/plane":201,"./object/vector":202,"./renderer/linescanner":203,"./renderer/mapper":204,"./renderer/raytracer":205,"babel/polyfill":188}],195:[function(require,module,exports){
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
@@ -5067,6 +5077,51 @@ module.exports = exports["default"];
 
 },{}],197:[function(require,module,exports){
 /**
+ * Created by shuding on 10/16/15.
+ * <ds303077135@gmail.com>
+ */
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Cuboid = (function () {
+    /**
+     * Constructor of the Cuboid class
+     * @param {Face4} a
+     * @param {Face4} b
+     */
+
+    function Cuboid(a, b) {
+        _classCallCheck(this, Cuboid);
+
+        this.a = a;
+        this.b = b;
+    }
+
+    _createClass(Cuboid, [{
+        key: "projection",
+        value: function projection() {
+            var _a, _b;
+
+            return new Cuboid((_a = this.a).projection.apply(_a, arguments), (_b = this.b).projection.apply(_b, arguments));
+        }
+    }]);
+
+    return Cuboid;
+})();
+
+exports["default"] = Cuboid;
+module.exports = exports["default"];
+
+},{}],198:[function(require,module,exports){
+/**
  * Created by shuding on 10/8/15.
  * <ds303077135@gmail.com>
  */
@@ -5112,7 +5167,56 @@ var Face = (function () {
 exports["default"] = Face;
 module.exports = exports["default"];
 
-},{}],198:[function(require,module,exports){
+},{}],199:[function(require,module,exports){
+/**
+ * Created by shuding on 10/16/15.
+ * <ds303077135@gmail.com>
+ */
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Face4 = (function () {
+    /**
+     * Constructor of the Face4 class
+     * @param {Vector} a
+     * @param {Vector} b
+     * @param {Vector} c
+     * @param {Vector} d
+     */
+
+    function Face4(a, b, c, d) {
+        _classCallCheck(this, Face4);
+
+        this.a = a;
+        this.b = b;
+        this.c = c;
+        this.d = d;
+    }
+
+    _createClass(Face4, [{
+        key: "projection",
+        value: function projection() {
+            var _a, _b, _c, _d;
+
+            return new Face4((_a = this.a).projection.apply(_a, arguments), (_b = this.b).projection.apply(_b, arguments), (_c = this.c).projection.apply(_c, arguments), (_d = this.d).projection.apply(_d, arguments));
+        }
+    }]);
+
+    return Face4;
+})();
+
+exports["default"] = Face4;
+module.exports = exports["default"];
+
+},{}],200:[function(require,module,exports){
 /**
  * Created by shuding on 10/8/15.
  * <ds303077135@gmail.com>
@@ -5157,7 +5261,7 @@ var Line = (function () {
 exports["default"] = Line;
 module.exports = exports["default"];
 
-},{}],199:[function(require,module,exports){
+},{}],201:[function(require,module,exports){
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
@@ -5190,7 +5294,7 @@ var planeFromScreen = function planeFromScreen(screen) {
 exports.planeFromScreen = planeFromScreen;
 exports["default"] = Plane;
 
-},{}],200:[function(require,module,exports){
+},{}],202:[function(require,module,exports){
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
@@ -5357,7 +5461,7 @@ var Vector = (function () {
 exports['default'] = Vector;
 module.exports = exports['default'];
 
-},{}],201:[function(require,module,exports){
+},{}],203:[function(require,module,exports){
 "use strict";
 
 /**
@@ -5365,7 +5469,7 @@ module.exports = exports['default'];
  * <ds303077135@gmail.com>
  */
 
-},{}],202:[function(require,module,exports){
+},{}],204:[function(require,module,exports){
 /**
  * Created by shuding on 10/15/15.
  * <ds303077135@gmail.com>
@@ -5403,6 +5507,10 @@ var _drawerLine2 = _interopRequireDefault(_drawerLine);
 
 var _coreColor = require('../core/color');
 
+function drawProjectLine(bresenham, A, B, x, y) {
+    bresenham.draw(A.projectionLength(x), A.projectionLength(y), B.projectionLength(x), B.projectionLength(y), _coreColor.colors.black);
+}
+
 /**
  * Mapper is a renderer which has no eye origin position, or says
  * it has a infinite perspective.
@@ -5435,10 +5543,15 @@ var Mapper = (function () {
     }, {
         key: 'render',
         value: function render(scene) {
+            var coorA, coorB, coorC, coorD, coorE, coorF, coorG, coorH;
+
             var screenPlane = (0, _objectPlane.planeFromScreen)(this.camera.screen);
             var origin = this.camera.screen[2];
             var x = this.camera.screen[1].minus(this.camera.screen[0]);
             var y = this.camera.screen[0].minus(this.camera.screen[2]);
+
+            var bresenham = new _drawerLine2['default'](this.output);
+
             var _iteratorNormalCompletion = true;
             var _didIteratorError = false;
             var _iteratorError = undefined;
@@ -5450,10 +5563,49 @@ var Mapper = (function () {
                     var objProject = obj.projection(screenPlane);
                     switch (objProject.constructor.name) {
                         case 'Line':
-                            var bresenham = new _drawerLine2['default'](this.output);
-                            var coorA = objProject.a.minus(origin);
-                            var coorB = objProject.b.minus(origin);
-                            bresenham.draw(coorA.projectionLength(x), coorA.projectionLength(y), coorB.projectionLength(x), coorB.projectionLength(y), _coreColor.colors.black);
+                            coorA = objProject.a.minus(origin);
+                            coorB = objProject.b.minus(origin);
+                            drawProjectLine(bresenham, coorA, coorB, x, y);
+                            break;
+                        case 'Face':
+                            coorA = objProject.a.minus(origin);
+                            coorB = objProject.b.minus(origin);
+                            coorC = objProject.c.minus(origin);
+                            drawProjectLine(bresenham, coorA, coorB, x, y);
+                            drawProjectLine(bresenham, coorA, coorC, x, y);
+                            drawProjectLine(bresenham, coorB, coorC, x, y);
+                            break;
+                        case 'Face4':
+                            coorA = objProject.a.minus(origin);
+                            coorB = objProject.b.minus(origin);
+                            coorC = objProject.c.minus(origin);
+                            coorD = objProject.d.minus(origin);
+                            drawProjectLine(bresenham, coorA, coorB, x, y);
+                            drawProjectLine(bresenham, coorB, coorC, x, y);
+                            drawProjectLine(bresenham, coorC, coorD, x, y);
+                            drawProjectLine(bresenham, coorD, coorA, x, y);
+                            break;
+                        case 'Cuboid':
+                            coorA = objProject.a.a.minus(origin);
+                            coorB = objProject.a.b.minus(origin);
+                            coorC = objProject.a.c.minus(origin);
+                            coorD = objProject.a.d.minus(origin);
+                            coorE = objProject.b.a.minus(origin);
+                            coorF = objProject.b.b.minus(origin);
+                            coorG = objProject.b.c.minus(origin);
+                            coorH = objProject.b.d.minus(origin);
+                            drawProjectLine(bresenham, coorA, coorB, x, y);
+                            drawProjectLine(bresenham, coorB, coorC, x, y);
+                            drawProjectLine(bresenham, coorC, coorD, x, y);
+                            drawProjectLine(bresenham, coorD, coorA, x, y);
+                            drawProjectLine(bresenham, coorE, coorF, x, y);
+                            drawProjectLine(bresenham, coorF, coorG, x, y);
+                            drawProjectLine(bresenham, coorG, coorH, x, y);
+                            drawProjectLine(bresenham, coorH, coorE, x, y);
+                            drawProjectLine(bresenham, coorE, coorA, x, y);
+                            drawProjectLine(bresenham, coorF, coorB, x, y);
+                            drawProjectLine(bresenham, coorG, coorC, x, y);
+                            drawProjectLine(bresenham, coorH, coorD, x, y);
                             break;
                     }
                 }
@@ -5492,7 +5644,7 @@ var mapperFromSize = function mapperFromSize(width, height, output) {
 exports.mapperFromSize = mapperFromSize;
 exports['default'] = Mapper;
 
-},{"../core/camera":189,"../core/color":190,"../drawer/line":193,"../object/line":198,"../object/plane":199,"../object/vector":200}],203:[function(require,module,exports){
+},{"../core/camera":189,"../core/color":190,"../drawer/line":193,"../object/line":200,"../object/plane":201,"../object/vector":202}],205:[function(require,module,exports){
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
@@ -5558,7 +5710,7 @@ var Raytracer = (function () {
 exports["default"] = Raytracer;
 module.exports = exports["default"];
 
-},{}],204:[function(require,module,exports){
+},{}],206:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};

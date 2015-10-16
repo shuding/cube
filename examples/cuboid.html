@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title></title>
+</head>
+<body>
+<h1>drag on this canvas</h1>
+<canvas id="myCanvas" width="800" height="600" style="border: 1px solid #d3d3d3">
+  Your browser does not support the HTML5 canvas tag.
+</canvas>
+<script src="../bundle.js"></script>
+<script type="text/javascript">
+  htmlcanvas = document.getElementById('myCanvas');
+  canvas = new cube.Canvas(htmlcanvas);
+
+  face1 = new cube.Face4(
+    new cube.Vector(-300,  200, 0),
+    new cube.Vector( 300,  200, 0),
+    new cube.Vector( 300, -200, 0),
+    new cube.Vector(-300, -200, 0)
+  );
+
+  face2 = new cube.Face4(
+      new cube.Vector(-300,  200, 100),
+      new cube.Vector( 300,  200, 100),
+      new cube.Vector( 300, -200, 100),
+      new cube.Vector(-300, -200, 100)
+  );
+
+  scene = new cube.Scene(new cube.Cuboid(face1, face2));
+
+  // mapper = cube.mapperFromSize(800, 600, canvas);
+
+  // or specific viewport
+  camera = new cube.Camera(new cube.Vector(0, 0, 0), [
+    new cube.Vector(-400, 300, -10),
+    new cube.Vector(400, 300, -10),
+    new cube.Vector(-400, -300, -10),
+    new cube.Vector(400, 300, -10)
+  ]);
+  mapper = new cube.Mapper(camera, canvas);
+
+  mapper.render(scene);
+
+  canvas.bindDrag(function (event, data) {
+    var deltaY = 0.01 * (event.x - data.x);
+    var deltaX = 0.01 * (event.y - data.y);
+    mapper.clear();
+    mapper.rotate(deltaX, 0, deltaY);
+    mapper.render(scene);
+  });
+</script>
+</body>
+</html>

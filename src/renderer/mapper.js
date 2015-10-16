@@ -13,6 +13,16 @@ import Bresenham from '../drawer/line';
 
 import {colors} from '../core/color';
 
+function drawProjectLine(bresenham, A, B, x, y) {
+    bresenham.draw(
+        A.projectionLength(x),
+        A.projectionLength(y),
+        B.projectionLength(x),
+        B.projectionLength(y),
+        colors.black
+    );
+}
+
 /**
  * Mapper is a renderer which has no eye origin position, or says
  * it has a infinite perspective.
@@ -37,24 +47,62 @@ class Mapper {
      * @param {Scene} scene
      */
     render(scene) {
+        var coorA, coorB, coorC, coorD, coorE, coorF, coorG, coorH;
+
         let screenPlane = planeFromScreen(this.camera.screen);
         let origin = this.camera.screen[2];
         let x = this.camera.screen[1].minus(this.camera.screen[0]);
         let y = this.camera.screen[0].minus(this.camera.screen[2]);
+
+        let bresenham = new Bresenham(this.output);
+
         for (let obj of scene.eachObject()) {
             let objProject = obj.projection(screenPlane);
             switch (objProject.constructor.name) {
                 case 'Line':
-                    let bresenham = new Bresenham(this.output);
-                    let coorA = objProject.a.minus(origin);
-                    let coorB = objProject.b.minus(origin);
-                    bresenham.draw(
-                        coorA.projectionLength(x),
-                        coorA.projectionLength(y),
-                        coorB.projectionLength(x),
-                        coorB.projectionLength(y),
-                        colors.black
-                    );
+                    coorA = objProject.a.minus(origin);
+                    coorB = objProject.b.minus(origin);
+                    drawProjectLine(bresenham, coorA, coorB, x, y);
+                    break;
+                case 'Face':
+                    coorA = objProject.a.minus(origin);
+                    coorB = objProject.b.minus(origin);
+                    coorC = objProject.c.minus(origin);
+                    drawProjectLine(bresenham, coorA, coorB, x, y);
+                    drawProjectLine(bresenham, coorA, coorC, x, y);
+                    drawProjectLine(bresenham, coorB, coorC, x, y);
+                    break;
+                case 'Face4':
+                    coorA = objProject.a.minus(origin);
+                    coorB = objProject.b.minus(origin);
+                    coorC = objProject.c.minus(origin);
+                    coorD = objProject.d.minus(origin);
+                    drawProjectLine(bresenham, coorA, coorB, x, y);
+                    drawProjectLine(bresenham, coorB, coorC, x, y);
+                    drawProjectLine(bresenham, coorC, coorD, x, y);
+                    drawProjectLine(bresenham, coorD, coorA, x, y);
+                    break;
+                case 'Cuboid':
+                    coorA = objProject.a.a.minus(origin);
+                    coorB = objProject.a.b.minus(origin);
+                    coorC = objProject.a.c.minus(origin);
+                    coorD = objProject.a.d.minus(origin);
+                    coorE = objProject.b.a.minus(origin);
+                    coorF = objProject.b.b.minus(origin);
+                    coorG = objProject.b.c.minus(origin);
+                    coorH = objProject.b.d.minus(origin);
+                    drawProjectLine(bresenham, coorA, coorB, x, y);
+                    drawProjectLine(bresenham, coorB, coorC, x, y);
+                    drawProjectLine(bresenham, coorC, coorD, x, y);
+                    drawProjectLine(bresenham, coorD, coorA, x, y);
+                    drawProjectLine(bresenham, coorE, coorF, x, y);
+                    drawProjectLine(bresenham, coorF, coorG, x, y);
+                    drawProjectLine(bresenham, coorG, coorH, x, y);
+                    drawProjectLine(bresenham, coorH, coorE, x, y);
+                    drawProjectLine(bresenham, coorE, coorA, x, y);
+                    drawProjectLine(bresenham, coorF, coorB, x, y);
+                    drawProjectLine(bresenham, coorG, coorC, x, y);
+                    drawProjectLine(bresenham, coorH, coorD, x, y);
                     break;
             }
         }
