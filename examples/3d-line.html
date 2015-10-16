@@ -7,6 +7,7 @@
   <title></title>
 </head>
 <body>
+<h1>drag on this canvas</h1>
 <canvas id="myCanvas" width="800" height="600" style="border:1px solid #d3d3d3;">
   Your browser does not support the HTML5 canvas tag.
 </canvas>
@@ -15,24 +16,38 @@
   htmlcanvas = document.getElementById('myCanvas');
   canvas = new cube.Canvas(htmlcanvas);
 
-  v1 = new cube.Vector(300, 500, 1);
-  v2 = new cube.Vector(100, 100, 1);
-  line = new cube.Line(v1, v2);
+  line1 = new cube.Line(
+      new cube.Vector(-300, 200, 0),
+      new cube.Vector(100, -100, 0)
+  );
 
-  scene = new cube.Scene(line);
+  line2 = new cube.Line(
+      new cube.Vector(-300, 400, 0),
+      new cube.Vector(100, -100, 0)
+  );
+
+  scene = new cube.Scene(line1, line2);
 
   // mapper = cube.mapperFromSize(800, 600, canvas);
 
   // or specific viewport
   camera = new cube.Camera(new cube.Vector(0, 0, 0), [
-      new cube.Vector(0, 600, -1),
-      new cube.Vector(800, 600, -1),
-      new cube.Vector(0, 0, -2),
-      new cube.Vector(800, 0, -2)
+      new cube.Vector(-400, 300, -10),
+      new cube.Vector(400, 300, -10),
+      new cube.Vector(-400, -300, -10),
+      new cube.Vector(400, 300, -10)
   ]);
   mapper = new cube.Mapper(camera, canvas);
 
   mapper.render(scene);
+
+  canvas.bindDrag(function (event, data) {
+    var deltaY = 0.01 * (event.x - data.x);
+    var deltaX = 0.01 * (event.y - data.y);
+    mapper.clear();
+    mapper.rotate(deltaX, deltaY, 0);
+    mapper.render(scene);
+  });
 </script>
 </body>
 </html>

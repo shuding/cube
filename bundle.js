@@ -4297,7 +4297,7 @@ var Camera = (function () {
         _classCallCheck(this, Camera);
 
         this.eye = eye;
-        this.screen = screen;
+        this._screen_ = screen;
         this.pxWidth = width;
         this.pxHeight = height;
 
@@ -4314,18 +4314,26 @@ var Camera = (function () {
         this.heightInc = b2t.mulBy(this.heightPerPx / this.height);
     }
 
-    /**
-     * Generator for each pixel's coordinate and the vector pointed to this pixel
-     */
-
     _createClass(Camera, [{
+        key: 'rotate',
+        value: function rotate(x, y, z) {
+            this.eye.rotateBy(x, y, z);
+            this._screen_.forEach(function (p) {
+                p.rotateBy(x, y, z);
+            });
+        }
+
+        /**
+         * Generator for each pixel's coordinate and the vector pointed to this pixel
+         */
+    }, {
         key: 'eachPixel',
         value: regeneratorRuntime.mark(function eachPixel() {
             var posY, y, posX, x;
             return regeneratorRuntime.wrap(function eachPixel$(context$2$0) {
                 while (1) switch (context$2$0.prev = context$2$0.next) {
                     case 0:
-                        posY = this.screen.tl.clone();
+                        posY = this._screen_.tl.clone();
                         y = 0;
 
                     case 2:
@@ -4449,6 +4457,25 @@ var Camera = (function () {
                 }
             }, eachRay, this, [[3, 14, 18, 26], [19,, 21, 25]]);
         })
+    }, {
+        key: 'screen',
+        get: function get() {
+            return this._screen_;
+        },
+        set: function set(screen) {
+            this._screen_ = screen;
+            var r2l = screen[1].minus(screen[0]);
+            var b2t = screen[2].minus(screen[0]);
+
+            this.width = r2l.length();
+            this.height = b2t.length();
+
+            this.widthPerPx = this.width / this.pxWidth;
+            this.heightPerPx = this.height / this.pxHeight;
+
+            this.widthInc = r2l.mulBy(this.widthPerPx / this.width);
+            this.heightInc = b2t.mulBy(this.heightPerPx / this.height);
+        }
     }]);
 
     return Camera;
@@ -4636,11 +4663,17 @@ var Bresenham = (function () {
     _createClass(Bresenham, [{
         key: 'draw',
         value: function draw(x0, y0, x1, y1, color) {
+            x0 = ~ ~x0;
+            y0 = ~ ~y0;
+            x1 = ~ ~x1;
+            y1 = ~ ~y1;
+
             var dx = x1 - x0;
             var dy = y1 - y0;
             var x = x0;
             var y = y0;
             var D;
+
             if (dx > 0 && dy >= 0) {
                 if (dx > dy) {
                     D = -dx;
@@ -4850,15 +4883,15 @@ module.exports = exports['default'];
  * <ds303077135@gmail.com>
  */
 
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
+Object.defineProperty(exports, '__esModule', {
     value: true
 });
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 var Canvas = (function () {
     function Canvas(canvas) {
@@ -4869,30 +4902,136 @@ var Canvas = (function () {
         this.width = canvas.width;
         this.height = canvas.height;
         this.imgData = this.context.getImageData(0, 0, canvas.width, canvas.height);
+
+        // State flags
+        this.mouseDown = false;
+        this.dragData = {};
+        this._lastDragData_ = {};
+
+        // Binding functions
+        this.mouseDownFn = [];
+        this.mouseUpFn = [];
+        this.mouseMoveFn = [];
+        this.dragFn = [];
     }
 
     _createClass(Canvas, [{
-        key: "setPoint",
+        key: 'setPoint',
         value: function setPoint(x, y, color) {
-            var index = (y * this.width + x) * 4;
+            if (x < 0 || y < 0 || x >= this.width || y >= this.height) {
+                return;
+            }
+
+            var index = ((this.height - y - 1) * this.width + x) * 4;
 
             this.imgData.data[index] = color.r;
             this.imgData.data[index + 1] = color.g;
             this.imgData.data[index + 2] = color.b;
             this.imgData.data[index + 3] = ~ ~(color.a * 255);
         }
+
+        // Interactions binding fn
     }, {
-        key: "updateCanvas",
+        key: 'bindMouseDown',
+        value: function bindMouseDown(fn) {
+            var _this = this;
+
+            if (!this.mouseDownFn.length) {
+                // If not initialized, then init the event listener
+                this.cvs.addEventListener('mousedown', function (event) {
+                    var self = _this;
+                    _this.mouseDownFn.forEach(function (fn) {
+                        fn.call(self, event);
+                    });
+                });
+            }
+            // Push into function list
+            this.mouseDownFn.push(fn);
+        }
+    }, {
+        key: 'bindMouseUp',
+        value: function bindMouseUp(fn) {
+            var _this2 = this;
+
+            if (!this.mouseUpFn.length) {
+                // If not initialized, then init the event listener
+                this.cvs.addEventListener('mouseup', function (event) {
+                    var self = _this2;
+                    _this2.mouseUpFn.forEach(function (fn) {
+                        fn.call(self, event);
+                    });
+                });
+            }
+            // Push into function list
+            this.mouseUpFn.push(fn);
+        }
+    }, {
+        key: 'bindMouseMove',
+        value: function bindMouseMove(fn) {
+            var _this3 = this;
+
+            if (!this.mouseMoveFn.length) {
+                // If not initialized, then init the event listener
+                this.cvs.addEventListener('mousemove', function (event) {
+                    var self = _this3;
+                    _this3.mouseMoveFn.forEach(function (fn) {
+                        fn.call(self, event);
+                    });
+                });
+            }
+            // Push into function list
+            this.mouseMoveFn.push(fn);
+        }
+    }, {
+        key: 'bindDrag',
+        value: function bindDrag(fn) {
+            var _this4 = this;
+
+            if (!this.dragFn.length) {
+                this.bindMouseDown(function (event) {
+                    _this4.mouseDown = true;
+                    _this4._lastDragData_ = {
+                        x: event.x,
+                        y: event.y
+                    };
+                });
+                this.bindMouseUp(function () {
+                    _this4.mouseDown = false;
+                });
+                this.bindMouseMove(function (event) {
+                    if (_this4.mouseDown) {
+                        var self = _this4;
+                        _this4.dragFn.forEach(function (fn) {
+                            fn.apply(self, [event, self._lastDragData_]);
+                        });
+                        self.dragData = {
+                            x: event.x,
+                            y: event.y
+                        };
+                        self._lastDragData_ = self.dragData;
+                    }
+                });
+            }
+            this.dragFn.push(fn);
+        }
+    }, {
+        key: 'updateCanvas',
         value: function updateCanvas() {
             this.context.putImageData(this.imgData, 0, 0);
+        }
+    }, {
+        key: 'clearCanvas',
+        value: function clearCanvas() {
+            this.context.clearRect(0, 0, this.width, this.height);
+            this.imgData = this.context.getImageData(0, 0, canvas.width, canvas.height);
         }
     }]);
 
     return Canvas;
 })();
 
-exports["default"] = Canvas;
-module.exports = exports["default"];
+exports['default'] = Canvas;
+module.exports = exports['default'];
 
 },{}],196:[function(require,module,exports){
 /**
@@ -5129,6 +5268,49 @@ var Vector = (function () {
             delete this.len;
         }
     }, {
+        key: 'rotateBy',
+        value: function rotateBy(x, y, z) {
+            if (x !== 0) {
+                this.rotateByX(x);
+            }
+            if (y !== 0) {
+                this.rotateByY(y);
+            }
+            if (z !== 0) {
+                this.rotateByZ(z);
+            }
+        }
+    }, {
+        key: 'rotateByX',
+        value: function rotateByX(angle) {
+            var y = this.y;
+            var z = this.z;
+            var cos = Math.cos(angle);
+            var sin = Math.sin(angle);
+            this.y = y * cos - z * sin;
+            this.z = y * sin + z * cos;
+        }
+    }, {
+        key: 'rotateByY',
+        value: function rotateByY(angle) {
+            var x = this.x;
+            var z = this.z;
+            var cos = Math.cos(angle);
+            var sin = Math.sin(angle);
+            this.x = x * cos + z * sin;
+            this.z = -x * sin + z * cos;
+        }
+    }, {
+        key: 'rotateByZ',
+        value: function rotateByZ(angle) {
+            var x = this.x;
+            var y = this.y;
+            var cos = Math.cos(angle);
+            var sin = Math.sin(angle);
+            this.x = x * cos - y * sin;
+            this.y = x * sin + y * cos;
+        }
+    }, {
         key: 'length',
         value: function length() {
             if (typeof this.len === 'undefined') {
@@ -5160,6 +5342,12 @@ var Vector = (function () {
             var len = v.dot(p.n);
             var vDelta = p.n.mul(len);
             return this.minus(vDelta);
+        }
+    }, {
+        key: 'projectionLength',
+        value: function projectionLength(v) {
+            var len = this.dot(v);
+            return len / v.length();
         }
     }]);
 
@@ -5234,15 +5422,23 @@ var Mapper = (function () {
         this.output = output;
     }
 
-    /**
-     * Render particular scene with camera to output
-     * @param {Scene} scene
-     */
-
     _createClass(Mapper, [{
+        key: 'rotate',
+        value: function rotate(x, y, z) {
+            this.camera.rotate(x, y, z);
+        }
+
+        /**
+         * Render particular scene with camera to output
+         * @param {Scene} scene
+         */
+    }, {
         key: 'render',
         value: function render(scene) {
             var screenPlane = (0, _objectPlane.planeFromScreen)(this.camera.screen);
+            var origin = this.camera.screen[2];
+            var x = this.camera.screen[1].minus(this.camera.screen[0]);
+            var y = this.camera.screen[0].minus(this.camera.screen[2]);
             var _iteratorNormalCompletion = true;
             var _didIteratorError = false;
             var _iteratorError = undefined;
@@ -5255,7 +5451,9 @@ var Mapper = (function () {
                     switch (objProject.constructor.name) {
                         case 'Line':
                             var bresenham = new _drawerLine2['default'](this.output);
-                            bresenham.draw(objProject.a.x, objProject.a.y, objProject.b.x, objProject.b.y, _coreColor.colors.black);
+                            var coorA = objProject.a.minus(origin);
+                            var coorB = objProject.b.minus(origin);
+                            bresenham.draw(coorA.projectionLength(x), coorA.projectionLength(y), coorB.projectionLength(x), coorB.projectionLength(y), _coreColor.colors.black);
                             break;
                     }
                 }
@@ -5275,6 +5473,11 @@ var Mapper = (function () {
             }
 
             this.output.updateCanvas();
+        }
+    }, {
+        key: 'clear',
+        value: function clear() {
+            this.output.clearCanvas();
         }
     }]);
 

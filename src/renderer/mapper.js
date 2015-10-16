@@ -28,22 +28,41 @@ class Mapper {
         this.output = output;
     }
 
+    rotate(x, y, z) {
+        this.camera.rotate(x, y, z);
+    }
+
     /**
      * Render particular scene with camera to output
      * @param {Scene} scene
      */
     render(scene) {
-        var screenPlane = planeFromScreen(this.camera.screen);
+        let screenPlane = planeFromScreen(this.camera.screen);
+        let origin = this.camera.screen[2];
+        let x = this.camera.screen[1].minus(this.camera.screen[0]);
+        let y = this.camera.screen[0].minus(this.camera.screen[2]);
         for (let obj of scene.eachObject()) {
             let objProject = obj.projection(screenPlane);
             switch (objProject.constructor.name) {
                 case 'Line':
                     let bresenham = new Bresenham(this.output);
-                    bresenham.draw(objProject.a.x, objProject.a.y, objProject.b.x, objProject.b.y, colors.black);
+                    let coorA = objProject.a.minus(origin);
+                    let coorB = objProject.b.minus(origin);
+                    bresenham.draw(
+                        coorA.projectionLength(x),
+                        coorA.projectionLength(y),
+                        coorB.projectionLength(x),
+                        coorB.projectionLength(y),
+                        colors.black
+                    );
                     break;
             }
         }
         this.output.updateCanvas();
+    }
+
+    clear() {
+        this.output.clearCanvas();
     }
 }
 
