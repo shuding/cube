@@ -7,7 +7,7 @@
   <title></title>
 </head>
 <body>
-<canvas id="myCanvas" width="80" height="60" style="border: 1px solid #d3d3d3">
+<canvas id="myCanvas" width="800" height="600" style="border: 1px solid #d3d3d3">
   Your browser does not support the HTML5 canvas tag.
 </canvas>
 <script src="../bundle.js"></script>
@@ -16,24 +16,26 @@
   canvas = new cube.Canvas(htmlcanvas);
 
   face = new cube.Face(
-      new cube.Vector(-30,  20, 10),
-      new cube.Vector( 30,  20, 10),
-      new cube.Vector( 30, -20, 10)
+      new cube.Vector(-300,  200, 0),
+      new cube.Vector( 300,  200, 0),
+      new cube.Vector( 300, -200, 0)
   );
 
   scene = new cube.Scene(face);
 
-  // mapper = cube.mapperFromSize(800, 600, canvas);
-
   // or specific viewport
-  camera = new cube.Camera(new cube.Vector(0, 0, -20), [
-    new cube.Vector(-40, 30, -10),
-    new cube.Vector(40, 30, -10),
-    new cube.Vector(-40, -30, -10),
-    new cube.Vector(40, 30, -10)
+  camera = new cube.Camera(new cube.Vector(0, 0, -10), [
+    new cube.Vector(-400, 300, 0),
+    new cube.Vector(400, 300, 0),
+    new cube.Vector(-400, -300, 0),
+    new cube.Vector(400, 300, 0)
   ]);
 
   raytracer = new cube.Raytracer(camera, canvas);
+  raytracer.addLight(
+      new cube.Vector(400, 300, -30),
+      cube.colors.white
+  );
 
   raytracer.render(scene);
 

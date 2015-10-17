@@ -30,9 +30,9 @@ class Canvas {
 
         let index = ((this.height - y - 1) * this.width + x) * 4;
 
-        this.imgData.data[index]     = color.r;
-        this.imgData.data[index + 1] = color.g;
-        this.imgData.data[index + 2] = color.b;
+        this.imgData.data[index]     = ~~(color.r * 255);
+        this.imgData.data[index + 1] = ~~(color.g * 255);
+        this.imgData.data[index + 2] = ~~(color.b * 255);
         this.imgData.data[index + 3] = ~~(color.a * 255);
     }
 

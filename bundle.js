@@ -4496,24 +4496,37 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Color =
-/**
- * Color constructor
- * @param {Number} r Red [0..255]
- * @param {Number} g Green [0..255]
- * @param {Number} b Blue [0..255]
- * @param {Number} a Alpha [0, 1]
- */
-function Color(r, g, b, a) {
-    _classCallCheck(this, Color);
+var Color = (function () {
+    /**
+     * Color constructor
+     * @param {Number} r Red [0, 1]
+     * @param {Number} g Green [0, 1]
+     * @param {Number} b Blue [0, 1]
+     * @param {Number} a Alpha [0, 1]
+     */
 
-    this.r = r;
-    this.g = g;
-    this.b = b;
-    this.a = a;
-};
+    function Color(r, g, b, a) {
+        _classCallCheck(this, Color);
+
+        this.r = r;
+        this.g = g;
+        this.b = b;
+        this.a = a;
+    }
+
+    _createClass(Color, [{
+        key: "mul",
+        value: function mul(r) {
+            return new Color(this.r * r, this.g * r, this.b * r, this.a);
+        }
+    }]);
+
+    return Color;
+})();
 
 var colors = {
     white: new Color(255, 255, 255, 1),
@@ -4934,9 +4947,9 @@ var Canvas = (function () {
 
             var index = ((this.height - y - 1) * this.width + x) * 4;
 
-            this.imgData.data[index] = color.r;
-            this.imgData.data[index + 1] = color.g;
-            this.imgData.data[index + 2] = color.b;
+            this.imgData.data[index] = ~ ~(color.r * 255);
+            this.imgData.data[index + 1] = ~ ~(color.g * 255);
+            this.imgData.data[index + 2] = ~ ~(color.b * 255);
             this.imgData.data[index + 3] = ~ ~(color.a * 255);
         }
 
@@ -5126,15 +5139,21 @@ module.exports = exports["default"];
  * <ds303077135@gmail.com>
  */
 
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
+Object.defineProperty(exports, '__esModule', {
     value: true
 });
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var _coreRay = require('../core/ray');
+
+var _coreRay2 = _interopRequireDefault(_coreRay);
 
 var Face = (function () {
     /**
@@ -5150,6 +5169,9 @@ var Face = (function () {
         this.a = a;
         this.b = b;
         this.c = c;
+
+        // Normal vector
+        this.n = a.minus(b).det(c.minus(b)).normalize();
     }
 
     /**
@@ -5158,24 +5180,26 @@ var Face = (function () {
      */
 
     _createClass(Face, [{
-        key: "testInnerRay",
+        key: 'testInnerRay',
         value: function testInnerRay(ray) {
             var a = this.a.minus(ray.s);
             var b = this.b.minus(ray.s);
-            if (a.det(b).dot(ray.t) < 0) {
-                return 0;
+            if (a.det(b).dot(ray.t) > 0) {
+                return null;
             }
             var c = this.c.minus(ray.s);
-            if (b.det(c).dot(ray.t) < 0) {
-                return 0;
+            if (b.det(c).dot(ray.t) > 0) {
+                return null;
             }
-            if (c.det(a).dot(ray.t) < 0) {
-                return 0;
+            if (c.det(a).dot(ray.t) > 0) {
+                return null;
             }
-            return 1;
+            // Intersect point
+            var p = ray.t.mul(this.a.minus(ray.s).dot(this.n) / ray.t.dot(this.n)).addBy(ray.s);
+            return new _coreRay2['default'](p, p.minusBy(this.n.mul(p.dot(this.n) * 2)));
         }
     }, {
-        key: "projection",
+        key: 'projection',
         value: function projection() {
             var _a, _b, _c;
 
@@ -5186,10 +5210,10 @@ var Face = (function () {
     return Face;
 })();
 
-exports["default"] = Face;
-module.exports = exports["default"];
+exports['default'] = Face;
+module.exports = exports['default'];
 
-},{}],199:[function(require,module,exports){
+},{"../core/ray":191}],199:[function(require,module,exports){
 /**
  * Created by shuding on 10/16/15.
  * <ds303077135@gmail.com>
@@ -5710,13 +5734,27 @@ var Raytracer = (function () {
     }
 
     /**
-     * Tracy specific ray and returns color
-     * @param {Scene} scene
-     * @param {ray} ray
-     * @returns {Color}
+     * Add point light source
+     * @param {Vector} p Position
+     * @param {Color} c Color
      */
 
     _createClass(Raytracer, [{
+        key: 'addLight',
+        value: function addLight(p, c) {
+            this.light = {
+                p: p,
+                c: c
+            };
+        }
+
+        /**
+         * Tracy specific ray and returns color
+         * @param {Scene} scene
+         * @param {ray} ray
+         * @returns {Color}
+         */
+    }, {
         key: 'trace',
         value: function trace(scene, ray) {
             // TODO
@@ -5730,8 +5768,10 @@ var Raytracer = (function () {
 
                     switch (obj.constructor.name) {
                         case 'Face':
-                            if (obj.testInnerRay(ray)) {
-                                return _coreColor.colors.white;
+                            var p = obj.testInnerRay(ray);
+                            if (p) {
+                                var cosAngle = this.light.p.minus(p.s).normalize().dot(p.t.normalize());
+                                return _coreColor.colors.white.mul(Math.pow(cosAngle, 3));
                             }
                             break;
                     }

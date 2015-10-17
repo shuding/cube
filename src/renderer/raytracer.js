@@ -17,6 +17,18 @@ class Raytracer {
     }
 
     /**
+     * Add point light source
+     * @param {Vector} p Position
+     * @param {Color} c Color
+     */
+    addLight(p, c) {
+        this.light = {
+            p: p,
+            c: c
+        };
+    }
+
+    /**
      * Tracy specific ray and returns color
      * @param {Scene} scene
      * @param {ray} ray
@@ -27,8 +39,10 @@ class Raytracer {
         for (let obj of scene.eachObject()) {
             switch (obj.constructor.name) {
                 case 'Face':
-                    if (obj.testInnerRay(ray)) {
-                        return colors.white;
+                    let p = obj.testInnerRay(ray);
+                    if (p) {
+                        let cosAngle = this.light.p.minus(p.s).normalize().dot(p.t.normalize());
+                        return colors.white.mul(Math.pow(cosAngle, 3));
                     }
                     break;
             }

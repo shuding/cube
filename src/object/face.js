@@ -3,6 +3,8 @@
  * <ds303077135@gmail.com>
  */
 
+import Ray from '../core/ray';
+
 class Face {
     /**
      * Constructor of the Face class
@@ -14,6 +16,9 @@ class Face {
         this.a = a;
         this.b = b;
         this.c = c;
+
+        // Normal vector
+        this.n = a.minus(b).det(c.minus(b)).normalize();
     }
 
     /**
@@ -23,17 +28,19 @@ class Face {
     testInnerRay(ray) {
         let a = this.a.minus(ray.s);
         let b = this.b.minus(ray.s);
-        if (a.det(b).dot(ray.t) < 0) {
-            return 0;
+        if (a.det(b).dot(ray.t) > 0) {
+            return null;
         }
         let c = this.c.minus(ray.s);
-        if (b.det(c).dot(ray.t) < 0) {
-            return 0;
+        if (b.det(c).dot(ray.t) > 0) {
+            return null;
         }
-        if (c.det(a).dot(ray.t) < 0) {
-            return 0;
+        if (c.det(a).dot(ray.t) > 0) {
+            return null;
         }
-        return 1;
+        // Intersect point
+        let p = ray.t.mul(this.a.minus(ray.s).dot(this.n) / ray.t.dot(this.n)).addBy(ray.s);
+        return new Ray(p, p.minusBy(this.n.mul(p.dot(this.n) * 2)));
     }
 
     projection() {
