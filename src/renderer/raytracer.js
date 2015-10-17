@@ -3,6 +3,8 @@
  * <ds303077135@gmail.com>
  */
 
+import Color, {colors} from '../core/color';
+
 class Raytracer {
     /**
      * Constructor of the Raytracer class
@@ -16,11 +18,22 @@ class Raytracer {
 
     /**
      * Tracy specific ray and returns color
-     * @param ray
+     * @param {Scene} scene
+     * @param {ray} ray
      * @returns {Color}
      */
-    trace(ray) {
+    trace(scene, ray) {
         // TODO
+        for (let obj of scene.eachObject()) {
+            switch (obj.constructor.name) {
+                case 'Face':
+                    if (obj.testInnerRay(ray)) {
+                        return colors.white;
+                    }
+                    break;
+            }
+        }
+        return colors.black;
     }
 
     /**
@@ -28,14 +41,10 @@ class Raytracer {
      * @param {Scene} scene
      */
     render(scene) {
-        let genRay = this.camera.eachRay();
-        let pixel  = genRay.next();
-
-        this.scene = scene;
-
-        while (!pixel.done) {
-            this.output.draw(pixel.value.x, pixel.value.y, this.trace(pixel.value.ray));
+        for (let pixel of this.camera.eachRay()) {
+            this.output.setPoint(pixel.x, pixel.y, this.trace(scene, pixel.ray));
         }
+        this.output.updateCanvas();
     }
 }
 

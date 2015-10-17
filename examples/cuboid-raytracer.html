@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title></title>
+</head>
+<body>
+<canvas id="myCanvas" width="80" height="60" style="border: 1px solid #d3d3d3">
+  Your browser does not support the HTML5 canvas tag.
+</canvas>
+<script src="../bundle.js"></script>
+<script type="text/javascript">
+  htmlcanvas = document.getElementById('myCanvas');
+  canvas = new cube.Canvas(htmlcanvas);
+
+  face = new cube.Face(
+      new cube.Vector(-30,  20, 10),
+      new cube.Vector( 30,  20, 10),
+      new cube.Vector( 30, -20, 10)
+  );
+
+  scene = new cube.Scene(face);
+
+  // mapper = cube.mapperFromSize(800, 600, canvas);
+
+  // or specific viewport
+  camera = new cube.Camera(new cube.Vector(0, 0, -20), [
+    new cube.Vector(-40, 30, -10),
+    new cube.Vector(40, 30, -10),
+    new cube.Vector(-40, -30, -10),
+    new cube.Vector(40, 30, -10)
+  ]);
+
+  raytracer = new cube.Raytracer(camera, canvas);
+
+  raytracer.render(scene);
+
+  /*
+  canvas.bindDrag(function (event, data) {
+    var deltaY = 0.01 * (event.x - data.x);
+    var deltaX = 0.01 * (event.y - data.y);
+    raytracer.clear();
+    raytracer.rotate(deltaX, 0, deltaY);
+    raytracer.render(scene);
+  });
+  */
+</script>
+</body>
+</html>

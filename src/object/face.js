@@ -16,6 +16,26 @@ class Face {
         this.c = c;
     }
 
+    /**
+     * Test if a ray intersect with the face
+     * @param ray
+     */
+    testInnerRay(ray) {
+        let a = this.a.minus(ray.s);
+        let b = this.b.minus(ray.s);
+        if (a.det(b).dot(ray.t) < 0) {
+            return 0;
+        }
+        let c = this.c.minus(ray.s);
+        if (b.det(c).dot(ray.t) < 0) {
+            return 0;
+        }
+        if (c.det(a).dot(ray.t) < 0) {
+            return 0;
+        }
+        return 1;
+    }
+
     projection() {
         return new Face(
             this.a.projection(...arguments),

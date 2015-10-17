@@ -30,6 +30,7 @@ class Vector {
         this.y += v.y;
         this.z += v.z;
         delete this.len;
+        return this;
     }
 
     minus(v) {
@@ -41,6 +42,7 @@ class Vector {
         this.y -= v.y;
         this.z -= v.z;
         delete this.len;
+        return this;
     }
 
     mul(r) {
@@ -52,6 +54,7 @@ class Vector {
         this.y *= r;
         this.z *= r;
         delete this.len;
+        return this;
     }
 
     rotateBy(x, y, z) {
@@ -64,6 +67,7 @@ class Vector {
         if (z !== 0) {
             this.rotateByZ(z);
         }
+        return this;
     }
 
     rotateByX(angle) {
@@ -73,6 +77,7 @@ class Vector {
         let sin = Math.sin(angle);
         this.y  = y * cos - z * sin;
         this.z  = y * sin + z * cos;
+        return this;
     }
 
     rotateByY(angle) {
@@ -82,6 +87,7 @@ class Vector {
         let sin = Math.sin(angle);
         this.x  = x * cos + z * sin;
         this.z  = -x * sin + z * cos;
+        return this;
     }
 
     rotateByZ(angle) {
@@ -91,6 +97,7 @@ class Vector {
         let sin = Math.sin(angle);
         this.x  = x * cos - y * sin;
         this.y  = x * sin + y * cos;
+        return this;
     }
 
     length() {
@@ -107,7 +114,7 @@ class Vector {
     }
 
     clone() {
-        return Object.assign({}, this);
+        return new Vector(this.x, this.y, this.z);
     }
 
     /**

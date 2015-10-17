@@ -62,7 +62,7 @@ class Camera {
      * Generator for each pixel's coordinate and the vector pointed to this pixel
      */
     * eachPixel() {
-        let posY = this._screen_.tl.clone();
+        let posY = this._screen_[0].clone();
         for (let y = 0; y < this.pxHeight; ++y) {
             let posX = posY.clone();
             for (let x = 0; x < this.pxWidth; ++x) {

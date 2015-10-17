@@ -12,7 +12,7 @@ class Ray {
      * @param {Vector} t the direction vector
      * @param {Color} c color of the ray source
      */
-    constructor(s, t, c = white) {
+    constructor(s, t, c = colors.white) {
         this.s = s;
         this.t = t;
         this.c = c;
