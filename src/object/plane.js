@@ -3,6 +3,8 @@
  * <ds303077135@gmail.com>
  */
 
+import Ray from '../core/ray';
+
 class Plane {
     /**
      * The Plane constructor
@@ -12,6 +14,15 @@ class Plane {
     constructor(p, n) {
         this.p = p;
         this.n = n;
+    }
+
+    /**
+     * Test if a ray intersect with the plane
+     * @param ray
+     */
+    testInnerRay(ray) {
+        let p = ray.t.mul(this.p.minus(ray.s).dot(this.n) / ray.t.dot(this.n)).addBy(ray.s);
+        return new Ray(p, p.minusBy(this.n.mul(p.dot(this.n) * 2)));
     }
 }
 

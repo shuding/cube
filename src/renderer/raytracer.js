@@ -28,6 +28,10 @@ class Raytracer {
         };
     }
 
+    addPlane(p) {
+        this.plane = p;
+    }
+
     /**
      * Tracy specific ray and returns color
      * @param {Scene} scene
@@ -42,10 +46,15 @@ class Raytracer {
                     let p = obj.testInnerRay(ray);
                     if (p) {
                         let cosAngle = this.light.p.minus(p.s).normalize().dot(p.t.normalize());
-                        return colors.white.mul(Math.pow(cosAngle, 3));
+                        return colors.white.mul(cosAngle * cosAngle * cosAngle);
                     }
                     break;
             }
+        }
+        if (this.plane) {
+            let p        = this.plane.testInnerRay(ray);
+            let cosAngle = this.light.p.minus(p.s).normalize().dot(p.t.normalize());
+            return colors.white.mul(cosAngle * cosAngle * cosAngle);
         }
         return colors.black;
     }

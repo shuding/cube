@@ -5313,34 +5313,59 @@ module.exports = exports["default"];
  * <ds303077135@gmail.com>
  */
 
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
+Object.defineProperty(exports, '__esModule', {
     value: true
 });
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var Plane =
-/**
- * The Plane constructor
- * @param {Vector} p Origin point
- * @param {Vector} n The normal vector
- */
-function Plane(p, n) {
-    _classCallCheck(this, Plane);
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-    this.p = p;
-    this.n = n;
-};
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var _coreRay = require('../core/ray');
+
+var _coreRay2 = _interopRequireDefault(_coreRay);
+
+var Plane = (function () {
+    /**
+     * The Plane constructor
+     * @param {Vector} p Origin point
+     * @param {Vector} n The normal vector
+     */
+
+    function Plane(p, n) {
+        _classCallCheck(this, Plane);
+
+        this.p = p;
+        this.n = n;
+    }
+
+    /**
+     * Test if a ray intersect with the plane
+     * @param ray
+     */
+
+    _createClass(Plane, [{
+        key: 'testInnerRay',
+        value: function testInnerRay(ray) {
+            var p = ray.t.mul(this.p.minus(ray.s).dot(this.n) / ray.t.dot(this.n)).addBy(ray.s);
+            return new _coreRay2['default'](p, p.minusBy(this.n.mul(p.dot(this.n) * 2)));
+        }
+    }]);
+
+    return Plane;
+})();
 
 var planeFromScreen = function planeFromScreen(screen) {
     return new Plane(screen[0], screen[1].minus(screen[0]).det(screen[2].minus(screen[0])).normalize());
 };
 exports.planeFromScreen = planeFromScreen;
-exports["default"] = Plane;
+exports['default'] = Plane;
 
-},{}],202:[function(require,module,exports){
+},{"../core/ray":191}],202:[function(require,module,exports){
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
@@ -5747,6 +5772,11 @@ var Raytracer = (function () {
                 c: c
             };
         }
+    }, {
+        key: 'addPlane',
+        value: function addPlane(p) {
+            this.plane = p;
+        }
 
         /**
          * Tracy specific ray and returns color
@@ -5771,7 +5801,7 @@ var Raytracer = (function () {
                             var p = obj.testInnerRay(ray);
                             if (p) {
                                 var cosAngle = this.light.p.minus(p.s).normalize().dot(p.t.normalize());
-                                return _coreColor.colors.white.mul(Math.pow(cosAngle, 3));
+                                return _coreColor.colors.white.mul(cosAngle * cosAngle * cosAngle);
                             }
                             break;
                     }
@@ -5791,6 +5821,11 @@ var Raytracer = (function () {
                 }
             }
 
+            if (this.plane) {
+                var p = this.plane.testInnerRay(ray);
+                var cosAngle = this.light.p.minus(p.s).normalize().dot(p.t.normalize());
+                return _coreColor.colors.white.mul(cosAngle * cosAngle * cosAngle);
+            }
             return _coreColor.colors.black;
         }
 
