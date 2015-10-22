@@ -23,18 +23,18 @@ import Raytracer from './renderer/raytracer';
 import Bresenham from './drawer/line';
 
 export default {
-    Camera: Camera,
-    Color: Color,
-    colors: colors,
-    Ray: Ray,
-    Scene: Scene,
-    Canvas: Canvas,
-    Interface: Interface,
-    Face: Face,
-    Line: Line,
-    Plane: Plane,
-    Vector: Vector,
+    Camera     : Camera,
+    Color      : Color,
+    colors     : colors,
+    Ray        : Ray,
+    Scene      : Scene,
+    Canvas     : Canvas,
+    Interface  : Interface,
+    Face       : Face,
+    Line       : Line,
+    Plane      : Plane,
+    Vector     : Vector,
     Linescanner: Linescanner,
-    Raytracer: Raytracer,
-    Bresenham: Bresenham
+    Raytracer  : Raytracer,
+    Bresenham  : Bresenham
 };

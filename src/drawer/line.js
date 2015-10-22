@@ -93,7 +93,7 @@ class Bresenham {
                     this.cvs.setPoint(x, y, color);
                     D += 2 * dy;
                     if (D >= 0) {
-                        y --;
+                        y--;
                         D -= 2 * dx;
                     }
                 }
@@ -103,7 +103,7 @@ class Bresenham {
                     this.cvs.setPoint(x, y, color);
                     D += 2 * dx;
                     if (D >= 0) {
-                        x ++;
+                        x++;
                         D -= 2 * dy;
                     }
                 }
