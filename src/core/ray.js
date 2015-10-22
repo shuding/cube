@@ -3,7 +3,7 @@
  * <ds303077135@gmail.com>
  */
 
-import Color, {white, black} from './color';
+import Color, {colors} from './color';
 
 class Ray {
     /**
@@ -12,7 +12,7 @@ class Ray {
      * @param {Vector} t the direction vector
      * @param {Color} c color of the ray source
      */
-    constructor(s, t, c = white) {
+    constructor(s, t, c = colors.white) {
         this.s = s;
         this.t = t;
         this.c = c;

@@ -3,6 +3,8 @@
  * <ds303077135@gmail.com>
  */
 
+import Color, {colors} from '../core/color';
+
 class Raytracer {
     /**
      * Constructor of the Raytracer class
@@ -15,12 +17,46 @@ class Raytracer {
     }
 
     /**
+     * Add point light source
+     * @param {Vector} p Position
+     * @param {Color} c Color
+     */
+    addLight(p, c) {
+        this.light = {
+            p: p,
+            c: c
+        };
+    }
+
+    addPlane(p) {
+        this.plane = p;
+    }
+
+    /**
      * Tracy specific ray and returns color
-     * @param ray
+     * @param {Scene} scene
+     * @param {ray} ray
      * @returns {Color}
      */
-    trace(ray) {
+    trace(scene, ray) {
         // TODO
+        for (let obj of scene.eachObject()) {
+            switch (obj.constructor.name) {
+                case 'Face':
+                    let p = obj.testInnerRay(ray);
+                    if (p) {
+                        let cosAngle = this.light.p.minus(p.s).normalize().dot(p.t.normalize());
+                        return colors.white.mul(cosAngle * cosAngle * cosAngle);
+                    }
+                    break;
+            }
+        }
+        if (this.plane) {
+            let p        = this.plane.testInnerRay(ray);
+            let cosAngle = this.light.p.minus(p.s).normalize().dot(p.t.normalize());
+            return colors.white.mul(cosAngle * cosAngle * cosAngle);
+        }
+        return colors.black;
     }
 
     /**
@@ -28,14 +64,10 @@ class Raytracer {
      * @param {Scene} scene
      */
     render(scene) {
-        let genRay = this.camera.eachRay();
-        let pixel  = genRay.next();
-
-        this.scene = scene;
-
-        while (!pixel.done) {
-            this.output.draw(pixel.value.x, pixel.value.y, this.trace(pixel.value.ray));
+        for (let pixel of this.camera.eachRay()) {
+            this.output.setPoint(pixel.x, pixel.y, this.trace(scene, pixel.ray));
         }
+        this.output.updateCanvas();
     }
 }
 

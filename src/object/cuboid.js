@@ -1,13 +1,13 @@
 /**
- * Created by shuding on 10/8/15.
+ * Created by shuding on 10/16/15.
  * <ds303077135@gmail.com>
  */
 
-class Line {
+class Cuboid {
     /**
-     * Constructor of the Line class
-     * @param {Vector} a
-     * @param {Vector} b
+     * Constructor of the Cuboid class
+     * @param {Face4} a
+     * @param {Face4} b
      */
     constructor(a, b) {
         this.a = a;
@@ -15,11 +15,11 @@ class Line {
     }
 
     projection() {
-        return new Line(
+        return new Cuboid(
             this.a.projection(...arguments),
             this.b.projection(...arguments)
         );
     }
 }
 
-export default Line;
+export default Cuboid;

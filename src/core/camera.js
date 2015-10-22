@@ -15,12 +15,12 @@ class Camera {
      */
     constructor(eye, screen, width = 800, height = 600) {
         this.eye      = eye;
-        this.screen   = screen;
+        this._screen_ = screen;
         this.pxWidth  = width;
         this.pxHeight = height;
 
-        let r2l = screen.tr.minus(screen.tl);
-        let b2t = screen.bl.minus(screen.tl);
+        let r2l = screen[1].minus(screen[0]);
+        let b2t = screen[2].minus(screen[0]);
 
         this.width  = r2l.length();
         this.height = b2t.length();
@@ -32,11 +32,37 @@ class Camera {
         this.heightInc = b2t.mulBy(this.heightPerPx / this.height);
     }
 
+    get screen() {
+        return this._screen_;
+    }
+
+    set screen(screen) {
+        this._screen_ = screen;
+        let r2l       = screen[1].minus(screen[0]);
+        let b2t       = screen[2].minus(screen[0]);
+
+        this.width  = r2l.length();
+        this.height = b2t.length();
+
+        this.widthPerPx  = this.width / this.pxWidth;
+        this.heightPerPx = this.height / this.pxHeight;
+
+        this.widthInc  = r2l.mulBy(this.widthPerPx / this.width);
+        this.heightInc = b2t.mulBy(this.heightPerPx / this.height);
+    }
+
+    rotate(x, y, z) {
+        this.eye.rotateBy(x, y, z);
+        this._screen_.forEach(function (p) {
+            p.rotateBy(x, y, z);
+        });
+    }
+
     /**
      * Generator for each pixel's coordinate and the vector pointed to this pixel
      */
     * eachPixel() {
-        let posY = this.screen.tl.clone();
+        let posY = this._screen_[0].clone();
         for (let y = 0; y < this.pxHeight; ++y) {
             let posX = posY.clone();
             for (let x = 0; x < this.pxWidth; ++x) {
@@ -55,17 +81,13 @@ class Camera {
      * Generator for each pixel's coordinate and the ray from camera to this pixel
      */
     * eachRay() {
-        let genPixel = this.eachPixel();
-        let pixel    = genPixel.next();
-        while (!pixel.done) {
+        for (let pixel of this.eachPixel()) {
             yield {
-                x:   pixel.value.x,
-                y:   pixel.value.y,
-                ray: new Ray(this.eye, pixel.value.v.clone().minusBy(this.eye))
+                x:   pixel.x,
+                y:   pixel.y,
+                ray: new Ray(this.eye, pixel.v.clone().minusBy(this.eye))
             };
-            pixel = genPixel.next();
         }
-
     }
 }
 

@@ -11,11 +11,17 @@ class Bresenham {
     }
 
     draw(x0, y0, x1, y1, color) {
+        x0 = ~~x0;
+        y0 = ~~y0;
+        x1 = ~~x1;
+        y1 = ~~y1;
+
         var dx = x1 - x0;
         var dy = y1 - y0;
-        var x = x0;
-        var y = y0;
+        var x  = x0;
+        var y  = y0;
         var D;
+
         if (dx > 0 && dy >= 0) {
             if (dx > dy) {
                 D = -dx;
@@ -23,7 +29,7 @@ class Bresenham {
                     this.cvs.setPoint(x, y, color);
                     D += 2 * dy;
                     if (D >= 0) {
-                        y ++;
+                        y++;
                         D -= 2 * dx;
                     }
                 }
@@ -33,7 +39,7 @@ class Bresenham {
                     this.cvs.setPoint(x, y, color);
                     D += 2 * dx;
                     if (D >= 0) {
-                        x ++;
+                        x++;
                         D -= 2 * dy;
                     }
                 }
@@ -46,7 +52,7 @@ class Bresenham {
                     this.cvs.setPoint(x, y, color);
                     D += 2 * dy;
                     if (D >= 0) {
-                        y ++;
+                        y++;
                         D -= 2 * dx;
                     }
                 }
@@ -56,7 +62,7 @@ class Bresenham {
                     this.cvs.setPoint(x, y, color);
                     D += 2 * dx;
                     if (D >= 0) {
-                        x --;
+                        x--;
                         D -= 2 * dy;
                     }
                 }
@@ -70,7 +76,7 @@ class Bresenham {
                     this.cvs.setPoint(x, y, color);
                     D += 2 * dy;
                     if (D >= 0) {
-                        y --;
+                        y--;
                         D -= 2 * dx;
                     }
                 }
@@ -80,7 +86,7 @@ class Bresenham {
                     this.cvs.setPoint(x, y, color);
                     D += 2 * dx;
                     if (D >= 0) {
-                        x --;
+                        x--;
                         D -= 2 * dy;
                     }
                 }
@@ -111,7 +117,7 @@ class Bresenham {
         }
     }
 
-    updateCanvas () {
+    updateCanvas() {
         this.cvs.updateCanvas();
     }
 }

@@ -1,6 +1,6 @@
 {
   "name": "cube",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "3D library written with JavaScript ES6",
   "main": "src/index.js",
   "scripts": {

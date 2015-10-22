@@ -4253,7 +4253,7 @@ module.exports = require('./modules/$.core');
 );
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":203}],187:[function(require,module,exports){
+},{"_process":206}],187:[function(require,module,exports){
 module.exports = require("./lib/polyfill");
 
 },{"./lib/polyfill":1}],188:[function(require,module,exports){
@@ -4297,12 +4297,12 @@ var Camera = (function () {
         _classCallCheck(this, Camera);
 
         this.eye = eye;
-        this.screen = screen;
+        this._screen_ = screen;
         this.pxWidth = width;
         this.pxHeight = height;
 
-        var r2l = screen.tr.minus(screen.tl);
-        var b2t = screen.bl.minus(screen.tl);
+        var r2l = screen[1].minus(screen[0]);
+        var b2t = screen[2].minus(screen[0]);
 
         this.width = r2l.length();
         this.height = b2t.length();
@@ -4314,18 +4314,26 @@ var Camera = (function () {
         this.heightInc = b2t.mulBy(this.heightPerPx / this.height);
     }
 
-    /**
-     * Generator for each pixel's coordinate and the vector pointed to this pixel
-     */
-
     _createClass(Camera, [{
+        key: 'rotate',
+        value: function rotate(x, y, z) {
+            this.eye.rotateBy(x, y, z);
+            this._screen_.forEach(function (p) {
+                p.rotateBy(x, y, z);
+            });
+        }
+
+        /**
+         * Generator for each pixel's coordinate and the vector pointed to this pixel
+         */
+    }, {
         key: 'eachPixel',
         value: regeneratorRuntime.mark(function eachPixel() {
             var posY, y, posX, x;
             return regeneratorRuntime.wrap(function eachPixel$(context$2$0) {
                 while (1) switch (context$2$0.prev = context$2$0.next) {
                     case 0:
-                        posY = this.screen.tl.clone();
+                        posY = this._screen_[0].clone();
                         y = 0;
 
                     case 2:
@@ -4379,37 +4387,95 @@ var Camera = (function () {
     }, {
         key: 'eachRay',
         value: regeneratorRuntime.mark(function eachRay() {
-            var genPixel, pixel;
+            var _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, pixel;
+
             return regeneratorRuntime.wrap(function eachRay$(context$2$0) {
                 while (1) switch (context$2$0.prev = context$2$0.next) {
                     case 0:
-                        genPixel = this.eachPixel();
-                        pixel = genPixel.next();
+                        _iteratorNormalCompletion = true;
+                        _didIteratorError = false;
+                        _iteratorError = undefined;
+                        context$2$0.prev = 3;
+                        _iterator = this.eachPixel()[Symbol.iterator]();
 
-                    case 2:
-                        if (pixel.done) {
-                            context$2$0.next = 8;
+                    case 5:
+                        if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
+                            context$2$0.next = 12;
                             break;
                         }
 
-                        context$2$0.next = 5;
+                        pixel = _step.value;
+                        context$2$0.next = 9;
                         return {
-                            x: pixel.value.x,
-                            y: pixel.value.y,
-                            ray: new _ray2['default'](this.eye, pixel.value.v.clone().minusBy(this.eye))
+                            x: pixel.x,
+                            y: pixel.y,
+                            ray: new _ray2['default'](this.eye, pixel.v.clone().minusBy(this.eye))
                         };
 
-                    case 5:
-                        pixel = genPixel.next();
-                        context$2$0.next = 2;
+                    case 9:
+                        _iteratorNormalCompletion = true;
+                        context$2$0.next = 5;
                         break;
 
-                    case 8:
+                    case 12:
+                        context$2$0.next = 18;
+                        break;
+
+                    case 14:
+                        context$2$0.prev = 14;
+                        context$2$0.t0 = context$2$0['catch'](3);
+                        _didIteratorError = true;
+                        _iteratorError = context$2$0.t0;
+
+                    case 18:
+                        context$2$0.prev = 18;
+                        context$2$0.prev = 19;
+
+                        if (!_iteratorNormalCompletion && _iterator['return']) {
+                            _iterator['return']();
+                        }
+
+                    case 21:
+                        context$2$0.prev = 21;
+
+                        if (!_didIteratorError) {
+                            context$2$0.next = 24;
+                            break;
+                        }
+
+                        throw _iteratorError;
+
+                    case 24:
+                        return context$2$0.finish(21);
+
+                    case 25:
+                        return context$2$0.finish(18);
+
+                    case 26:
                     case 'end':
                         return context$2$0.stop();
                 }
-            }, eachRay, this);
+            }, eachRay, this, [[3, 14, 18, 26], [19,, 21, 25]]);
         })
+    }, {
+        key: 'screen',
+        get: function get() {
+            return this._screen_;
+        },
+        set: function set(screen) {
+            this._screen_ = screen;
+            var r2l = screen[1].minus(screen[0]);
+            var b2t = screen[2].minus(screen[0]);
+
+            this.width = r2l.length();
+            this.height = b2t.length();
+
+            this.widthPerPx = this.width / this.pxWidth;
+            this.heightPerPx = this.height / this.pxHeight;
+
+            this.widthInc = r2l.mulBy(this.widthPerPx / this.width);
+            this.heightInc = b2t.mulBy(this.heightPerPx / this.height);
+        }
     }]);
 
     return Camera;
@@ -4430,20 +4496,41 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Color = function Color(r, g, b, a) {
-    _classCallCheck(this, Color);
+var Color = (function () {
+    /**
+     * Color constructor
+     * @param {Number} r Red [0, 1]
+     * @param {Number} g Green [0, 1]
+     * @param {Number} b Blue [0, 1]
+     * @param {Number} a Alpha [0, 1]
+     */
 
-    this.r = r;
-    this.g = g;
-    this.b = b;
-    this.a = a;
-};
+    function Color(r, g, b, a) {
+        _classCallCheck(this, Color);
+
+        this.r = r;
+        this.g = g;
+        this.b = b;
+        this.a = a;
+    }
+
+    _createClass(Color, [{
+        key: "mul",
+        value: function mul(r) {
+            return new Color(this.r * r, this.g * r, this.b * r, this.a);
+        }
+    }]);
+
+    return Color;
+})();
 
 var colors = {
-    white: new Color(255, 255, 255, 255),
-    black: new Color(0, 0, 0, 255)
+    white: new Color(255, 255, 255, 1),
+    black: new Color(0, 0, 0, 1)
 };
 exports.colors = colors;
 exports["default"] = Color;
@@ -4476,7 +4563,7 @@ var Ray =
  * @param {Color} c color of the ray source
  */
 function Ray(s, t) {
-  var c = arguments.length <= 2 || arguments[2] === undefined ? _color.white : arguments[2];
+  var c = arguments.length <= 2 || arguments[2] === undefined ? _color.colors.white : arguments[2];
 
   _classCallCheck(this, Ray);
 
@@ -4507,14 +4594,43 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Scene = (function () {
     function Scene() {
         _classCallCheck(this, Scene);
+
+        for (var _len = arguments.length, objects = Array(_len), _key = 0; _key < _len; _key++) {
+            objects[_key] = arguments[_key];
+        }
+
+        this.objects = objects;
     }
 
     _createClass(Scene, [{
+        key: "addObject",
+        value: function addObject(obj) {
+            this.objects.push(obj);
+        }
+    }, {
         key: "eachObject",
         value: regeneratorRuntime.mark(function eachObject() {
+            var i;
             return regeneratorRuntime.wrap(function eachObject$(context$2$0) {
                 while (1) switch (context$2$0.prev = context$2$0.next) {
                     case 0:
+                        i = 0;
+
+                    case 1:
+                        if (!(i < this.objects.length)) {
+                            context$2$0.next = 7;
+                            break;
+                        }
+
+                        context$2$0.next = 4;
+                        return this.objects[i];
+
+                    case 4:
+                        ++i;
+                        context$2$0.next = 1;
+                        break;
+
+                    case 7:
                     case "end":
                         return context$2$0.stop();
                 }
@@ -4560,11 +4676,17 @@ var Bresenham = (function () {
     _createClass(Bresenham, [{
         key: 'draw',
         value: function draw(x0, y0, x1, y1, color) {
+            x0 = ~ ~x0;
+            y0 = ~ ~y0;
+            x1 = ~ ~x1;
+            y1 = ~ ~y1;
+
             var dx = x1 - x0;
             var dy = y1 - y0;
             var x = x0;
             var y = y0;
             var D;
+
             if (dx > 0 && dy >= 0) {
                 if (dx > dy) {
                     D = -dx;
@@ -4686,7 +4808,7 @@ Object.defineProperty(exports, '__esModule', {
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-require("babel/polyfill");
+require('babel/polyfill');
 
 var _coreCamera = require('./core/camera');
 
@@ -4716,6 +4838,14 @@ var _objectFace = require('./object/face');
 
 var _objectFace2 = _interopRequireDefault(_objectFace);
 
+var _objectFace4 = require('./object/face4');
+
+var _objectFace42 = _interopRequireDefault(_objectFace4);
+
+var _objectCuboid = require('./object/cuboid');
+
+var _objectCuboid2 = _interopRequireDefault(_objectCuboid);
+
 var _objectLine = require('./object/line');
 
 var _objectLine2 = _interopRequireDefault(_objectLine);
@@ -4736,43 +4866,55 @@ var _rendererRaytracer = require('./renderer/raytracer');
 
 var _rendererRaytracer2 = _interopRequireDefault(_rendererRaytracer);
 
+var _rendererMapper = require('./renderer/mapper');
+
+var _rendererMapper2 = _interopRequireDefault(_rendererMapper);
+
 var _drawerLine = require('./drawer/line');
 
 var _drawerLine2 = _interopRequireDefault(_drawerLine);
 
 exports['default'] = {
+    // classes
     Camera: _coreCamera2['default'],
     Color: _coreColor2['default'],
-    colors: _coreColor.colors,
     Ray: _coreRay2['default'],
     Scene: _coreScene2['default'],
     Canvas: _interfaceCanvas2['default'],
     Interface: _interfaceIndex2['default'],
     Face: _objectFace2['default'],
+    Face4: _objectFace42['default'],
+    Cuboid: _objectCuboid2['default'],
     Line: _objectLine2['default'],
     Plane: _objectPlane2['default'],
     Vector: _objectVector2['default'],
     Linescanner: _rendererLinescanner2['default'],
     Raytracer: _rendererRaytracer2['default'],
-    Bresenham: _drawerLine2['default']
+    Mapper: _rendererMapper2['default'],
+    Bresenham: _drawerLine2['default'],
+    // methods
+    mapperFromSize: _rendererMapper.mapperFromSize,
+    planeFromScreen: _objectPlane.planeFromScreen,
+    // constants
+    colors: _coreColor.colors
 };
 module.exports = exports['default'];
 
-},{"./core/camera":189,"./core/color":190,"./core/ray":191,"./core/scene":192,"./drawer/line":193,"./interface/canvas":195,"./interface/index":196,"./object/face":197,"./object/line":198,"./object/plane":199,"./object/vector":200,"./renderer/linescanner":201,"./renderer/raytracer":202,"babel/polyfill":188}],195:[function(require,module,exports){
+},{"./core/camera":189,"./core/color":190,"./core/ray":191,"./core/scene":192,"./drawer/line":193,"./interface/canvas":195,"./interface/index":196,"./object/cuboid":197,"./object/face":198,"./object/face4":199,"./object/line":200,"./object/plane":201,"./object/vector":202,"./renderer/linescanner":203,"./renderer/mapper":204,"./renderer/raytracer":205,"babel/polyfill":188}],195:[function(require,module,exports){
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
  */
 
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
+Object.defineProperty(exports, '__esModule', {
     value: true
 });
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 var Canvas = (function () {
     function Canvas(canvas) {
@@ -4783,30 +4925,136 @@ var Canvas = (function () {
         this.width = canvas.width;
         this.height = canvas.height;
         this.imgData = this.context.getImageData(0, 0, canvas.width, canvas.height);
+
+        // State flags
+        this.mouseDown = false;
+        this.dragData = {};
+        this._lastDragData_ = {};
+
+        // Binding functions
+        this.mouseDownFn = [];
+        this.mouseUpFn = [];
+        this.mouseMoveFn = [];
+        this.dragFn = [];
     }
 
     _createClass(Canvas, [{
-        key: "setPoint",
+        key: 'setPoint',
         value: function setPoint(x, y, color) {
-            var index = (y * this.width + x) * 4;
+            if (x < 0 || y < 0 || x >= this.width || y >= this.height) {
+                return;
+            }
 
-            this.imgData.data[index] = color.r;
-            this.imgData.data[index + 1] = color.g;
-            this.imgData.data[index + 2] = color.b;
-            this.imgData.data[index + 3] = color.a;
+            var index = ((this.height - y - 1) * this.width + x) * 4;
+
+            this.imgData.data[index] = ~ ~(color.r * 255);
+            this.imgData.data[index + 1] = ~ ~(color.g * 255);
+            this.imgData.data[index + 2] = ~ ~(color.b * 255);
+            this.imgData.data[index + 3] = ~ ~(color.a * 255);
+        }
+
+        // Interactions binding fn
+    }, {
+        key: 'bindMouseDown',
+        value: function bindMouseDown(fn) {
+            var _this = this;
+
+            if (!this.mouseDownFn.length) {
+                // If not initialized, then init the event listener
+                this.cvs.addEventListener('mousedown', function (event) {
+                    var self = _this;
+                    _this.mouseDownFn.forEach(function (fn) {
+                        fn.call(self, event);
+                    });
+                });
+            }
+            // Push into function list
+            this.mouseDownFn.push(fn);
         }
     }, {
-        key: "updateCanvas",
+        key: 'bindMouseUp',
+        value: function bindMouseUp(fn) {
+            var _this2 = this;
+
+            if (!this.mouseUpFn.length) {
+                // If not initialized, then init the event listener
+                this.cvs.addEventListener('mouseup', function (event) {
+                    var self = _this2;
+                    _this2.mouseUpFn.forEach(function (fn) {
+                        fn.call(self, event);
+                    });
+                });
+            }
+            // Push into function list
+            this.mouseUpFn.push(fn);
+        }
+    }, {
+        key: 'bindMouseMove',
+        value: function bindMouseMove(fn) {
+            var _this3 = this;
+
+            if (!this.mouseMoveFn.length) {
+                // If not initialized, then init the event listener
+                this.cvs.addEventListener('mousemove', function (event) {
+                    var self = _this3;
+                    _this3.mouseMoveFn.forEach(function (fn) {
+                        fn.call(self, event);
+                    });
+                });
+            }
+            // Push into function list
+            this.mouseMoveFn.push(fn);
+        }
+    }, {
+        key: 'bindDrag',
+        value: function bindDrag(fn) {
+            var _this4 = this;
+
+            if (!this.dragFn.length) {
+                this.bindMouseDown(function (event) {
+                    _this4.mouseDown = true;
+                    _this4._lastDragData_ = {
+                        x: event.x,
+                        y: event.y
+                    };
+                });
+                this.bindMouseUp(function () {
+                    _this4.mouseDown = false;
+                });
+                this.bindMouseMove(function (event) {
+                    if (_this4.mouseDown) {
+                        var self = _this4;
+                        _this4.dragFn.forEach(function (fn) {
+                            fn.apply(self, [event, self._lastDragData_]);
+                        });
+                        self.dragData = {
+                            x: event.x,
+                            y: event.y
+                        };
+                        self._lastDragData_ = self.dragData;
+                    }
+                });
+            }
+            this.dragFn.push(fn);
+        }
+    }, {
+        key: 'updateCanvas',
         value: function updateCanvas() {
             this.context.putImageData(this.imgData, 0, 0);
+        }
+    }, {
+        key: 'clearCanvas',
+        value: function clearCanvas() {
+            this.context.clearRect(0, 0, this.width, this.height);
+            this.imgData = this.context.getImageData(0, 0, canvas.width, canvas.height);
         }
     }]);
 
     return Canvas;
 })();
 
-exports["default"] = Canvas;
-module.exports = exports["default"];
+exports['default'] = Canvas;
+module.exports = exports['default'];
 
 },{}],196:[function(require,module,exports){
 /**
@@ -4842,34 +5090,47 @@ module.exports = exports["default"];
 
 },{}],197:[function(require,module,exports){
 /**
- * Created by shuding on 10/8/15.
+ * Created by shuding on 10/16/15.
  * <ds303077135@gmail.com>
  */
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+    value: true
 });
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Face =
-/**
- * Constructor of the Face class
- * @param {Vector} a
- * @param {Vector} b
- * @param {Vector} c
- */
-function Face(a, b, c) {
-  _classCallCheck(this, Face);
+var Cuboid = (function () {
+    /**
+     * Constructor of the Cuboid class
+     * @param {Face4} a
+     * @param {Face4} b
+     */
 
-  this.a = a;
-  this.b = b;
-  this.c = c;
-};
+    function Cuboid(a, b) {
+        _classCallCheck(this, Cuboid);
 
-exports["default"] = Face;
+        this.a = a;
+        this.b = b;
+    }
+
+    _createClass(Cuboid, [{
+        key: "projection",
+        value: function projection() {
+            var _a, _b;
+
+            return new Cuboid((_a = this.a).projection.apply(_a, arguments), (_b = this.b).projection.apply(_b, arguments));
+        }
+    }]);
+
+    return Cuboid;
+})();
+
+exports["default"] = Cuboid;
 module.exports = exports["default"];
 
 },{}],198:[function(require,module,exports){
@@ -4878,39 +5139,233 @@ module.exports = exports["default"];
  * <ds303077135@gmail.com>
  */
 
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+    value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var _coreRay = require('../core/ray');
+
+var _coreRay2 = _interopRequireDefault(_coreRay);
+
+var Face = (function () {
+    /**
+     * Constructor of the Face class
+     * @param {Vector} a
+     * @param {Vector} b
+     * @param {Vector} c
+     */
+
+    function Face(a, b, c) {
+        _classCallCheck(this, Face);
+
+        this.a = a;
+        this.b = b;
+        this.c = c;
+
+        // Normal vector
+        this.n = a.minus(b).det(c.minus(b)).normalize();
+    }
+
+    /**
+     * Test if a ray intersect with the face
+     * @param ray
+     */
+
+    _createClass(Face, [{
+        key: 'testInnerRay',
+        value: function testInnerRay(ray) {
+            var a = this.a.minus(ray.s);
+            var b = this.b.minus(ray.s);
+            if (a.det(b).dot(ray.t) > 0) {
+                return null;
+            }
+            var c = this.c.minus(ray.s);
+            if (b.det(c).dot(ray.t) > 0) {
+                return null;
+            }
+            if (c.det(a).dot(ray.t) > 0) {
+                return null;
+            }
+            // Intersect point
+            var p = ray.t.mul(this.a.minus(ray.s).dot(this.n) / ray.t.dot(this.n)).addBy(ray.s);
+            return new _coreRay2['default'](p, p.minusBy(this.n.mul(p.dot(this.n) * 2)));
+        }
+    }, {
+        key: 'projection',
+        value: function projection() {
+            var _a, _b, _c;
+
+            return new Face((_a = this.a).projection.apply(_a, arguments), (_b = this.b).projection.apply(_b, arguments), (_c = this.c).projection.apply(_c, arguments));
+        }
+    }]);
+
+    return Face;
+})();
+
+exports['default'] = Face;
+module.exports = exports['default'];
+
+},{"../core/ray":191}],199:[function(require,module,exports){
+/**
+ * Created by shuding on 10/16/15.
+ * <ds303077135@gmail.com>
+ */
+
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+    value: true
 });
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Line =
-/**
- * Constructor of the Line class
- * @param {Vector} a
- * @param {Vector} b
- */
-function Line(a, b) {
-  _classCallCheck(this, Line);
+var Face4 = (function () {
+    /**
+     * Constructor of the Face4 class
+     * @param {Vector} a
+     * @param {Vector} b
+     * @param {Vector} c
+     * @param {Vector} d
+     */
 
-  this.a = a;
-  this.b = b;
-};
+    function Face4(a, b, c, d) {
+        _classCallCheck(this, Face4);
+
+        this.a = a;
+        this.b = b;
+        this.c = c;
+        this.d = d;
+    }
+
+    _createClass(Face4, [{
+        key: "projection",
+        value: function projection() {
+            var _a, _b, _c, _d;
+
+            return new Face4((_a = this.a).projection.apply(_a, arguments), (_b = this.b).projection.apply(_b, arguments), (_c = this.c).projection.apply(_c, arguments), (_d = this.d).projection.apply(_d, arguments));
+        }
+    }]);
+
+    return Face4;
+})();
+
+exports["default"] = Face4;
+module.exports = exports["default"];
+
+},{}],200:[function(require,module,exports){
+/**
+ * Created by shuding on 10/8/15.
+ * <ds303077135@gmail.com>
+ */
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Line = (function () {
+    /**
+     * Constructor of the Line class
+     * @param {Vector} a
+     * @param {Vector} b
+     */
+
+    function Line(a, b) {
+        _classCallCheck(this, Line);
+
+        this.a = a;
+        this.b = b;
+    }
+
+    _createClass(Line, [{
+        key: "projection",
+        value: function projection() {
+            var _a, _b;
+
+            return new Line((_a = this.a).projection.apply(_a, arguments), (_b = this.b).projection.apply(_b, arguments));
+        }
+    }]);
+
+    return Line;
+})();
 
 exports["default"] = Line;
 module.exports = exports["default"];
 
-},{}],199:[function(require,module,exports){
-"use strict";
-
+},{}],201:[function(require,module,exports){
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
  */
 
-},{}],200:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+    value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var _coreRay = require('../core/ray');
+
+var _coreRay2 = _interopRequireDefault(_coreRay);
+
+var Plane = (function () {
+    /**
+     * The Plane constructor
+     * @param {Vector} p Origin point
+     * @param {Vector} n The normal vector
+     */
+
+    function Plane(p, n) {
+        _classCallCheck(this, Plane);
+
+        this.p = p;
+        this.n = n;
+    }
+
+    /**
+     * Test if a ray intersect with the plane
+     * @param ray
+     */
+
+    _createClass(Plane, [{
+        key: 'testInnerRay',
+        value: function testInnerRay(ray) {
+            var p = ray.t.mul(this.p.minus(ray.s).dot(this.n) / ray.t.dot(this.n)).addBy(ray.s);
+            return new _coreRay2['default'](p, p.minusBy(this.n.mul(p.dot(this.n) * 2)));
+        }
+    }]);
+
+    return Plane;
+})();
+
+var planeFromScreen = function planeFromScreen(screen) {
+    return new Plane(screen[0], screen[1].minus(screen[0]).det(screen[2].minus(screen[0])).normalize());
+};
+exports.planeFromScreen = planeFromScreen;
+exports['default'] = Plane;
+
+},{"../core/ray":191}],202:[function(require,module,exports){
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
@@ -4946,7 +5401,7 @@ var Vector = (function () {
     }, {
         key: 'det',
         value: function det(v) {
-            return this.y * v.z - this.z * v.y - this.x * v.z + this.z * v.x + this.x * v.y - this.y * v.x;
+            return new Vector(this.y * v.z - this.z * v.y, -this.x * v.z + this.z * v.x, this.x * v.y - this.y * v.x);
         }
     }, {
         key: 'add',
@@ -4960,6 +5415,7 @@ var Vector = (function () {
             this.y += v.y;
             this.z += v.z;
             delete this.len;
+            return this;
         }
     }, {
         key: 'minus',
@@ -4973,6 +5429,7 @@ var Vector = (function () {
             this.y -= v.y;
             this.z -= v.z;
             delete this.len;
+            return this;
         }
     }, {
         key: 'mul',
@@ -4986,6 +5443,54 @@ var Vector = (function () {
             this.y *= r;
             this.z *= r;
             delete this.len;
+            return this;
+        }
+    }, {
+        key: 'rotateBy',
+        value: function rotateBy(x, y, z) {
+            if (x !== 0) {
+                this.rotateByX(x);
+            }
+            if (y !== 0) {
+                this.rotateByY(y);
+            }
+            if (z !== 0) {
+                this.rotateByZ(z);
+            }
+            return this;
+        }
+    }, {
+        key: 'rotateByX',
+        value: function rotateByX(angle) {
+            var y = this.y;
+            var z = this.z;
+            var cos = Math.cos(angle);
+            var sin = Math.sin(angle);
+            this.y = y * cos - z * sin;
+            this.z = y * sin + z * cos;
+            return this;
+        }
+    }, {
+        key: 'rotateByY',
+        value: function rotateByY(angle) {
+            var x = this.x;
+            var z = this.z;
+            var cos = Math.cos(angle);
+            var sin = Math.sin(angle);
+            this.x = x * cos + z * sin;
+            this.z = -x * sin + z * cos;
+            return this;
+        }
+    }, {
+        key: 'rotateByZ',
+        value: function rotateByZ(angle) {
+            var x = this.x;
+            var y = this.y;
+            var cos = Math.cos(angle);
+            var sin = Math.sin(angle);
+            this.x = x * cos - y * sin;
+            this.y = x * sin + y * cos;
+            return this;
         }
     }, {
         key: 'length',
@@ -5000,11 +5505,31 @@ var Vector = (function () {
         value: function normalize() {
             this.mulBy(1 / this.length());
             this.len = 1;
+            return this;
         }
     }, {
         key: 'clone',
         value: function clone() {
-            return Object.assign({}, this);
+            return new Vector(this.x, this.y, this.z);
+        }
+
+        /**
+         * Get projection
+         * @param {Plane} p
+         */
+    }, {
+        key: 'projection',
+        value: function projection(p) {
+            var v = this.minus(p.p);
+            var len = v.dot(p.n);
+            var vDelta = p.n.mul(len);
+            return this.minus(vDelta);
+        }
+    }, {
+        key: 'projectionLength',
+        value: function projectionLength(v) {
+            var len = this.dot(v);
+            return len / v.length();
         }
     }]);
 
@@ -5014,7 +5539,7 @@ var Vector = (function () {
 exports['default'] = Vector;
 module.exports = exports['default'];
 
-},{}],201:[function(require,module,exports){
+},{}],203:[function(require,module,exports){
 "use strict";
 
 /**
@@ -5022,21 +5547,202 @@ module.exports = exports['default'];
  * <ds303077135@gmail.com>
  */
 
-},{}],202:[function(require,module,exports){
+},{}],204:[function(require,module,exports){
 /**
- * Created by shuding on 10/9/15.
+ * Created by shuding on 10/15/15.
  * <ds303077135@gmail.com>
  */
 
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
+Object.defineProperty(exports, '__esModule', {
     value: true
 });
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var _coreCamera = require('../core/camera');
+
+var _coreCamera2 = _interopRequireDefault(_coreCamera);
+
+var _objectPlane = require('../object/plane');
+
+var _objectLine = require('../object/line');
+
+var _objectLine2 = _interopRequireDefault(_objectLine);
+
+var _objectVector = require('../object/vector');
+
+var _objectVector2 = _interopRequireDefault(_objectVector);
+
+var _drawerLine = require('../drawer/line');
+
+var _drawerLine2 = _interopRequireDefault(_drawerLine);
+
+var _coreColor = require('../core/color');
+
+function drawProjectLine(bresenham, A, B, x, y) {
+    bresenham.draw(A.projectionLength(x), A.projectionLength(y), B.projectionLength(x), B.projectionLength(y), _coreColor.colors.black);
+}
+
+/**
+ * Mapper is a renderer which has no eye origin position, or says
+ * it has a infinite perspective.
+ */
+
+var Mapper = (function () {
+    /**
+     * Constructor of the Mapper class
+     * @param {Camera} camera Camera class from core/camera
+     * @param {Output} output Output class from interface/index
+     */
+
+    function Mapper(camera, output) {
+        _classCallCheck(this, Mapper);
+
+        this.camera = camera;
+        this.output = output;
+    }
+
+    _createClass(Mapper, [{
+        key: 'rotate',
+        value: function rotate(x, y, z) {
+            this.camera.rotate(x, y, z);
+        }
+
+        /**
+         * Render particular scene with camera to output
+         * @param {Scene} scene
+         */
+    }, {
+        key: 'render',
+        value: function render(scene) {
+            var coorA, coorB, coorC, coorD, coorE, coorF, coorG, coorH;
+
+            var screenPlane = (0, _objectPlane.planeFromScreen)(this.camera.screen);
+            var origin = this.camera.screen[2];
+            var x = this.camera.screen[1].minus(this.camera.screen[0]);
+            var y = this.camera.screen[0].minus(this.camera.screen[2]);
+
+            var bresenham = new _drawerLine2['default'](this.output);
+
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
+
+            try {
+                for (var _iterator = scene.eachObject()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                    var obj = _step.value;
+
+                    var objProject = obj.projection(screenPlane);
+                    switch (objProject.constructor.name) {
+                        case 'Line':
+                            coorA = objProject.a.minus(origin);
+                            coorB = objProject.b.minus(origin);
+                            drawProjectLine(bresenham, coorA, coorB, x, y);
+                            break;
+                        case 'Face':
+                            coorA = objProject.a.minus(origin);
+                            coorB = objProject.b.minus(origin);
+                            coorC = objProject.c.minus(origin);
+                            drawProjectLine(bresenham, coorA, coorB, x, y);
+                            drawProjectLine(bresenham, coorA, coorC, x, y);
+                            drawProjectLine(bresenham, coorB, coorC, x, y);
+                            break;
+                        case 'Face4':
+                            coorA = objProject.a.minus(origin);
+                            coorB = objProject.b.minus(origin);
+                            coorC = objProject.c.minus(origin);
+                            coorD = objProject.d.minus(origin);
+                            drawProjectLine(bresenham, coorA, coorB, x, y);
+                            drawProjectLine(bresenham, coorB, coorC, x, y);
+                            drawProjectLine(bresenham, coorC, coorD, x, y);
+                            drawProjectLine(bresenham, coorD, coorA, x, y);
+                            break;
+                        case 'Cuboid':
+                            coorA = objProject.a.a.minus(origin);
+                            coorB = objProject.a.b.minus(origin);
+                            coorC = objProject.a.c.minus(origin);
+                            coorD = objProject.a.d.minus(origin);
+                            coorE = objProject.b.a.minus(origin);
+                            coorF = objProject.b.b.minus(origin);
+                            coorG = objProject.b.c.minus(origin);
+                            coorH = objProject.b.d.minus(origin);
+                            drawProjectLine(bresenham, coorA, coorB, x, y);
+                            drawProjectLine(bresenham, coorB, coorC, x, y);
+                            drawProjectLine(bresenham, coorC, coorD, x, y);
+                            drawProjectLine(bresenham, coorD, coorA, x, y);
+                            drawProjectLine(bresenham, coorE, coorF, x, y);
+                            drawProjectLine(bresenham, coorF, coorG, x, y);
+                            drawProjectLine(bresenham, coorG, coorH, x, y);
+                            drawProjectLine(bresenham, coorH, coorE, x, y);
+                            drawProjectLine(bresenham, coorE, coorA, x, y);
+                            drawProjectLine(bresenham, coorF, coorB, x, y);
+                            drawProjectLine(bresenham, coorG, coorC, x, y);
+                            drawProjectLine(bresenham, coorH, coorD, x, y);
+                            break;
+                    }
+                }
+            } catch (err) {
+                _didIteratorError = true;
+                _iteratorError = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion && _iterator['return']) {
+                        _iterator['return']();
+                    }
+                } finally {
+                    if (_didIteratorError) {
+                        throw _iteratorError;
+                    }
+                }
+            }
+
+            this.output.updateCanvas();
+        }
+    }, {
+        key: 'clear',
+        value: function clear() {
+            this.output.clearCanvas();
+        }
+    }]);
+
+    return Mapper;
+})();
+
+var mapperFromSize = function mapperFromSize(width, height, output) {
+    var camera = new _coreCamera2['default'](new _objectVector2['default'](0, 0, 0), [new _objectVector2['default'](0, height, 0), new _objectVector2['default'](width, height, 0), new _objectVector2['default'](0, -height, 0), new _objectVector2['default'](width, -height, 0)]);
+    return new Mapper(camera, output);
+};
+
+exports.mapperFromSize = mapperFromSize;
+exports['default'] = Mapper;
+
+},{"../core/camera":189,"../core/color":190,"../drawer/line":193,"../object/line":200,"../object/plane":201,"../object/vector":202}],205:[function(require,module,exports){
+/**
+ * Created by shuding on 10/9/15.
+ * <ds303077135@gmail.com>
+ */
+
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+    value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var _coreColor = require('../core/color');
+
+var _coreColor2 = _interopRequireDefault(_coreColor);
 
 var Raytracer = (function () {
     /**
@@ -5053,42 +5759,119 @@ var Raytracer = (function () {
     }
 
     /**
-     * Tracy specific ray and returns color
-     * @param ray
-     * @returns {Color}
+     * Add point light source
+     * @param {Vector} p Position
+     * @param {Color} c Color
      */
 
     _createClass(Raytracer, [{
-        key: "trace",
-        value: function trace(ray) {}
-        // TODO
+        key: 'addLight',
+        value: function addLight(p, c) {
+            this.light = {
+                p: p,
+                c: c
+            };
+        }
+    }, {
+        key: 'addPlane',
+        value: function addPlane(p) {
+            this.plane = p;
+        }
+
+        /**
+         * Tracy specific ray and returns color
+         * @param {Scene} scene
+         * @param {ray} ray
+         * @returns {Color}
+         */
+    }, {
+        key: 'trace',
+        value: function trace(scene, ray) {
+            // TODO
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
+
+            try {
+                for (var _iterator = scene.eachObject()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                    var obj = _step.value;
+
+                    switch (obj.constructor.name) {
+                        case 'Face':
+                            var p = obj.testInnerRay(ray);
+                            if (p) {
+                                var cosAngle = this.light.p.minus(p.s).normalize().dot(p.t.normalize());
+                                return _coreColor.colors.white.mul(cosAngle * cosAngle * cosAngle);
+                            }
+                            break;
+                    }
+                }
+            } catch (err) {
+                _didIteratorError = true;
+                _iteratorError = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion && _iterator['return']) {
+                        _iterator['return']();
+                    }
+                } finally {
+                    if (_didIteratorError) {
+                        throw _iteratorError;
+                    }
+                }
+            }
+
+            if (this.plane) {
+                var p = this.plane.testInnerRay(ray);
+                var cosAngle = this.light.p.minus(p.s).normalize().dot(p.t.normalize());
+                return _coreColor.colors.white.mul(cosAngle * cosAngle * cosAngle);
+            }
+            return _coreColor.colors.black;
+        }
 
         /**
          * Render particular scene with camera to output
          * @param {Scene} scene
          */
-
     }, {
-        key: "render",
+        key: 'render',
         value: function render(scene) {
-            var genRay = this.camera.eachRay();
-            var pixel = genRay.next();
+            var _iteratorNormalCompletion2 = true;
+            var _didIteratorError2 = false;
+            var _iteratorError2 = undefined;
 
-            this.scene = scene;
+            try {
+                for (var _iterator2 = this.camera.eachRay()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                    var pixel = _step2.value;
 
-            while (!pixel.done) {
-                this.output.draw(pixel.value.x, pixel.value.y, this.trace(pixel.value.ray));
+                    this.output.setPoint(pixel.x, pixel.y, this.trace(scene, pixel.ray));
+                }
+            } catch (err) {
+                _didIteratorError2 = true;
+                _iteratorError2 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion2 && _iterator2['return']) {
+                        _iterator2['return']();
+                    }
+                } finally {
+                    if (_didIteratorError2) {
+                        throw _iteratorError2;
+                    }
+                }
             }
+
+            this.output.updateCanvas();
         }
     }]);
 
     return Raytracer;
 })();
 
-exports["default"] = Raytracer;
-module.exports = exports["default"];
+exports['default'] = Raytracer;
+module.exports = exports['default'];
 
-},{}],203:[function(require,module,exports){
+},{"../core/color":190}],206:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -5121,9 +5904,7 @@ function drainQueue() {
         currentQueue = queue;
         queue = [];
         while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
+            currentQueue[queueIndex].run();
         }
         queueIndex = -1;
         len = queue.length;
@@ -5175,6 +5956,7 @@ process.binding = function (name) {
     throw new Error('process.binding is not supported');
 };
 
+// TODO(shtylman)
 process.cwd = function () { return '/' };
 process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
