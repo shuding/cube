@@ -25,45 +25,30 @@ import Raytracer from './renderer/raytracer';
 import Mapper, {mapperFromSize} from './renderer/mapper';
 
 import Bresenham from './drawer/line';
+import MarkFiller from './drawer/polygon';
 
 export default {
-<<<<<<< HEAD
-    Camera     : Camera,
-    Color      : Color,
-    colors     : colors,
-    Ray        : Ray,
-    Scene      : Scene,
-    Canvas     : Canvas,
-    Interface  : Interface,
-    Face       : Face,
-    Line       : Line,
-    Plane      : Plane,
-    Vector     : Vector,
-    Linescanner: Linescanner,
-    Raytracer  : Raytracer,
-    Bresenham  : Bresenham
-=======
 // classes
-    Camera:          Camera,
-    Color:           Color,
-    Ray:             Ray,
-    Scene:           Scene,
-    Canvas:          Canvas,
-    Interface:       Interface,
-    Face:            Face,
-    Face4:           Face4,
-    Cuboid:          Cuboid,
-    Line:            Line,
-    Plane:           Plane,
-    Vector:          Vector,
-    Linescanner:     Linescanner,
-    Raytracer:       Raytracer,
-    Mapper:          Mapper,
-    Bresenham:       Bresenham,
+    Camera         : Camera,
+    Color          : Color,
+    Ray            : Ray,
+    Scene          : Scene,
+    Canvas         : Canvas,
+    Interface      : Interface,
+    Face           : Face,
+    Face4          : Face4,
+    Cuboid         : Cuboid,
+    Line           : Line,
+    Plane          : Plane,
+    Vector         : Vector,
+    Linescanner    : Linescanner,
+    Raytracer      : Raytracer,
+    Mapper         : Mapper,
+    Bresenham      : Bresenham,
+    MarkFiller     : MarkFiller,
 // methods
-    mapperFromSize:  mapperFromSize,
+    mapperFromSize : mapperFromSize,
     planeFromScreen: planeFromScreen,
 // constants
-    colors:          colors
->>>>>>> 5970e4c30721dd4f5831a07ee4194295314b390c
+    colors         : colors
 };
