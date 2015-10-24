@@ -27,6 +27,7 @@ export var colors = {
     white: new Color(255, 255, 255, 1),
     black: new Color(0, 0, 0, 1),
     green: new Color(0, 255, 0, 1),
-    blue: new Color(0, 0, 255, 1)
+    blue: new Color(0, 0, 255, 1),
+    red: new Color(255, 0, 0, 1)
 };
 export default Color;
