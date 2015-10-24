@@ -15,8 +15,8 @@
     htmlcanvas = document.getElementById('myCanvas');
     canvas = new cube.Canvas(htmlcanvas);
     polygonDrawer = new cube.MarkFiller(canvas);
-    var X = [200, 700, 100, 600, 400];
-    var Y = [500, 250, 250, 500, 100];
+    var X = [-100, 400, -200, 300, 100];
+    var Y = [200, -50, -50, 200, -200];
     polygonDrawer.setColor(cube.colors.green, cube.colors.blue);
     polygonDrawer.draw(X, Y);
     polygonDrawer.drawBorder(X, Y);

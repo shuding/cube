@@ -13,11 +13,21 @@ class MarkFiller {
         this.mark = new Array(this.h);
         for (var i = 0; i < this.h; ++i)
             this.mark[i] = new Array(this.w + 1);
+        this.head = new Array(this.h);
     }
 
     setColor(acolor, bcolor) {
         this.acolor = acolor;
         this.bcolor = bcolor;
+    }
+
+    setMark(x, y) {
+        if (y >= 0 && y < this.h) {
+            if (x < 0)
+                this.head[y] ^= 1;
+            else if (x < this.w)
+                this.mark[y][x] ^= 1;
+        }
     }
 
     line(x0, y0, x1, y1) {
@@ -38,7 +48,7 @@ class MarkFiller {
                 for (; x < x1; ++x) {
                     D += 2 * dy;
                     if (D >= 0) {
-                        this.mark[y][x] ^= 1;
+                        this.setMark(x, y);
                         y++;
                         D -= 2 * dx;
                     }
@@ -46,7 +56,7 @@ class MarkFiller {
             } else {
                 D = -dy;
                 for (; y < y1; ++y) {
-                    this.mark[y][x] ^= 1;
+                    this.setMark(x, y);
                     D += 2 * dx;
                     if (D >= 0) {
                         x++;
@@ -61,7 +71,7 @@ class MarkFiller {
                 for (; x > x1; --x) {
                     D += 2 * dy;
                     if (D >= 0) {
-                        this.mark[y][x - 1] ^= 1;
+                        this.setMark(x - 1, y);
                         y++;
                         D -= 2 * dx;
                     }
@@ -74,7 +84,7 @@ class MarkFiller {
                         x--;
                         D -= 2 * dy;
                     }
-                    this.mark[y][x] ^= 1;
+                    this.setMark(x, y);
                 }
             }
         } else if (dx < 0 && dy <= 0) {
@@ -86,7 +96,7 @@ class MarkFiller {
                     D += 2 * dy;
                     if (D >= 0) {
                         y--;
-                        this.mark[y][x - 1] ^= 1;
+                        this.setMark(x - 1, y);
                         D -= 2 * dx;
                     }
                 }
@@ -98,7 +108,7 @@ class MarkFiller {
                         x--;
                         D -= 2 * dy;
                     }
-                    this.mark[y - 1][x] ^= 1;
+                    this.setMark(x, y - 1);
                 }
             }
         } else {
@@ -109,14 +119,14 @@ class MarkFiller {
                     D += 2 * dy;
                     if (D >= 0) {
                         y--;
-                        this.mark[y][x] ^= 1;
+                        this.setMark(x, y);
                         D -= 2 * dx;
                     }
                 }
             } else {
                 D = -dy;
                 for (; y > y1; --y) {
-                    this.mark[y - 1][x] ^= 1;
+                    this.setMark(x, y - 1);
                     D += 2 * dx;
                     if (D >= 0) {
                         x++;
@@ -129,14 +139,16 @@ class MarkFiller {
 
     draw(PX, PY) {
         var n = PX.length;
-        for (var y = 0; y < this.h; ++y)
+        for (var y = 0; y < this.h; ++y) {
+            this.head[y] = 0;
             for (var x = 0; x <= this.w; ++x) {
                 this.mark[y][x] = 0;
             }
+        }
         for (var i = 0; i < n; ++i)
-            this.line(PX[i], PY[i], PX[(i + 1) % n], PY[(i + 1) % n]);
+            this.line(PX[i] + 1, PY[i], PX[(i + 1) % n] + 1, PY[(i + 1) % n]);
         for (var y = 0; y < this.h; ++y) {
-            var c = 0;
+            var c = this.head[y];
             for (var x = 0; x < this.w; ++x) {
                 c ^= this.mark[y][x];
                 if (c == 1) {
@@ -150,7 +162,7 @@ class MarkFiller {
         var n = PX.length;
         var line_drawer = new Bresenham(this.cvs);
         for (var i = 0; i < n; ++i) {
-            line_drawer.draw(PX[i] - 1, PY[i], PX[(i + 1) % n] - 1, PY[(i + 1) % n], this.bcolor);
+            line_drawer.draw(PX[i], PY[i], PX[(i + 1) % n], PY[(i + 1) % n], this.bcolor);
         }
     }
 
