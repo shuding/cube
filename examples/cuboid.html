@@ -17,17 +17,17 @@
   canvas = new cube.Canvas(htmlcanvas);
 
   face1 = new cube.Face4(
-    new cube.Vector(-300,  200, 0),
-    new cube.Vector( 300,  200, 0),
-    new cube.Vector( 300, -200, 0),
-    new cube.Vector(-300, -200, 0)
+    new cube.Vector(-200,  200, 0),
+    new cube.Vector( 200,  200, 0),
+    new cube.Vector( 200, -200, 0),
+    new cube.Vector(-200, -200, 0)
   );
 
   face2 = new cube.Face4(
-      new cube.Vector(-300,  200, 100),
-      new cube.Vector( 300,  200, 100),
-      new cube.Vector( 300, -200, 100),
-      new cube.Vector(-300, -200, 100)
+      new cube.Vector(-200,  200, 400),
+      new cube.Vector( 200,  200, 400),
+      new cube.Vector( 200, -200, 400),
+      new cube.Vector(-200, -200, 400)
   );
 
   scene = new cube.Scene(new cube.Cuboid(face1, face2));

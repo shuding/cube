@@ -4503,9 +4503,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Color = (function () {
     /**
      * Color constructor
-     * @param {Number} r Red [0, 1]
-     * @param {Number} g Green [0, 1]
-     * @param {Number} b Blue [0, 1]
+     * @param {Number} r Red [0, 255]
+     * @param {Number} g Green [0, 255]
+     * @param {Number} b Blue [0, 255]
      * @param {Number} a Alpha [0, 1]
      */
 
@@ -4533,7 +4533,9 @@ var colors = {
     black: new Color(0, 0, 0, 1),
     green: new Color(0, 255, 0, 1),
     blue: new Color(0, 0, 255, 1),
-    red: new Color(255, 0, 0, 1)
+    red: new Color(255, 0, 0, 1),
+    yellow: new Color(255, 255, 0, 1),
+    cyan: new Color(0, 255, 255, 1)
 };
 exports.colors = colors;
 exports["default"] = Color;
@@ -5732,7 +5734,9 @@ var Vector = (function () {
             var v = this.minus(p.p);
             var len = v.dot(p.n);
             var vDelta = p.n.mul(len);
-            return this.minus(vDelta);
+            var ret = this.minus(vDelta);
+            ret.z = len; // projection distance
+            return ret;
         }
     }, {
         key: 'projectionLength',
@@ -5792,10 +5796,25 @@ var _drawerLine = require('../drawer/line');
 
 var _drawerLine2 = _interopRequireDefault(_drawerLine);
 
+var _drawerPolygon = require('../drawer/polygon');
+
+var _drawerPolygon2 = _interopRequireDefault(_drawerPolygon);
+
 var _coreColor = require('../core/color');
 
 function drawProjectLine(bresenham, A, B, x, y) {
     bresenham.draw(A.projectionLength(x), A.projectionLength(y), B.projectionLength(x), B.projectionLength(y), _coreColor.colors.black);
+}
+
+function drawProjectFace(markfiller, coors, x, y) {
+    var X = [],
+        Y = [];
+    coors.forEach(function (coor) {
+        X.push(coor.projectionLength(x));
+        Y.push(coor.projectionLength(y));
+    });
+    markfiller.draw(X, Y);
+    markfiller.drawBorder(X, Y);
 }
 
 /**
@@ -5836,8 +5855,11 @@ var Mapper = (function () {
             var origin = this.camera.screen[2];
             var x = this.camera.screen[1].minus(this.camera.screen[0]);
             var y = this.camera.screen[0].minus(this.camera.screen[2]);
+            var z = this.camera.screen[2].add(x.mul(.5)).addBy(y.mul(.5)).minusBy(this.camera.eye);
 
             var bresenham = new _drawerLine2['default'](this.output);
+            var markfiller = new _drawerPolygon2['default'](this.output);
+            markfiller.setColor(_coreColor.colors.yellow, _coreColor.colors.black);
 
             var _iteratorNormalCompletion = true;
             var _didIteratorError = false;
@@ -5867,10 +5889,7 @@ var Mapper = (function () {
                             coorB = objProject.b.minus(origin);
                             coorC = objProject.c.minus(origin);
                             coorD = objProject.d.minus(origin);
-                            drawProjectLine(bresenham, coorA, coorB, x, y);
-                            drawProjectLine(bresenham, coorB, coorC, x, y);
-                            drawProjectLine(bresenham, coorC, coorD, x, y);
-                            drawProjectLine(bresenham, coorD, coorA, x, y);
+                            drawProjectFace(markfiller, [coorA, coorB, coorC, coorD], x, y);
                             break;
                         case 'Cuboid':
                             coorA = objProject.a.a.minus(origin);
@@ -5881,18 +5900,23 @@ var Mapper = (function () {
                             coorF = objProject.b.b.minus(origin);
                             coorG = objProject.b.c.minus(origin);
                             coorH = objProject.b.d.minus(origin);
-                            drawProjectLine(bresenham, coorA, coorB, x, y);
-                            drawProjectLine(bresenham, coorB, coorC, x, y);
-                            drawProjectLine(bresenham, coorC, coorD, x, y);
-                            drawProjectLine(bresenham, coorD, coorA, x, y);
-                            drawProjectLine(bresenham, coorE, coorF, x, y);
-                            drawProjectLine(bresenham, coorF, coorG, x, y);
-                            drawProjectLine(bresenham, coorG, coorH, x, y);
-                            drawProjectLine(bresenham, coorH, coorE, x, y);
-                            drawProjectLine(bresenham, coorE, coorA, x, y);
-                            drawProjectLine(bresenham, coorF, coorB, x, y);
-                            drawProjectLine(bresenham, coorG, coorC, x, y);
-                            drawProjectLine(bresenham, coorH, coorD, x, y);
+
+                            // Sort by z-index
+                            var faces = [[coorA, coorB, coorC, coorD], [coorE, coorF, coorG, coorH], [coorA, coorB, coorF, coorE], [coorB, coorC, coorG, coorF], [coorC, coorD, coorH, coorG], [coorD, coorA, coorE, coorH]];
+                            faces = faces.map(function (face) {
+                                face.zIndex = Math.max(face[0].projectionLength(z), face[1].projectionLength(z), face[2].projectionLength(z), face[3].projectionLength(z));
+                                return face;
+                            });
+                            faces.sort(function (a, b) {
+                                return -a.zIndex + b.zIndex;
+                            });
+
+                            drawProjectFace(markfiller, faces[0], x, y);
+                            drawProjectFace(markfiller, faces[1], x, y);
+                            drawProjectFace(markfiller, faces[2], x, y);
+                            drawProjectFace(markfiller, faces[3], x, y);
+                            drawProjectFace(markfiller, faces[4], x, y);
+                            drawProjectFace(markfiller, faces[5], x, y);
                             break;
                     }
                 }
@@ -5931,7 +5955,7 @@ var mapperFromSize = function mapperFromSize(width, height, output) {
 exports.mapperFromSize = mapperFromSize;
 exports['default'] = Mapper;
 
-},{"../core/camera":189,"../core/color":190,"../drawer/line":193,"../object/line":201,"../object/plane":202,"../object/vector":203}],206:[function(require,module,exports){
+},{"../core/camera":189,"../core/color":190,"../drawer/line":193,"../drawer/polygon":194,"../object/line":201,"../object/plane":202,"../object/vector":203}],206:[function(require,module,exports){
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
@@ -6113,9 +6137,7 @@ function drainQueue() {
         currentQueue = queue;
         queue = [];
         while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
+            currentQueue[queueIndex].run();
         }
         queueIndex = -1;
         len = queue.length;
@@ -6167,6 +6189,7 @@ process.binding = function (name) {
     throw new Error('process.binding is not supported');
 };
 
+// TODO(shtylman)
 process.cwd = function () { return '/' };
 process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');

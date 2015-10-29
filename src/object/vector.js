@@ -125,7 +125,9 @@ class Vector {
         let v      = this.minus(p.p);
         let len    = v.dot(p.n);
         let vDelta = p.n.mul(len);
-        return this.minus(vDelta);
+        let ret = this.minus(vDelta);
+        ret.z = len; // projection distance
+        return ret;
     }
 
     projectionLength(v) {
