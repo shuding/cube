@@ -13,7 +13,6 @@ class MarkFiller {
         this.mark = new Array(this.h);
         for (var i = 0; i < this.h; ++i)
             this.mark[i] = new Array(this.w + 1);
-        this.head = new Array(this.h);
     }
 
     setColor(acolor, bcolor) {
@@ -24,8 +23,8 @@ class MarkFiller {
     setMark(x, y) {
         if (y >= 0 && y < this.h) {
             if (x < 0)
-                this.head[y] ^= 1;
-            else if (x < this.w)
+                x = 0;
+            if (x < this.w)
                 this.mark[y][x] ^= 1;
         }
     }
@@ -140,7 +139,6 @@ class MarkFiller {
     draw(PX, PY) {
         var n = PX.length;
         for (var y = 0; y < this.h; ++y) {
-            this.head[y] = 0;
             for (var x = 0; x <= this.w; ++x) {
                 this.mark[y][x] = 0;
             }
@@ -148,7 +146,7 @@ class MarkFiller {
         for (var i = 0; i < n; ++i)
             this.line(PX[i] + 1, PY[i], PX[(i + 1) % n] + 1, PY[(i + 1) % n]);
         for (var y = 0; y < this.h; ++y) {
-            var c = this.head[y];
+            var c = 0;
             for (var x = 0; x < this.w; ++x) {
                 c ^= this.mark[y][x];
                 if (c == 1) {

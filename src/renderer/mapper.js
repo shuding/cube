@@ -41,6 +41,7 @@ class Mapper {
     constructor(camera, output) {
         this.camera = camera;
         this.output = output;
+        this.zI = new Array();
     }
 
     rotate(x, y, z) {
@@ -65,7 +66,7 @@ class Mapper {
         markfiller.setColor(colors.yellow, colors.black);
 
         for (let obj of scene.eachObject()) {
-            let objProject = obj.projection(screenPlane);
+            let objProject = obj;//obj.projection(screenPlane);
             switch (objProject.constructor.name) {
                 case 'Line':
                     coorA = objProject.a.minus(origin);
@@ -106,8 +107,16 @@ class Mapper {
                         [coorC, coorD, coorH, coorG],
                         [coorD, coorA, coorE, coorH]
                     ];
+
+                    faces[0].color = colors.red;
+                    faces[1].color = colors.green;
+                    faces[2].color = colors.blue;
+                    faces[3].color = colors.yellow;
+                    faces[4].color = colors.cyan;
+                    faces[5].color = colors.magenta;
+
                     faces = faces.map(face => {
-                        face.zIndex = Math.max(
+                        face.zIndex = Math.min(
                             face[0].projectionLength(z),
                             face[1].projectionLength(z),
                             face[2].projectionLength(z),
@@ -115,17 +124,14 @@ class Mapper {
                         );
                         return face;
                     });
-                    faces.sort((a, b) => {
-                        return -a.zIndex + b.zIndex;
+                    faces = faces.sort((a, b) => {
+                        return b.zIndex - a.zIndex;
                     });
 
-                    drawProjectFace(markfiller, faces[0], x, y);
-                    drawProjectFace(markfiller, faces[1], x, y);
-                    drawProjectFace(markfiller, faces[2], x, y);
-                    drawProjectFace(markfiller, faces[3], x, y);
-                    drawProjectFace(markfiller, faces[4], x, y);
-                    drawProjectFace(markfiller, faces[5], x, y);
-                    break;
+                    for (var i = 0; i < 6; ++i) {
+                        markfiller.setColor(faces[i].color, colors.black);
+                        drawProjectFace(markfiller, faces[i], x, y);
+                    }
             }
         }
         this.output.updateCanvas();

@@ -11,23 +11,24 @@
 <canvas id="myCanvas" width="800" height="600" style="border: 1px solid #d3d3d3">
   Your browser does not support the HTML5 canvas tag.
 </canvas>
+<button onclick='alert(mapper.zI[0] + "\n" + mapper.zI[1] + "\n" + mapper.zI[2] + "\n" + mapper.zI[3] + "\n" + mapper.zI[4] + "\n" + mapper.zI[5] + "\n")'>show</button>
 <script src="../bundle.js"></script>
 <script type="text/javascript">
   htmlcanvas = document.getElementById('myCanvas');
   canvas = new cube.Canvas(htmlcanvas);
 
   face1 = new cube.Face4(
-    new cube.Vector(-200,  200, 0),
-    new cube.Vector( 200,  200, 0),
-    new cube.Vector( 200, -200, 0),
-    new cube.Vector(-200, -200, 0)
+    new cube.Vector(-200.0,  200.0, -200.0),
+    new cube.Vector( 200.0,  200.0, -200.0),
+    new cube.Vector( 200.0, -200.0, -200.0),
+    new cube.Vector(-200.0, -200.0, -200.0)
   );
 
   face2 = new cube.Face4(
-      new cube.Vector(-200,  200, 400),
-      new cube.Vector( 200,  200, 400),
-      new cube.Vector( 200, -200, 400),
-      new cube.Vector(-200, -200, 400)
+      new cube.Vector(-200.0,  200.0, 200.0),
+      new cube.Vector( 200.0,  200.0, 200.0),
+      new cube.Vector( 200.0, -200.0, 200.0),
+      new cube.Vector(-200.0, -200.0, 200.0)
   );
 
   scene = new cube.Scene(new cube.Cuboid(face1, face2));
@@ -35,11 +36,11 @@
   // mapper = cube.mapperFromSize(800, 600, canvas);
 
   // or specific viewport
-  camera = new cube.Camera(new cube.Vector(0, 0, 0), [
-    new cube.Vector(-400, 300, -10),
-    new cube.Vector(400, 300, -10),
-    new cube.Vector(-400, -300, -10),
-    new cube.Vector(400, 300, -10)
+  camera = new cube.Camera(new cube.Vector(0.0, 0.0, -400.0), [
+    new cube.Vector(-400.0, 300.0, 0.0),
+    new cube.Vector(400.0, 300.0, 0.0),
+    new cube.Vector(-400.0, -300.0, 0.0),
+    new cube.Vector(400.0, -300.0, 0.0)
   ]);
   mapper = new cube.Mapper(camera, canvas);
 
@@ -49,7 +50,7 @@
     var deltaY = 0.01 * (event.x - data.x);
     var deltaX = 0.01 * (event.y - data.y);
     mapper.clear();
-    mapper.rotate(deltaX, 0, deltaY);
+    mapper.rotate(deltaX, deltaY, 0);
     mapper.render(scene);
   });
 </script>
