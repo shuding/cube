@@ -5834,7 +5834,6 @@ var Mapper = (function () {
 
         this.camera = camera;
         this.output = output;
-        this.zI = new Array();
     }
 
     _createClass(Mapper, [{

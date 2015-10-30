@@ -41,7 +41,6 @@ class Mapper {
     constructor(camera, output) {
         this.camera = camera;
         this.output = output;
-        this.zI = new Array();
     }
 
     rotate(x, y, z) {
