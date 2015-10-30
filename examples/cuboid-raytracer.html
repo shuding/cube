@@ -7,7 +7,7 @@
   <title></title>
 </head>
 <body>
-<canvas id="myCanvas" width="800" height="600" style="border: 1px solid #d3d3d3">
+<canvas id="myCanvas" width="400" height="300" style="border: 1px solid #d3d3d3">
   Your browser does not support the HTML5 canvas tag.
 </canvas>
 <script src="../bundle.js"></script>
@@ -15,36 +15,29 @@
   htmlcanvas = document.getElementById('myCanvas');
   canvas = new cube.Canvas(htmlcanvas);
 
-  face1 = new cube.Face(
-      new cube.Vector(-300,  200, 50),
-      new cube.Vector( 0,  200, 0),
-      new cube.Vector( 0, -200, 0)
+  ball = new cube.Ball(
+      new cube.Vector(0, 0, 0),
+      10
   );
 
-  face2 = new cube.Face(
-      new cube.Vector(300,  200, 50),
-      new cube.Vector( 0, -200, 0),
-      new cube.Vector( 0, 200, 0)
-  );
-
-  scene = new cube.Scene(face1, face2);
+  scene = new cube.Scene(ball);
 
   // or specific viewport
-  camera = new cube.Camera(new cube.Vector(0, 0, -10), [
+  camera = new cube.Camera(new cube.Vector(0, 0, -30), [
     new cube.Vector(-400, 300, 0),
     new cube.Vector(400, 300, 0),
     new cube.Vector(-400, -300, 0),
     new cube.Vector(400, 300, 0)
-  ]);
+  ], 400, 300);
 
   raytracer = new cube.Raytracer(camera, canvas);
   raytracer.addLight(
-      new cube.Vector(0, 300, 300),
+      new cube.Vector(300, 300, 300),
       cube.colors.white
   );
   raytracer.addPlane(new cube.Plane(
       new cube.Vector(0,  -500, 0),
-      new cube.Vector(0,  1, 0)
+      new cube.Vector(0,  -1, 0)
   ));
 
   raytracer.render(scene);
