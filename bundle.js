@@ -4529,13 +4529,14 @@ var Color = (function () {
 })();
 
 var colors = {
-    white: new Color(255, 255, 255, 1),
+    white: new Color(1, 1, 1, 1),
     black: new Color(0, 0, 0, 1),
-    green: new Color(0, 255, 0, 1),
-    blue: new Color(0, 0, 255, 1),
-    red: new Color(255, 0, 0, 1),
-    yellow: new Color(255, 255, 0, 1),
-    cyan: new Color(0, 255, 255, 1)
+    green: new Color(0, 1, 0, 1),
+    blue: new Color(0, 0, 1, 1),
+    red: new Color(1, 0, 0, 1),
+    yellow: new Color(1, 1, 0, 1),
+    cyan: new Color(0, 1, 1, 1),
+    magenta: new Color(1, 0, 1, 1)
 };
 exports.colors = colors;
 exports["default"] = Color;
@@ -4833,7 +4834,6 @@ var MarkFiller = (function () {
         this.h = canvas.height;
         this.mark = new Array(this.h);
         for (var i = 0; i < this.h; ++i) this.mark[i] = new Array(this.w + 1);
-        this.head = new Array(this.h);
     }
 
     _createClass(MarkFiller, [{
@@ -4846,7 +4846,8 @@ var MarkFiller = (function () {
         key: 'setMark',
         value: function setMark(x, y) {
             if (y >= 0 && y < this.h) {
-                if (x < 0) this.head[y] ^= 1;else if (x < this.w) this.mark[y][x] ^= 1;
+                if (x < 0) x = 0;
+                if (x < this.w) this.mark[y][x] ^= 1;
             }
         }
     }, {
@@ -4962,14 +4963,13 @@ var MarkFiller = (function () {
         value: function draw(PX, PY) {
             var n = PX.length;
             for (var y = 0; y < this.h; ++y) {
-                this.head[y] = 0;
                 for (var x = 0; x <= this.w; ++x) {
                     this.mark[y][x] = 0;
                 }
             }
             for (var i = 0; i < n; ++i) this.line(PX[i] + 1, PY[i], PX[(i + 1) % n] + 1, PY[(i + 1) % n]);
             for (var y = 0; y < this.h; ++y) {
-                var c = this.head[y];
+                var c = 0;
                 for (var x = 0; x < this.w; ++x) {
                     c ^= this.mark[y][x];
                     if (c == 1) {
@@ -5902,6 +5902,7 @@ var Mapper = (function () {
 
         this.camera = camera;
         this.output = output;
+        this.zI = new Array();
     }
 
     _createClass(Mapper, [{
@@ -5937,7 +5938,7 @@ var Mapper = (function () {
                 for (var _iterator = scene.eachObject()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
                     var obj = _step.value;
 
-                    var objProject = obj.projection(screenPlane);
+                    var objProject = obj; //obj.projection(screenPlane);
                     switch (objProject.constructor.name) {
                         case 'Line':
                             coorA = objProject.a.minus(origin);
@@ -5971,21 +5972,26 @@ var Mapper = (function () {
 
                             // Sort by z-index
                             var faces = [[coorA, coorB, coorC, coorD], [coorE, coorF, coorG, coorH], [coorA, coorB, coorF, coorE], [coorB, coorC, coorG, coorF], [coorC, coorD, coorH, coorG], [coorD, coorA, coorE, coorH]];
+
+                            faces[0].color = _coreColor.colors.red;
+                            faces[1].color = _coreColor.colors.green;
+                            faces[2].color = _coreColor.colors.blue;
+                            faces[3].color = _coreColor.colors.yellow;
+                            faces[4].color = _coreColor.colors.cyan;
+                            faces[5].color = _coreColor.colors.magenta;
+
                             faces = faces.map(function (face) {
-                                face.zIndex = Math.max(face[0].projectionLength(z), face[1].projectionLength(z), face[2].projectionLength(z), face[3].projectionLength(z));
+                                face.zIndex = Math.min(face[0].projectionLength(z), face[1].projectionLength(z), face[2].projectionLength(z), face[3].projectionLength(z));
                                 return face;
                             });
-                            faces.sort(function (a, b) {
-                                return -a.zIndex + b.zIndex;
+                            faces = faces.sort(function (a, b) {
+                                return b.zIndex - a.zIndex;
                             });
 
-                            drawProjectFace(markfiller, faces[0], x, y);
-                            drawProjectFace(markfiller, faces[1], x, y);
-                            drawProjectFace(markfiller, faces[2], x, y);
-                            drawProjectFace(markfiller, faces[3], x, y);
-                            drawProjectFace(markfiller, faces[4], x, y);
-                            drawProjectFace(markfiller, faces[5], x, y);
-                            break;
+                            for (var i = 0; i < 6; ++i) {
+                                markfiller.setColor(faces[i].color, _coreColor.colors.black);
+                                drawProjectFace(markfiller, faces[i], x, y);
+                            }
                     }
                 }
             } catch (err) {
@@ -6218,7 +6224,9 @@ function drainQueue() {
         currentQueue = queue;
         queue = [];
         while (++queueIndex < len) {
-            currentQueue[queueIndex].run();
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
         }
         queueIndex = -1;
         len = queue.length;
@@ -6270,7 +6278,6 @@ process.binding = function (name) {
     throw new Error('process.binding is not supported');
 };
 
-// TODO(shtylman)
 process.cwd = function () { return '/' };
 process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
