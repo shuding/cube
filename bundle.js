@@ -5905,10 +5905,10 @@ var Mapper = (function () {
                             var faces = [[coorA, coorB, coorC, coorD], [coorE, coorF, coorG, coorH], [coorA, coorB, coorF, coorE], [coorB, coorC, coorG, coorF], [coorC, coorD, coorH, coorG], [coorD, coorA, coorE, coorH]];
 
                             faces[0].color = _coreColor.colors.red;
-                            faces[1].color = _coreColor.colors.green;
+                            faces[1].color = _coreColor.colors.cyan;
                             faces[2].color = _coreColor.colors.blue;
-                            faces[3].color = _coreColor.colors.yellow;
-                            faces[4].color = _coreColor.colors.cyan;
+                            faces[3].color = _coreColor.colors.green;
+                            faces[4].color = _coreColor.colors.yellow;
                             faces[5].color = _coreColor.colors.magenta;
 
                             faces = faces.map(function (face) {

@@ -108,10 +108,10 @@ class Mapper {
                     ];
 
                     faces[0].color = colors.red;
-                    faces[1].color = colors.green;
+                    faces[1].color = colors.cyan;
                     faces[2].color = colors.blue;
-                    faces[3].color = colors.yellow;
-                    faces[4].color = colors.cyan;
+                    faces[3].color = colors.green;
+                    faces[4].color = colors.yellow;
                     faces[5].color = colors.magenta;
 
                     faces = faces.map(face => {

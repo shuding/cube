@@ -46,8 +46,8 @@
   mapper.render(scene);
 
   canvas.bindDrag(function (event, data) {
-    var deltaY = 0.01 * (event.x - data.x);
-    var deltaX = 0.01 * (event.y - data.y);
+    var deltaY = 0.005 * (event.x - data.x);
+    var deltaX = 0.005 * (event.y - data.y);
     mapper.clear();
     var x = mapper.camera.screen[1].minus(mapper.camera.screen[0]);
     var y = mapper.camera.screen[0].minus(mapper.camera.screen[2]);
