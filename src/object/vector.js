@@ -116,9 +116,15 @@ class Vector {
         return this.len;
     }
 
+    normal() {
+        return this.clone().normalize();
+    }
+
     normalize() {
-        this.mulBy(1 / this.length());
-        this.len = 1;
+        if (this.len !== 1) {
+            this.mulBy(1 / this.length());
+            this.len = 1;
+        }
         return this;
     }
 

@@ -21,6 +21,10 @@ class Color {
     mul(r) {
         return new Color(this.r * r, this.g * r, this.b * r, this.a);
     }
+
+    add(r) {
+        return new Color(this.r + r.r, this.g + r.g, this.b + r.b, this.a + r.a);
+    }
 }
 
 export var colors = {

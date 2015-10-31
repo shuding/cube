@@ -15,15 +15,25 @@
   htmlcanvas = document.getElementById('myCanvas');
   canvas = new cube.Canvas(htmlcanvas);
 
-  ball = new cube.Ball(
+  ball1 = new cube.Ball(
       new cube.Vector(0, 0, 0),
-      10
+      50
   );
 
-  scene = new cube.Scene(ball);
+  ball2 = new cube.Ball(
+      new cube.Vector(100, 0, 0),
+      50
+  );
+
+  ball3 = new cube.Ball(
+      new cube.Vector(200, 0, 0),
+      50
+  );
+
+  scene = new cube.Scene(ball1, ball2, ball3);
 
   // or specific viewport
-  camera = new cube.Camera(new cube.Vector(0, 0, -30), [
+  camera = new cube.Camera(new cube.Vector(0, 0, -1000), [
     new cube.Vector(-400, 300, 0),
     new cube.Vector(400, 300, 0),
     new cube.Vector(-400, -300, 0),
@@ -32,15 +42,23 @@
 
   raytracer = new cube.Raytracer(camera, canvas);
   raytracer.addLight(
-      new cube.Vector(300, 300, 300),
+      new cube.Vector(0, -300, 10),
       cube.colors.white
   );
+  /*
   raytracer.addPlane(new cube.Plane(
-      new cube.Vector(0,  -500, 0),
+      new cube.Vector(0,  1000, 0),
       new cube.Vector(0,  -1, 0)
   ));
+  */
+
+  var t = new Date();
 
   raytracer.render(scene);
+
+  var p = document.createElement('p');
+  p.innerHTML = ((new Date()).getTime() - t.getTime()) + 'ms';
+  document.body.appendChild(p);
 
   /*
   canvas.bindDrag(function (event, data) {

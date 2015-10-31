@@ -21,8 +21,12 @@ class Plane {
      * @param ray
      */
     testInnerRay(ray) {
-        let p = ray.t.mul(this.p.minus(ray.s).dot(this.n) / ray.t.dot(this.n)).addBy(ray.s);
-        return new Ray(p, p.minusBy(this.n.mul(p.dot(this.n) * 2)));
+        let dot = ray.t.dot(this.n);
+        if (dot >= 0) {
+            return null;
+        }
+        let p = ray.t.mul(this.p.minus(ray.s).dot(this.n) / dot);
+        return new Ray(p.add(ray.s), p.minus(this.n.mul(p.dot(this.n) * 2)));
     }
 }
 

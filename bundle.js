@@ -4523,6 +4523,11 @@ var Color = (function () {
         value: function mul(r) {
             return new Color(this.r * r, this.g * r, this.b * r, this.a);
         }
+    }, {
+        key: "add",
+        value: function add(r) {
+            return new Color(this.r + r.r, this.g + r.g, this.b + r.b, this.a + r.a);
+        }
     }]);
 
     return Color;
@@ -5326,6 +5331,10 @@ var _coreRay = require('../core/ray');
 
 var _coreRay2 = _interopRequireDefault(_coreRay);
 
+// Cache
+
+var sqrt = Math.sqrt;
+
 var Ball = (function () {
     /**
      * Constructor of the Ball class
@@ -5344,9 +5353,21 @@ var Ball = (function () {
         key: 'testInnerRay',
         value: function testInnerRay(ray) {
             var os = this.o.minus(ray.s);
-            var dis = os.normalize().det(ray.t.normalize()).length() * os.length();
+            var osn = os.normal();
+            var sin = osn.det(ray.t.normalize()).length();
+
+            var dis = sin * os.length();
             if (dis > this.r) return null;
-            return 1;
+
+            // ray.t is already normalized here!
+            var oscos = os.dot(ray.t);
+            var delta = sqrt(this.r * this.r - dis * dis);
+            var x = ray.t.mul(oscos - delta);
+            var p = ray.s.add(x);
+            var r = os.minus(x).normalize();
+            var d = x.add(r.mulBy(-2 * x.dot(r)));
+
+            return new _coreRay2['default'](p, d);
         }
     }]);
 
@@ -5619,8 +5640,12 @@ var Plane = (function () {
     _createClass(Plane, [{
         key: 'testInnerRay',
         value: function testInnerRay(ray) {
-            var p = ray.t.mul(this.p.minus(ray.s).dot(this.n) / ray.t.dot(this.n)).addBy(ray.s);
-            return new _coreRay2['default'](p, p.minusBy(this.n.mul(p.dot(this.n) * 2)));
+            var dot = ray.t.dot(this.n);
+            if (dot >= 0) {
+                return null;
+            }
+            var p = ray.t.mul(this.p.minus(ray.s).dot(this.n) / dot);
+            return new _coreRay2['default'](p.add(ray.s), p.minus(this.n.mul(p.dot(this.n) * 2)));
         }
     }]);
 
@@ -5780,10 +5805,17 @@ var Vector = (function () {
             return this.len;
         }
     }, {
+        key: 'normal',
+        value: function normal() {
+            return this.clone().normalize();
+        }
+    }, {
         key: 'normalize',
         value: function normalize() {
-            this.mulBy(1 / this.length());
-            this.len = 1;
+            if (this.len !== 1) {
+                this.mulBy(1 / this.length());
+                this.len = 1;
+            }
             return this;
         }
     }, {
@@ -6089,11 +6121,15 @@ var Raytracer = (function () {
          * Tracy specific ray and returns color
          * @param {Scene} scene
          * @param {ray} ray
+         * @param depth
          * @returns {Color}
          */
     }, {
         key: 'trace',
         value: function trace(scene, ray) {
+            var depth = arguments.length <= 2 || arguments[2] === undefined ? 1 : arguments[2];
+
+            if (depth <= 0) return _coreColor.colors.black;
             // TODO
             var p = undefined;
             var _iteratorNormalCompletion = true;
@@ -6109,28 +6145,21 @@ var Raytracer = (function () {
                             p = obj.testInnerRay(ray);
                             if (p) {
                                 var cosAngle = this.light.p.minus(p.s).normalize().dot(p.t.normalize());
+                                if (cosAngle < 0) cosAngle = 0;
                                 return _coreColor.colors.white.mul(cosAngle * cosAngle);
                             }
                             break;
                         case 'Ball':
                             p = obj.testInnerRay(ray);
                             if (p) {
-                                return _coreColor.colors.white;
+                                var cosAngle = this.light.p.minus(p.s).normalize().dot(p.t.normalize());
+                                if (cosAngle < 0) cosAngle = 0;
+                                var c = this.trace(scene, p, depth - 1);
+                                return _coreColor.colors.white.mul(cosAngle * cosAngle).add(c.mul(0.5));
                             }
                             break;
                     }
                 }
-                /*
-                if (this.plane) {
-                    let p        = this.plane.testInnerRay(ray);
-                    if (p) {
-                        let cosAngle = this.light.p.minus(p.s).normalize().dot(p.t.normalize());
-                        return colors.white.mul(Math.pow(cosAngle, 100));
-                    }
-                    //return colors.red.mul(cosAngle);
-                    //return colors.red;
-                }
-                */
             } catch (err) {
                 _didIteratorError = true;
                 _iteratorError = err;
@@ -6144,6 +6173,18 @@ var Raytracer = (function () {
                         throw _iteratorError;
                     }
                 }
+            }
+
+            if (this.plane) {
+                p = this.plane.testInnerRay(ray);
+                if (p) {
+                    var cosAngle = this.light.p.minus(p.s).normalize().dot(p.t.normalize());
+                    //if (cosAngle < 0) cosAngle = 0;
+                    var c = this.trace(scene, p, depth - 1);
+                    return _coreColor.colors.white.mul(Math.pow(cosAngle, 2)).add(c);
+                }
+                //return colors.red.mul(cosAngle);
+                //return colors.red;
             }
 
             return _coreColor.colors.black;
@@ -6164,7 +6205,7 @@ var Raytracer = (function () {
                 for (var _iterator2 = this.camera.eachRay()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
                     var pixel = _step2.value;
 
-                    this.output.setPoint(pixel.x, pixel.y, this.trace(scene, pixel.ray));
+                    this.output.setPoint(pixel.x, pixel.y, this.trace(scene, pixel.ray, 2));
                 }
             } catch (err) {
                 _didIteratorError2 = true;
@@ -6224,9 +6265,7 @@ function drainQueue() {
         currentQueue = queue;
         queue = [];
         while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
+            currentQueue[queueIndex].run();
         }
         queueIndex = -1;
         len = queue.length;
@@ -6278,6 +6317,7 @@ process.binding = function (name) {
     throw new Error('process.binding is not supported');
 };
 
+// TODO(shtylman)
 process.cwd = function () { return '/' };
 process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
