@@ -13,10 +13,19 @@ class Vector {
         this.z = z;
     }
 
+    /**
+     * Dot: |a||b|cos
+     * @param v
+     * @returns {number}
+     */
     dot(v) {
         return this.x * v.x + this.y * v.y + this.z * v.z;
     }
 
+    /**
+     * Det: (signed)|a||b|sin
+     * @param v
+     */
     det(v) {
         return new Vector(this.y * v.z - this.z * v.y, -this.x * v.z + this.z * v.x, this.x * v.y - this.y * v.x);
     }

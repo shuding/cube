@@ -40,22 +40,35 @@ class Raytracer {
      */
     trace(scene, ray) {
         // TODO
+        let p;
         for (let obj of scene.eachObject()) {
             switch (obj.constructor.name) {
                 case 'Face':
-                    let p = obj.testInnerRay(ray);
+                    p = obj.testInnerRay(ray);
                     if (p) {
                         let cosAngle = this.light.p.minus(p.s).normalize().dot(p.t.normalize());
-                        return colors.white.mul(cosAngle * cosAngle * cosAngle);
+                        return colors.white.mul(cosAngle * cosAngle);
+                    }
+                    break;
+                case 'Ball':
+                    p = obj.testInnerRay(ray);
+                    if (p) {
+                        return colors.white;
                     }
                     break;
             }
         }
+        /*
         if (this.plane) {
             let p        = this.plane.testInnerRay(ray);
-            let cosAngle = this.light.p.minus(p.s).normalize().dot(p.t.normalize());
-            return colors.white.mul(cosAngle * cosAngle * cosAngle);
+            if (p) {
+                let cosAngle = this.light.p.minus(p.s).normalize().dot(p.t.normalize());
+                return colors.white.mul(Math.pow(cosAngle, 100));
+            }
+            //return colors.red.mul(cosAngle);
+            //return colors.red;
         }
+        */
         return colors.black;
     }
 

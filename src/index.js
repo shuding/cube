@@ -17,6 +17,7 @@ import Face from './object/face';
 import Face4 from './object/face4';
 import Cuboid from './object/cuboid';
 import Line from './object/line';
+import Ball from './object/ball';
 import Plane, {planeFromScreen} from './object/plane';
 import Vector from './object/vector';
 
@@ -29,26 +30,27 @@ import MarkFiller from './drawer/polygon';
 
 export default {
 // classes
-    Camera         : Camera,
-    Color          : Color,
-    Ray            : Ray,
-    Scene          : Scene,
-    Canvas         : Canvas,
-    Interface      : Interface,
-    Face           : Face,
-    Face4          : Face4,
-    Cuboid         : Cuboid,
-    Line           : Line,
-    Plane          : Plane,
-    Vector         : Vector,
-    Linescanner    : Linescanner,
-    Raytracer      : Raytracer,
-    Mapper         : Mapper,
-    Bresenham      : Bresenham,
-    MarkFiller     : MarkFiller,
+    Camera:          Camera,
+    Color:           Color,
+    Ray:             Ray,
+    Scene:           Scene,
+    Canvas:          Canvas,
+    Interface:       Interface,
+    Face:            Face,
+    Face4:           Face4,
+    Cuboid:          Cuboid,
+    Line:            Line,
+    Ball:            Ball,
+    Plane:           Plane,
+    Vector:          Vector,
+    Linescanner:     Linescanner,
+    Raytracer:       Raytracer,
+    Mapper:          Mapper,
+    Bresenham:       Bresenham,
+    MarkFiller:      MarkFiller,
 // methods
-    mapperFromSize : mapperFromSize,
+    mapperFromSize:  mapperFromSize,
     planeFromScreen: planeFromScreen,
 // constants
-    colors         : colors
+    colors:          colors
 };
