@@ -15,6 +15,9 @@
   htmlcanvas = document.getElementById('myCanvas');
   canvas = new cube.Canvas(htmlcanvas);
 
+  width = 800;
+  height = 600;
+
   ball1 = new cube.Ball(
       new cube.Vector(0, 0, 0),
       100
@@ -40,11 +43,11 @@
     new cube.Vector(400, 300, 0),
     new cube.Vector(-400, -300, 0),
     new cube.Vector(400, 300, 0)
-  ], 800, 600);
+  ], width, height);
 
   raytracer = new cube.Raytracer(camera, canvas);
   raytracer.addLight(
-      new cube.Vector(50, -300, -10),
+      new cube.Vector(400, -400, 0),
       cube.colors.white
   );
   raytracer.addPlane(new cube.Plane(

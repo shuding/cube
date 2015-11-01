@@ -10,6 +10,8 @@ class Canvas {
         this.width   = canvas.width;
         this.height  = canvas.height;
         this.imgData = this.context.getImageData(0, 0, canvas.width, canvas.height);
+        // http://www.onaluf.org/en/entry/13
+        this._imgData_ = this.imgData.data;
 
         // State flags
         this.mouseDown      = false;
@@ -24,8 +26,9 @@ class Canvas {
     }
 
     fillBlack() {
-        for (var i = 0; i < this.imgData.data.length; ++i)
-            this.imgData.data[i] = 0;
+        for (var i = 0; i < this.imgData.data.length; ++i) {
+            this._imgData_[i] = 0;
+        }
     }
 
     setPoint(x, y, color) {
@@ -35,10 +38,10 @@ class Canvas {
 
         let index = ((this.height - y - 1) * this.width + x) * 4;
 
-        this.imgData.data[index]     = ~~(color.r * 255);
-        this.imgData.data[index + 1] = ~~(color.g * 255);
-        this.imgData.data[index + 2] = ~~(color.b * 255);
-        this.imgData.data[index + 3] = ~~(color.a * 255);
+        this._imgData_[index]     = ~~(color.r * 255);
+        this._imgData_[index + 1] = ~~(color.g * 255);
+        this._imgData_[index + 2] = ~~(color.b * 255);
+        this._imgData_[index + 3] = ~~(color.a * 255);
     }
 
 // Interactions binding fn
@@ -119,7 +122,8 @@ class Canvas {
 
     clearCanvas() {
         this.context.clearRect(0, 0, this.width, this.height);
-        this.imgData = this.context.getImageData(0, 0, canvas.width, canvas.height);
+        this.imgData   = this.context.getImageData(0, 0, canvas.width, canvas.height);
+        this._imgData_ = this.imgData.data;
     }
 }
 

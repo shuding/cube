@@ -5175,6 +5175,8 @@ var Canvas = (function () {
         this.width = canvas.width;
         this.height = canvas.height;
         this.imgData = this.context.getImageData(0, 0, canvas.width, canvas.height);
+        // http://www.onaluf.org/en/entry/13
+        this._imgData_ = this.imgData.data;
 
         // State flags
         this.mouseDown = false;
@@ -5191,7 +5193,9 @@ var Canvas = (function () {
     _createClass(Canvas, [{
         key: 'fillBlack',
         value: function fillBlack() {
-            for (var i = 0; i < this.imgData.data.length; ++i) this.imgData.data[i] = 0;
+            for (var i = 0; i < this.imgData.data.length; ++i) {
+                this._imgData_[i] = 0;
+            }
         }
     }, {
         key: 'setPoint',
@@ -5202,10 +5206,10 @@ var Canvas = (function () {
 
             var index = ((this.height - y - 1) * this.width + x) * 4;
 
-            this.imgData.data[index] = ~ ~(color.r * 255);
-            this.imgData.data[index + 1] = ~ ~(color.g * 255);
-            this.imgData.data[index + 2] = ~ ~(color.b * 255);
-            this.imgData.data[index + 3] = ~ ~(color.a * 255);
+            this._imgData_[index] = ~ ~(color.r * 255);
+            this._imgData_[index + 1] = ~ ~(color.g * 255);
+            this._imgData_[index + 2] = ~ ~(color.b * 255);
+            this._imgData_[index + 3] = ~ ~(color.a * 255);
         }
 
         // Interactions binding fn
@@ -5302,6 +5306,7 @@ var Canvas = (function () {
         value: function clearCanvas() {
             this.context.clearRect(0, 0, this.width, this.height);
             this.imgData = this.context.getImageData(0, 0, canvas.width, canvas.height);
+            this._imgData_ = this.imgData.data;
         }
     }]);
 
@@ -6141,6 +6146,10 @@ var _coreConstant = require('../core/constant');
 
 var _coreConstant2 = _interopRequireDefault(_coreConstant);
 
+var _coreRay = require('../core/ray');
+
+var _coreRay2 = _interopRequireDefault(_coreRay);
+
 var _coreColor = require('../core/color');
 
 var _coreColor2 = _interopRequireDefault(_coreColor);
@@ -6200,6 +6209,9 @@ var Raytracer = (function () {
 
             // TODO
             var p = undefined;
+            var minP = undefined;
+            var minDis = Infinity;
+            var minObj = null;
             var _iteratorNormalCompletion = true;
             var _didIteratorError = false;
             var _iteratorError = undefined;
@@ -6209,26 +6221,19 @@ var Raytracer = (function () {
                     var obj = _step.value;
 
                     switch (obj.constructor.name) {
-                        case 'Face':
-                            p = obj.testInnerRay(ray);
-                            if (p) {
-                                var cosAngle = this.light.p.minus(p.s).normalize().dot(p.t.normalize());
-                                if (cosAngle < 0) cosAngle = 0;
-                                return ray.c.mul(cosAngle);
-                            }
-                            break;
                         case 'Ball':
                             p = obj.testInnerRay(ray);
                             /* anti-aliasing
-                            if (p == Cons.FLAG_EDGE) {
-                                return colors.red//ray.c.mul(Cons.RATE_EDGE);
-                            }*/
+                             if (p == Cons.FLAG_EDGE) {
+                             return colors.red//ray.c.mul(Cons.RATE_EDGE);
+                             }*/
                             if (p) {
-                                var cosAngle = this.light.p.minus(p.s).normalize().dot(p.t.normalize());
-                                if (cosAngle < 0) cosAngle = 0;
-                                // Reflection
-                                p.c = ray.c.mask(obj.c).mul(0.5);
-                                return ray.c.mask(obj.c).mul(cosAngle * cosAngle).add(this.trace(scene, p, depth - 1));
+                                var dis = ray.s.minus(p.s);
+                                if (dis.length() < minDis) {
+                                    minDis = dis.length();
+                                    minObj = obj;
+                                    minP = p;
+                                }
                             }
                             break;
                     }
@@ -6248,11 +6253,91 @@ var Raytracer = (function () {
                 }
             }
 
+            if (minObj) {
+                // Shadow
+                var rayToLight = new _coreRay2['default'](minP.s, this.light.p.clone());
+                var shadow = false;
+                var _iteratorNormalCompletion2 = true;
+                var _didIteratorError2 = false;
+                var _iteratorError2 = undefined;
+
+                try {
+                    for (var _iterator2 = scene.eachObject()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                        var obj = _step2.value;
+
+                        if (obj != minObj && obj.testInnerRay(rayToLight)) {
+                            shadow = true;
+                            break;
+                        }
+                    }
+                } catch (err) {
+                    _didIteratorError2 = true;
+                    _iteratorError2 = err;
+                } finally {
+                    try {
+                        if (!_iteratorNormalCompletion2 && _iterator2['return']) {
+                            _iterator2['return']();
+                        }
+                    } finally {
+                        if (_didIteratorError2) {
+                            throw _iteratorError2;
+                        }
+                    }
+                }
+
+                var cosAngle = 0;
+                if (!shadow) {
+                    cosAngle = this.light.p.minus(minP.s).normal().dot(minP.t.normalize());
+                }
+                if (cosAngle < 0) {
+                    cosAngle = 0;
+                }
+                // Reflection
+                minP.c = ray.c.mask(minObj.c).mul(0.5);
+                return ray.c.mask(minObj.c).mul(cosAngle * cosAngle).add(this.trace(scene, minP, depth - 1));
+            }
+
             if (this.plane) {
                 p = this.plane.testInnerRay(ray);
                 if (p) {
-                    var cosAngle = this.light.p.minus(p.s).normalize().dot(p.t.normalize());
-                    if (cosAngle < 0) cosAngle = 0;
+                    // Shadow
+                    var rayToLight = new _coreRay2['default'](p.s, this.light.p.clone());
+                    var shadow = false;
+                    var _iteratorNormalCompletion3 = true;
+                    var _didIteratorError3 = false;
+                    var _iteratorError3 = undefined;
+
+                    try {
+                        for (var _iterator3 = scene.eachObject()[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+                            var obj = _step3.value;
+
+                            if (obj.testInnerRay(rayToLight)) {
+                                shadow = true;
+                                break;
+                            }
+                        }
+                    } catch (err) {
+                        _didIteratorError3 = true;
+                        _iteratorError3 = err;
+                    } finally {
+                        try {
+                            if (!_iteratorNormalCompletion3 && _iterator3['return']) {
+                                _iterator3['return']();
+                            }
+                        } finally {
+                            if (_didIteratorError3) {
+                                throw _iteratorError3;
+                            }
+                        }
+                    }
+
+                    var cosAngle = 0;
+                    if (!shadow) {
+                        cosAngle = this.light.p.minus(p.s).normalize().dot(p.t.normalize());
+                    }
+                    if (cosAngle < 0) {
+                        cosAngle = 0;
+                    }
                     p.c = ray.c.mul(0.5);
                     return ray.c.mul(Math.pow(cosAngle, 3)).add(this.trace(scene, p, depth - 1));
                 }
@@ -6268,28 +6353,27 @@ var Raytracer = (function () {
     }, {
         key: 'render',
         value: function render(scene) {
-            this.output.fillBlack();
-            var _iteratorNormalCompletion2 = true;
-            var _didIteratorError2 = false;
-            var _iteratorError2 = undefined;
+            var _iteratorNormalCompletion4 = true;
+            var _didIteratorError4 = false;
+            var _iteratorError4 = undefined;
 
             try {
-                for (var _iterator2 = this.camera.eachRay()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-                    var pixel = _step2.value;
+                for (var _iterator4 = this.camera.eachRay()[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+                    var pixel = _step4.value;
 
                     this.output.setPoint(pixel.x, pixel.y, this.trace(scene, pixel.ray, 3));
                 }
             } catch (err) {
-                _didIteratorError2 = true;
-                _iteratorError2 = err;
+                _didIteratorError4 = true;
+                _iteratorError4 = err;
             } finally {
                 try {
-                    if (!_iteratorNormalCompletion2 && _iterator2['return']) {
-                        _iterator2['return']();
+                    if (!_iteratorNormalCompletion4 && _iterator4['return']) {
+                        _iterator4['return']();
                     }
                 } finally {
-                    if (_didIteratorError2) {
-                        throw _iteratorError2;
+                    if (_didIteratorError4) {
+                        throw _iteratorError4;
                     }
                 }
             }
@@ -6304,7 +6388,7 @@ var Raytracer = (function () {
 exports['default'] = Raytracer;
 module.exports = exports['default'];
 
-},{"../core/color":190,"../core/constant":191}],209:[function(require,module,exports){
+},{"../core/color":190,"../core/constant":191,"../core/ray":192}],209:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};

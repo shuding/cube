@@ -4,6 +4,7 @@
  */
 
 import Cons from '../core/constant';
+import Ray from '../core/ray';
 import Color, {colors} from '../core/color';
 
 class Raytracer {
@@ -50,38 +51,72 @@ class Raytracer {
 
         // TODO
         let p;
+        let minP;
+        let minDis = Infinity;
+        let minObj = null;
         for (let obj of scene.eachObject()) {
             switch (obj.constructor.name) {
-                case 'Face':
-                    p = obj.testInnerRay(ray);
-                    if (p) {
-                        let cosAngle = this.light.p.minus(p.s).normalize().dot(p.t.normalize());
-                        if (cosAngle < 0) cosAngle = 0;
-                        return ray.c.mul(cosAngle);
-                    }
-                    break;
                 case 'Ball':
                     p = obj.testInnerRay(ray);
                     /* anti-aliasing
-                    if (p == Cons.FLAG_EDGE) {
-                        return colors.red//ray.c.mul(Cons.RATE_EDGE);
-                    }*/
+                     if (p == Cons.FLAG_EDGE) {
+                     return colors.red//ray.c.mul(Cons.RATE_EDGE);
+                     }*/
                     if (p) {
-                        let cosAngle = this.light.p.minus(p.s).normalize().dot(p.t.normalize());
-                        if (cosAngle < 0) cosAngle = 0;
-                        // Reflection
-                        p.c = ray.c.mask(obj.c).mul(0.5);
-                        return ray.c.mask(obj.c).mul(cosAngle * cosAngle).add(this.trace(scene, p, depth - 1));
+                        let dis = ray.s.minus(p.s);
+                        if (dis.length() < minDis) {
+                            minDis = dis.length();
+                            minObj = obj;
+                            minP = p;
+                        }
                     }
                     break;
             }
         }
 
+        if (minObj) {
+            // Shadow
+            let rayToLight = new Ray(minP.s, this.light.p.clone());
+            let shadow = false;
+            for (let obj of scene.eachObject()) {
+                if (obj != minObj && obj.testInnerRay(rayToLight)) {
+                    shadow = true;
+                    break;
+                }
+            }
+
+            let cosAngle = 0;
+            if (!shadow) {
+                cosAngle = this.light.p.minus(minP.s).normal().dot(minP.t.normalize());
+            }
+            if (cosAngle < 0) {
+                cosAngle = 0;
+            }
+            // Reflection
+            minP.c = ray.c.mask(minObj.c).mul(0.5);
+            return ray.c.mask(minObj.c).mul(cosAngle * cosAngle).add(this.trace(scene, minP, depth - 1));
+        }
+
         if (this.plane) {
             p = this.plane.testInnerRay(ray);
             if (p) {
-                let cosAngle = this.light.p.minus(p.s).normalize().dot(p.t.normalize());
-                if (cosAngle < 0) cosAngle = 0;
+                // Shadow
+                let rayToLight = new Ray(p.s, this.light.p.clone());
+                let shadow = false;
+                for (let obj of scene.eachObject()) {
+                    if (obj.testInnerRay(rayToLight)) {
+                        shadow = true;
+                        break;
+                    }
+                }
+
+                let cosAngle = 0;
+                if (!shadow) {
+                    cosAngle = this.light.p.minus(p.s).normalize().dot(p.t.normalize());
+                }
+                if (cosAngle < 0) {
+                    cosAngle = 0;
+                }
                 p.c = ray.c.mul(0.5);
                 return ray.c.mul(Math.pow(cosAngle, 3)).add(this.trace(scene, p, depth - 1));
             }
@@ -95,7 +130,6 @@ class Raytracer {
      * @param {Scene} scene
      */
     render(scene) {
-        this.output.fillBlack();
         for (let pixel of this.camera.eachRay()) {
             this.output.setPoint(pixel.x, pixel.y, this.trace(scene, pixel.ray, 3));
         }
