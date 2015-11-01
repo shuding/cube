@@ -23,6 +23,11 @@ class Canvas {
         this.dragFn      = [];
     }
 
+    fillBlack() {
+        for (var i = 0; i < this.imgData.data.length; ++i)
+            this.imgData.data[i] = 0;
+    }
+
     setPoint(x, y, color) {
         if (x < 0 || y < 0 || x >= this.width || y >= this.height) {
             return;

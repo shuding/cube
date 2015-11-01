@@ -4253,7 +4253,7 @@ module.exports = require('./modules/$.core');
 );
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":208}],187:[function(require,module,exports){
+},{"_process":209}],187:[function(require,module,exports){
 module.exports = require("./lib/polyfill");
 
 },{"./lib/polyfill":1}],188:[function(require,module,exports){
@@ -4484,7 +4484,7 @@ var Camera = (function () {
 exports['default'] = Camera;
 module.exports = exports['default'];
 
-},{"./ray":191}],190:[function(require,module,exports){
+},{"./ray":192}],190:[function(require,module,exports){
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
@@ -4503,9 +4503,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Color = (function () {
     /**
      * Color constructor
-     * @param {Number} r Red [0, 255]
-     * @param {Number} g Green [0, 255]
-     * @param {Number} b Blue [0, 255]
+     * @param {Number} r Red [0, 1]
+     * @param {Number} g Green [0, 1]
+     * @param {Number} b Blue [0, 1]
      * @param {Number} a Alpha [0, 1]
      */
 
@@ -4528,6 +4528,16 @@ var Color = (function () {
         value: function add(r) {
             return new Color(this.r + r.r, this.g + r.g, this.b + r.b, this.a + r.a);
         }
+    }, {
+        key: "mask",
+        value: function mask(r) {
+            return new Color(this.r * r.r, this.g * r.g, this.b * r.b, this.a * r.a);
+        }
+    }, {
+        key: "brightness",
+        value: function brightness() {
+            return this.r + this.g + this.b;
+        }
     }]);
 
     return Color;
@@ -4547,6 +4557,25 @@ exports.colors = colors;
 exports["default"] = Color;
 
 },{}],191:[function(require,module,exports){
+/**
+ * Created by shuding on 11/2/15.
+ * <ds303077135@gmail.com>
+ */
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports["default"] = {
+    MIN_BRIGHTNESS: 0.1,
+    DELTA_EDGE: 2,
+    FLAG_EDGE: -1,
+    RATE_EDGE: 0.1
+};
+module.exports = exports["default"];
+
+},{}],192:[function(require,module,exports){
 /**
  * Created by shuding on 10/8/15.
  * <ds303077135@gmail.com>
@@ -4586,7 +4615,7 @@ function Ray(s, t) {
 exports['default'] = Ray;
 module.exports = exports['default'];
 
-},{"./color":190}],192:[function(require,module,exports){
+},{"./color":190}],193:[function(require,module,exports){
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
@@ -4655,7 +4684,7 @@ var Scene = (function () {
 exports["default"] = Scene;
 module.exports = exports["default"];
 
-},{}],193:[function(require,module,exports){
+},{}],194:[function(require,module,exports){
 /**
  * Created by ziyang on 15/10/10.
  * <carbon941030@gmai.com>
@@ -4805,7 +4834,7 @@ var Bresenham = (function () {
 exports['default'] = Bresenham;
 module.exports = exports['default'];
 
-},{"../interface/canvas":196}],194:[function(require,module,exports){
+},{"../interface/canvas":197}],195:[function(require,module,exports){
 /**
  * Created by ziyang on 15/10/23.
  */
@@ -5005,7 +5034,7 @@ var MarkFiller = (function () {
 exports['default'] = MarkFiller;
 module.exports = exports['default'];
 
-},{"../interface/canvas":196,"./line":193}],195:[function(require,module,exports){
+},{"../interface/canvas":197,"./line":194}],196:[function(require,module,exports){
 /**
  * Created by shuding on 10/8/15.
  * <ds303077135@gmail.com>
@@ -5121,7 +5150,7 @@ exports['default'] = {
 };
 module.exports = exports['default'];
 
-},{"./core/camera":189,"./core/color":190,"./core/ray":191,"./core/scene":192,"./drawer/line":193,"./drawer/polygon":194,"./interface/canvas":196,"./interface/index":197,"./object/ball":198,"./object/cuboid":199,"./object/face":200,"./object/face4":201,"./object/line":202,"./object/plane":203,"./object/vector":204,"./renderer/linescanner":205,"./renderer/mapper":206,"./renderer/raytracer":207,"babel/polyfill":188}],196:[function(require,module,exports){
+},{"./core/camera":189,"./core/color":190,"./core/ray":192,"./core/scene":193,"./drawer/line":194,"./drawer/polygon":195,"./interface/canvas":197,"./interface/index":198,"./object/ball":199,"./object/cuboid":200,"./object/face":201,"./object/face4":202,"./object/line":203,"./object/plane":204,"./object/vector":205,"./renderer/linescanner":206,"./renderer/mapper":207,"./renderer/raytracer":208,"babel/polyfill":188}],197:[function(require,module,exports){
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
@@ -5160,6 +5189,11 @@ var Canvas = (function () {
     }
 
     _createClass(Canvas, [{
+        key: 'fillBlack',
+        value: function fillBlack() {
+            for (var i = 0; i < this.imgData.data.length; ++i) this.imgData.data[i] = 0;
+        }
+    }, {
         key: 'setPoint',
         value: function setPoint(x, y, color) {
             if (x < 0 || y < 0 || x >= this.width || y >= this.height) {
@@ -5277,7 +5311,7 @@ var Canvas = (function () {
 exports['default'] = Canvas;
 module.exports = exports['default'];
 
-},{}],197:[function(require,module,exports){
+},{}],198:[function(require,module,exports){
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
@@ -5309,7 +5343,7 @@ var Output = (function () {
 exports["default"] = Output;
 module.exports = exports["default"];
 
-},{}],198:[function(require,module,exports){
+},{}],199:[function(require,module,exports){
 /**
  * Created by shuding on 10/29/15.
  * <ds303077135@gmail.com>
@@ -5327,9 +5361,17 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'd
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
+var _coreConstant = require('../core/constant');
+
+var _coreConstant2 = _interopRequireDefault(_coreConstant);
+
 var _coreRay = require('../core/ray');
 
 var _coreRay2 = _interopRequireDefault(_coreRay);
+
+var _coreColor = require('../core/color');
+
+var _coreColor2 = _interopRequireDefault(_coreColor);
 
 // Cache
 
@@ -5340,13 +5382,17 @@ var Ball = (function () {
      * Constructor of the Ball class
      * @param {Vector} o the origin point
      * @param {Number} r the radius
+     * @param {Color} c
      */
 
     function Ball(o, r) {
+        var c = arguments.length <= 2 || arguments[2] === undefined ? _coreColor.colors.white : arguments[2];
+
         _classCallCheck(this, Ball);
 
         this.o = o;
         this.r = r;
+        this.c = c;
     }
 
     _createClass(Ball, [{
@@ -5357,10 +5403,22 @@ var Ball = (function () {
             var sin = osn.det(ray.t.normalize()).length();
 
             var dis = sin * os.length();
-            if (dis > this.r) return null;
+            if (dis > this.r) {
+                /* anti-aliasing
+                if (dis < this.r + Cons.DELTA_EDGE) {
+                    return Cons.FLAG_EDGE;
+                }
+                */
+                return null;
+            }
 
             // ray.t is already normalized here!
             var oscos = os.dot(ray.t);
+
+            if (oscos < 0) {
+                return null;
+            }
+
             var delta = sqrt(this.r * this.r - dis * dis);
             var x = ray.t.mul(oscos - delta);
             var p = ray.s.add(x);
@@ -5377,7 +5435,7 @@ var Ball = (function () {
 exports['default'] = Ball;
 module.exports = exports['default'];
 
-},{"../core/ray":191}],199:[function(require,module,exports){
+},{"../core/color":190,"../core/constant":191,"../core/ray":192}],200:[function(require,module,exports){
 /**
  * Created by shuding on 10/16/15.
  * <ds303077135@gmail.com>
@@ -5422,7 +5480,7 @@ var Cuboid = (function () {
 exports["default"] = Cuboid;
 module.exports = exports["default"];
 
-},{}],200:[function(require,module,exports){
+},{}],201:[function(require,module,exports){
 /**
  * Created by shuding on 10/8/15.
  * <ds303077135@gmail.com>
@@ -5502,7 +5560,7 @@ var Face = (function () {
 exports['default'] = Face;
 module.exports = exports['default'];
 
-},{"../core/ray":191}],201:[function(require,module,exports){
+},{"../core/ray":192}],202:[function(require,module,exports){
 /**
  * Created by shuding on 10/16/15.
  * <ds303077135@gmail.com>
@@ -5551,7 +5609,7 @@ var Face4 = (function () {
 exports["default"] = Face4;
 module.exports = exports["default"];
 
-},{}],202:[function(require,module,exports){
+},{}],203:[function(require,module,exports){
 /**
  * Created by shuding on 10/8/15.
  * <ds303077135@gmail.com>
@@ -5596,7 +5654,7 @@ var Line = (function () {
 exports["default"] = Line;
 module.exports = exports["default"];
 
-},{}],203:[function(require,module,exports){
+},{}],204:[function(require,module,exports){
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
@@ -5629,7 +5687,7 @@ var Plane = (function () {
         _classCallCheck(this, Plane);
 
         this.p = p;
-        this.n = n;
+        this.n = n.normalize();
     }
 
     /**
@@ -5658,7 +5716,7 @@ var planeFromScreen = function planeFromScreen(screen) {
 exports.planeFromScreen = planeFromScreen;
 exports['default'] = Plane;
 
-},{"../core/ray":191}],204:[function(require,module,exports){
+},{"../core/ray":192}],205:[function(require,module,exports){
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
@@ -5852,7 +5910,7 @@ var Vector = (function () {
 exports['default'] = Vector;
 module.exports = exports['default'];
 
-},{}],205:[function(require,module,exports){
+},{}],206:[function(require,module,exports){
 "use strict";
 
 /**
@@ -5860,7 +5918,7 @@ module.exports = exports['default'];
  * <ds303077135@gmail.com>
  */
 
-},{}],206:[function(require,module,exports){
+},{}],207:[function(require,module,exports){
 /**
  * Created by shuding on 10/15/15.
  * <ds303077135@gmail.com>
@@ -6061,7 +6119,7 @@ var mapperFromSize = function mapperFromSize(width, height, output) {
 exports.mapperFromSize = mapperFromSize;
 exports['default'] = Mapper;
 
-},{"../core/camera":189,"../core/color":190,"../drawer/line":193,"../drawer/polygon":194,"../object/line":202,"../object/plane":203,"../object/vector":204}],207:[function(require,module,exports){
+},{"../core/camera":189,"../core/color":190,"../drawer/line":194,"../drawer/polygon":195,"../object/line":203,"../object/plane":204,"../object/vector":205}],208:[function(require,module,exports){
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
@@ -6078,6 +6136,10 @@ var _createClass = (function () { function defineProperties(target, props) { for
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var _coreConstant = require('../core/constant');
+
+var _coreConstant2 = _interopRequireDefault(_coreConstant);
 
 var _coreColor = require('../core/color');
 
@@ -6129,7 +6191,13 @@ var Raytracer = (function () {
         value: function trace(scene, ray) {
             var depth = arguments.length <= 2 || arguments[2] === undefined ? 1 : arguments[2];
 
-            if (depth <= 0) return _coreColor.colors.black;
+            if (depth <= 0) {
+                return _coreColor.colors.black;
+            }
+            if (ray.c.brightness() < _coreConstant2['default'].MIN_BRIGHTNESS) {
+                return _coreColor.colors.black;
+            }
+
             // TODO
             var p = undefined;
             var _iteratorNormalCompletion = true;
@@ -6146,16 +6214,21 @@ var Raytracer = (function () {
                             if (p) {
                                 var cosAngle = this.light.p.minus(p.s).normalize().dot(p.t.normalize());
                                 if (cosAngle < 0) cosAngle = 0;
-                                return _coreColor.colors.white.mul(cosAngle * cosAngle);
+                                return ray.c.mul(cosAngle);
                             }
                             break;
                         case 'Ball':
                             p = obj.testInnerRay(ray);
+                            /* anti-aliasing
+                            if (p == Cons.FLAG_EDGE) {
+                                return colors.red//ray.c.mul(Cons.RATE_EDGE);
+                            }*/
                             if (p) {
                                 var cosAngle = this.light.p.minus(p.s).normalize().dot(p.t.normalize());
                                 if (cosAngle < 0) cosAngle = 0;
-                                var c = this.trace(scene, p, depth - 1);
-                                return _coreColor.colors.white.mul(cosAngle * cosAngle).add(c.mul(0.5));
+                                // Reflection
+                                p.c = ray.c.mask(obj.c).mul(0.5);
+                                return ray.c.mask(obj.c).mul(cosAngle * cosAngle).add(this.trace(scene, p, depth - 1));
                             }
                             break;
                     }
@@ -6179,12 +6252,10 @@ var Raytracer = (function () {
                 p = this.plane.testInnerRay(ray);
                 if (p) {
                     var cosAngle = this.light.p.minus(p.s).normalize().dot(p.t.normalize());
-                    //if (cosAngle < 0) cosAngle = 0;
-                    var c = this.trace(scene, p, depth - 1);
-                    return _coreColor.colors.white.mul(Math.pow(cosAngle, 2)).add(c);
+                    if (cosAngle < 0) cosAngle = 0;
+                    p.c = ray.c.mul(0.5);
+                    return ray.c.mul(Math.pow(cosAngle, 3)).add(this.trace(scene, p, depth - 1));
                 }
-                //return colors.red.mul(cosAngle);
-                //return colors.red;
             }
 
             return _coreColor.colors.black;
@@ -6197,6 +6268,7 @@ var Raytracer = (function () {
     }, {
         key: 'render',
         value: function render(scene) {
+            this.output.fillBlack();
             var _iteratorNormalCompletion2 = true;
             var _didIteratorError2 = false;
             var _iteratorError2 = undefined;
@@ -6205,7 +6277,7 @@ var Raytracer = (function () {
                 for (var _iterator2 = this.camera.eachRay()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
                     var pixel = _step2.value;
 
-                    this.output.setPoint(pixel.x, pixel.y, this.trace(scene, pixel.ray, 2));
+                    this.output.setPoint(pixel.x, pixel.y, this.trace(scene, pixel.ray, 3));
                 }
             } catch (err) {
                 _didIteratorError2 = true;
@@ -6232,7 +6304,7 @@ var Raytracer = (function () {
 exports['default'] = Raytracer;
 module.exports = exports['default'];
 
-},{"../core/color":190}],208:[function(require,module,exports){
+},{"../core/color":190,"../core/constant":191}],209:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -6324,5 +6396,5 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}]},{},[195])(195)
+},{}]},{},[196])(196)
 });

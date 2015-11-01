@@ -7,7 +7,7 @@
   <title></title>
 </head>
 <body>
-<canvas id="myCanvas" width="400" height="300" style="border: 1px solid #d3d3d3">
+<canvas id="myCanvas" width="800" height="600" style="border: 1px solid #d3d3d3; width: 800px; height: 600px;">
   Your browser does not support the HTML5 canvas tag.
 </canvas>
 <script src="../bundle.js"></script>
@@ -17,17 +17,19 @@
 
   ball1 = new cube.Ball(
       new cube.Vector(0, 0, 0),
-      50
+      100
   );
 
   ball2 = new cube.Ball(
-      new cube.Vector(100, 0, 0),
-      50
+      new cube.Vector(200, 0, 0),
+      100,
+      cube.colors.red
   );
 
   ball3 = new cube.Ball(
-      new cube.Vector(200, 0, 0),
-      50
+      new cube.Vector(-200, 0, 0),
+      100,
+      cube.colors.blue
   );
 
   scene = new cube.Scene(ball1, ball2, ball3);
@@ -38,19 +40,17 @@
     new cube.Vector(400, 300, 0),
     new cube.Vector(-400, -300, 0),
     new cube.Vector(400, 300, 0)
-  ], 400, 300);
+  ], 800, 600);
 
   raytracer = new cube.Raytracer(camera, canvas);
   raytracer.addLight(
-      new cube.Vector(0, -300, 10),
+      new cube.Vector(50, -300, -10),
       cube.colors.white
   );
-  /*
   raytracer.addPlane(new cube.Plane(
-      new cube.Vector(0,  1000, 0),
-      new cube.Vector(0,  -1, 0)
+      new cube.Vector(0,  200, 0),
+      new cube.Vector(0,  -1, -1)
   ));
-  */
 
   var t = new Date();
 

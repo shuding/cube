@@ -13,7 +13,7 @@ class Plane {
      */
     constructor(p, n) {
         this.p = p;
-        this.n = n;
+        this.n = n.normalize();
     }
 
     /**
