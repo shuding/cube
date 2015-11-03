@@ -57,11 +57,28 @@
 
   var t = new Date();
 
-  raytracer.render(scene);
+  //raytracer.render(scene);
 
-  var p = document.createElement('p');
-  p.innerHTML = ((new Date()).getTime() - t.getTime()) + 'ms';
-  document.body.appendChild(p);
+  var threads = 8;
+
+  var render = function (offsetX, offsetY) {
+    if (offsetX == threads && offsetY == threads) {
+      var p = document.createElement('p');
+      p.innerHTML = ((new Date()).getTime() - t.getTime()) + 'ms';
+      document.body.appendChild(p);
+      return;
+    }
+    raytracer.render(scene, offsetX, offsetY, threads, threads);
+    setTimeout(function (offsetX, offsetY) {
+      if (offsetX == threads) {
+        render(0, offsetY + 1);
+      } else {
+        render(offsetX + 1, offsetY);
+      }
+    }, 0, offsetX, offsetY);
+  };
+
+  render(0, 0);
 
   /*
   canvas.bindDrag(function (event, data) {

@@ -61,27 +61,33 @@ class Camera {
     /**
      * Generator for each pixel's coordinate and the vector pointed to this pixel
      */
-    * eachPixel() {
-        let posY = this._screen_[0].clone();
-        for (let y = 0; y < this.pxHeight; ++y) {
-            let posX = posY.clone();
-            for (let x = 0; x < this.pxWidth; ++x) {
+    * eachPixel(x0, y0, stepX, stepY) {
+        let widthInc = this.widthInc.mul(stepX);
+        let heightInc = this.heightInc.mul(stepY);
+        let widthOffset = this.widthInc.mul(x0);
+        let heightOffset = this.heightInc.mul(y0);
+
+        let posY = this._screen_[0].add(heightOffset);
+
+        for (let y = y0; y < this.pxHeight; y += stepY) {
+            let posX = posY.add(widthOffset);
+            for (let x = x0; x < this.pxWidth; x += stepX) {
                 yield {
                     x: x,
                     y: y,
                     v: posX
                 };
-                posX.addBy(this.widthInc);
+                posX.addBy(widthInc);
             }
-            posY.addBy(this.heightInc);
+            posY.addBy(heightInc);
         }
     }
 
     /**
      * Generator for each pixel's coordinate and the ray from camera to this pixel
      */
-    * eachRay() {
-        for (let pixel of this.eachPixel()) {
+    * eachRay(x0, y0, stepX, stepY) {
+        for (let pixel of this.eachPixel(x0, y0, stepX, stepY)) {
             yield {
                 x:   pixel.x,
                 y:   pixel.y,

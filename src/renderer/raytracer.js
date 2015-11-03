@@ -67,7 +67,7 @@ class Raytracer {
                         if (dis.length() < minDis) {
                             minDis = dis.length();
                             minObj = obj;
-                            minP = p;
+                            minP   = p;
                         }
                     }
                     break;
@@ -77,7 +77,7 @@ class Raytracer {
         if (minObj) {
             // Shadow
             let rayToLight = new Ray(minP.s, this.light.p.clone());
-            let shadow = false;
+            let shadow     = false;
             for (let obj of scene.eachObject()) {
                 if (obj != minObj && obj.testInnerRay(rayToLight)) {
                     shadow = true;
@@ -102,7 +102,7 @@ class Raytracer {
             if (p) {
                 // Shadow
                 let rayToLight = new Ray(p.s, this.light.p.clone());
-                let shadow = false;
+                let shadow     = false;
                 for (let obj of scene.eachObject()) {
                     if (obj.testInnerRay(rayToLight)) {
                         shadow = true;
@@ -128,10 +128,19 @@ class Raytracer {
     /**
      * Render particular scene with camera to output
      * @param {Scene} scene
+     * @param x0
+     * @param y0
+     * @param stepX
+     * @param stepY
      */
-    render(scene) {
-        for (let pixel of this.camera.eachRay()) {
-            this.output.setPoint(pixel.x, pixel.y, this.trace(scene, pixel.ray, 3));
+    render(scene, x0 = 0, y0 = 0, stepX = 1, stepY = 1) {
+        for (let pixel of this.camera.eachRay(x0, y0, stepX, stepY)) {
+            let c = this.trace(scene, pixel.ray, 3);
+            for (let x = 0; x < stepX - x0; ++x) {
+                for (let y = 0; y < stepY - y0; ++y) {
+                    this.output.setPoint(pixel.x + x, pixel.y + y, c);
+                }
+            }
         }
         this.output.updateCanvas();
     }

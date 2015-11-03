@@ -4328,53 +4328,57 @@ var Camera = (function () {
          */
     }, {
         key: 'eachPixel',
-        value: regeneratorRuntime.mark(function eachPixel() {
-            var posY, y, posX, x;
+        value: regeneratorRuntime.mark(function eachPixel(x0, y0, stepX, stepY) {
+            var widthInc, heightInc, widthOffset, heightOffset, posY, y, posX, x;
             return regeneratorRuntime.wrap(function eachPixel$(context$2$0) {
                 while (1) switch (context$2$0.prev = context$2$0.next) {
                     case 0:
-                        posY = this._screen_[0].clone();
-                        y = 0;
+                        widthInc = this.widthInc.mul(stepX);
+                        heightInc = this.heightInc.mul(stepY);
+                        widthOffset = this.widthInc.mul(x0);
+                        heightOffset = this.heightInc.mul(y0);
+                        posY = this._screen_[0].add(heightOffset);
+                        y = y0;
 
-                    case 2:
+                    case 6:
                         if (!(y < this.pxHeight)) {
+                            context$2$0.next = 20;
+                            break;
+                        }
+
+                        posX = posY.add(widthOffset);
+                        x = x0;
+
+                    case 9:
+                        if (!(x < this.pxWidth)) {
                             context$2$0.next = 16;
                             break;
                         }
 
-                        posX = posY.clone();
-                        x = 0;
-
-                    case 5:
-                        if (!(x < this.pxWidth)) {
-                            context$2$0.next = 12;
-                            break;
-                        }
-
-                        context$2$0.next = 8;
+                        context$2$0.next = 12;
                         return {
                             x: x,
                             y: y,
                             v: posX
                         };
 
-                    case 8:
-                        posX.addBy(this.widthInc);
-
-                    case 9:
-                        ++x;
-                        context$2$0.next = 5;
-                        break;
-
                     case 12:
-                        posY.addBy(this.heightInc);
+                        posX.addBy(widthInc);
 
                     case 13:
-                        ++y;
-                        context$2$0.next = 2;
+                        x += stepX;
+                        context$2$0.next = 9;
                         break;
 
                     case 16:
+                        posY.addBy(heightInc);
+
+                    case 17:
+                        y += stepY;
+                        context$2$0.next = 6;
+                        break;
+
+                    case 20:
                     case 'end':
                         return context$2$0.stop();
                 }
@@ -4386,7 +4390,7 @@ var Camera = (function () {
          */
     }, {
         key: 'eachRay',
-        value: regeneratorRuntime.mark(function eachRay() {
+        value: regeneratorRuntime.mark(function eachRay(x0, y0, stepX, stepY) {
             var _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, pixel;
 
             return regeneratorRuntime.wrap(function eachRay$(context$2$0) {
@@ -4396,7 +4400,7 @@ var Camera = (function () {
                         _didIteratorError = false;
                         _iteratorError = undefined;
                         context$2$0.prev = 3;
-                        _iterator = this.eachPixel()[Symbol.iterator]();
+                        _iterator = this.eachPixel(x0, y0, stepX, stepY)[Symbol.iterator]();
 
                     case 5:
                         if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
@@ -6349,19 +6353,32 @@ var Raytracer = (function () {
         /**
          * Render particular scene with camera to output
          * @param {Scene} scene
+         * @param x0
+         * @param y0
+         * @param stepX
+         * @param stepY
          */
     }, {
         key: 'render',
         value: function render(scene) {
+            var x0 = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
+            var y0 = arguments.length <= 2 || arguments[2] === undefined ? 0 : arguments[2];
+            var stepX = arguments.length <= 3 || arguments[3] === undefined ? 1 : arguments[3];
+            var stepY = arguments.length <= 4 || arguments[4] === undefined ? 1 : arguments[4];
             var _iteratorNormalCompletion4 = true;
             var _didIteratorError4 = false;
             var _iteratorError4 = undefined;
 
             try {
-                for (var _iterator4 = this.camera.eachRay()[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+                for (var _iterator4 = this.camera.eachRay(x0, y0, stepX, stepY)[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
                     var pixel = _step4.value;
 
-                    this.output.setPoint(pixel.x, pixel.y, this.trace(scene, pixel.ray, 3));
+                    var c = this.trace(scene, pixel.ray, 3);
+                    for (var x = 0; x < stepX - x0; ++x) {
+                        for (var y = 0; y < stepY - y0; ++y) {
+                            this.output.setPoint(pixel.x + x, pixel.y + y, c);
+                        }
+                    }
                 }
             } catch (err) {
                 _didIteratorError4 = true;
