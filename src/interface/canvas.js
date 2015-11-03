@@ -36,12 +36,13 @@ class Canvas {
             return;
         }
 
-        let index = ((this.height - y - 1) * this.width + x) * 4;
+        var index = ((this.height - y - 1) * this.width + x) * 4;
+        var imgData = this._imgData_;
 
-        this._imgData_[index]     = ~~(color.r * 255);
-        this._imgData_[index + 1] = ~~(color.g * 255);
-        this._imgData_[index + 2] = ~~(color.b * 255);
-        this._imgData_[index + 3] = ~~(color.a * 255);
+        imgData[index]     = ~~(color.r * 255);
+        imgData[index + 1] = ~~(color.g * 255);
+        imgData[index + 2] = ~~(color.b * 255);
+        imgData[index + 3] = ~~(color.a * 255);
     }
 
 // Interactions binding fn

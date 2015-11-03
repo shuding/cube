@@ -4,6 +4,7 @@
  */
 
 import Ray from './ray';
+import Cons from '../core/constant';
 
 class Camera {
     /**
@@ -30,6 +31,9 @@ class Camera {
 
         this.widthInc  = r2l.mulBy(this.widthPerPx / this.width);
         this.heightInc = b2t.mulBy(this.heightPerPx / this.height);
+
+        this.widthIncPerSubPixel = this.widthInc.mul(1.0 / Cons.NUMBER_SAMPLE);
+        this.heightIncPerSubPixel = this.heightInc.mul(1.0 / Cons.NUMBER_SAMPLE);
     }
 
     get screen() {
@@ -91,7 +95,7 @@ class Camera {
             yield {
                 x:   pixel.x,
                 y:   pixel.y,
-                ray: new Ray(this.eye, pixel.v.clone().minusBy(this.eye))
+                ray: new Ray(this.eye, pixel.v.minus(this.eye))
             };
         }
     }

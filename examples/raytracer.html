@@ -36,6 +36,10 @@
   );
 
   scene = new cube.Scene(ball1, ball2, ball3);
+  scene.addObject(new cube.Plane(
+      new cube.Vector(0,  200, 0),
+      new cube.Vector(0,  -1, -1)
+  ));
 
   // or specific viewport
   camera = new cube.Camera(new cube.Vector(0, 0, -1000), [
@@ -50,10 +54,6 @@
       new cube.Vector(400, -400, 0),
       cube.colors.white
   );
-  raytracer.addPlane(new cube.Plane(
-      new cube.Vector(0,  200, 0),
-      new cube.Vector(0,  -1, -1)
-  ));
 
   var t = new Date();
 

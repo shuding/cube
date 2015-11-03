@@ -17,6 +17,10 @@ class Ray {
         this.t = t;
         this.c = c;
     }
+
+    clone() {
+        return new Ray(this.s.clone(), this.t.clone(), this.c.clone());
+    }
 }
 
 export default Ray;
