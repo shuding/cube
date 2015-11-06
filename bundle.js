@@ -5306,7 +5306,7 @@ var Canvas = (function () {
         value: function getPoint(x, y) {
             var index = ((this.height - y - 1) * this.width + x) * 4;
             var imgData = this._imgData_;
-            return new _coreColor2['default'](imgData[index] / 256.0, imgData[index + 1] / 256.0, imgData[index + 2] / 256.0, imgData[index + 3] / 256.0);
+            return new _coreColor2['default'](imgData[index] / 255.0, imgData[index + 1] / 255.0, imgData[index + 2] / 255.0, imgData[index + 3] / 255.0);
         }
 
         // Interactions binding fn
