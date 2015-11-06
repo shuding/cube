@@ -5294,7 +5294,7 @@ var Canvas = (function () {
         value: function getPoint(x, y) {
             var index = ((this.height - y - 1) * this.width + x) * 4;
             var imgData = this._imgData_;
-            return new _coreColor2['default'](imgData[index] / 255.0, imgData[index + 1] / 255.0, imgData[index + 2] / 255.0, imgData[index + 3] / 255.0);
+            return new _coreColor2['default'](imgData[index] / 256.0, imgData[index + 1] / 256.0, imgData[index + 2] / 256.0, imgData[index + 3] / 256.0);
         }
 
         // Interactions binding fn
@@ -6321,10 +6321,11 @@ var Raytracer = (function () {
         this.time_stamp = 1;
         this.rcount = 0;
         this.scount = 0;
-        this.sigma = 16;
-        this.cur_stage = 4;
+        this.sigma = 20;
+        this.cur_stage = 5;
         this.r = 24;
-        this.rlimit = [1280, 640, 320, 160, 40];
+        this.rlimit = [4800, 2400, 800, 320, 80, 20];
+        this.slimit = [2, 4, 4, 4, 3, 2];
         this.pattern = new _utilityGaussianPattern2['default'](this.r, this.sigma);
     }
 
@@ -6519,43 +6520,48 @@ var Raytracer = (function () {
                 var y = coor[1];
                 var ray = this.camera.rayAt(x, y);
                 var c = this.trace(scene, ray, _coreConstant2['default'].DEEP);
-                for (var dx = -this.r + 1; dx < this.r; ++dx) for (var dy = -this.r + 1; dy < this.r; ++dy) {
-                    var nx = x + dx;
-                    var ny = y + dy;
-                    if (nx < 0 || nx >= this.width || ny < 0 || ny >= this.height) continue;
-                    if (this.stage[ny][nx] == 0) continue;
-                    if (dx == 0 && dy == 0) {
-                        this.output.setPoint(x, y, c);
-                        this.stage[ny][nx] = 0;
-                        this.time_stamp_arr[ny][nx] = this.time_stamp;
-                    } else if (this.time_stamp_arr[ny][nx] < this.time_stamp) {
-                        var cn = c.mul(this.pattern.pat[dx][dy]);
-                        this.stage[ny][nx] = this.cur_stage;
-                        this.time_stamp_arr[ny][nx] = this.time_stamp;
-                        this.acc[ny][nx] = this.pattern.pat[dx][dy];
-                        this.output.setPoint(nx, ny, cn);
-                    } else {
-                        var co = this.output.getPoint(nx, ny);
-                        var rn = this.pattern.pat[dx][dy];
-                        var cn = c.mul(rn);
-                        while (this.stage[ny][nx] > this.cur_stage) {
-                            this.stage[ny][nx]--;
+                if (this.cur_stage == 1) {
+                    this.output.setPoint(x, y, c);
+                } else {
+                    for (var dx = -this.r + 1; dx < this.r; ++dx) for (var dy = -this.r + 1; dy < this.r; ++dy) {
+                        var nx = x + dx;
+                        var ny = y + dy;
+                        if (nx < 0 || nx >= this.width || ny < 0 || ny >= this.height) continue;
+                        if (this.stage[ny][nx] == 0) continue;
+                        if (dx == 0 && dy == 0) {
+                            this.output.setPoint(x, y, c);
+                            this.stage[ny][nx] = 0;
+                            this.time_stamp_arr[ny][nx] = this.time_stamp;
+                        } else if (this.time_stamp_arr[ny][nx] < this.time_stamp) {
+                            var cn = c.mul(this.pattern.pat[dx][dy]);
+                            this.stage[ny][nx] = this.cur_stage;
+                            this.time_stamp_arr[ny][nx] = this.time_stamp;
+                            this.acc[ny][nx] = this.pattern.pat[dx][dy];
+                            this.output.setPoint(nx, ny, cn);
+                        } else {
+                            var co = this.output.getPoint(nx, ny);
+                            var rn = this.pattern.pat[dx][dy];
+                            var cn = c.mul(rn);
+                            rn = Math.pow(rn, 5);
+                            while (this.stage[ny][nx] > this.cur_stage) {
+                                this.stage[ny][nx]--;
+                            }
+                            this.acc[ny][nx] += rn;
+                            rn /= this.acc[ny][nx];
+                            cn.mulBy(rn);
+                            co.mulBy(1.0 - rn);
+                            cn.addBy(co);
+                            this.output.setPoint(nx, ny, cn);
                         }
-                        this.acc[ny][nx] += rn;
-                        rn /= this.acc[ny][nx];
-                        cn.mulBy(rn);
-                        co.mulBy(1.0 - rn);
-                        cn.addBy(co);
-                        this.output.setPoint(nx, ny, cn);
                     }
                 }
                 this.rcount++;
                 this.scount++;
                 if (this.rcount % this.rlimit[this.cur_stage] == 0) {
                     output.updateCanvas();
-                    if (this.scount * this.sigma * this.sigma > this.screen_size && this.cur_stage > 1) {
+                    if (this.scount * this.sigma * this.sigma > this.slimit[this.cur_stage] * this.screen_size && this.cur_stage > 1) {
                         this.scount = 0;
-                        this.sigma /= 2;
+                        this.sigma /= 2.0;
                         this.r /= 2;
                         this.pattern = new _utilityGaussianPattern2['default'](this.r, this.sigma);
                         this.cur_stage--;
