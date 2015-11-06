@@ -28,29 +28,34 @@ import Mapper, {mapperFromSize} from './renderer/mapper';
 import Bresenham from './drawer/line';
 import MarkFiller from './drawer/polygon';
 
+import RandomCoor from './utility/pseudoRandom';
+import GaussianPattern from './utility/gaussianPattern';
+
 export default {
 // classes
-    Camera:          Camera,
-    Color:           Color,
-    Ray:             Ray,
-    Scene:           Scene,
-    Canvas:          Canvas,
-    Interface:       Interface,
-    Face:            Face,
-    Face4:           Face4,
-    Cuboid:          Cuboid,
-    Line:            Line,
-    Ball:            Ball,
-    Plane:           Plane,
-    Vector:          Vector,
-    Linescanner:     Linescanner,
-    Raytracer:       Raytracer,
-    Mapper:          Mapper,
-    Bresenham:       Bresenham,
-    MarkFiller:      MarkFiller,
+    Camera         : Camera,
+    Color          : Color,
+    Ray            : Ray,
+    Scene          : Scene,
+    Canvas         : Canvas,
+    Interface      : Interface,
+    Face           : Face,
+    Face4          : Face4,
+    Cuboid         : Cuboid,
+    Line           : Line,
+    Ball           : Ball,
+    Plane          : Plane,
+    Vector         : Vector,
+    Linescanner    : Linescanner,
+    Raytracer      : Raytracer,
+    Mapper         : Mapper,
+    Bresenham      : Bresenham,
+    MarkFiller     : MarkFiller,
+    RandomCoor     : RandomCoor,
+    GaussianPattern: GaussianPattern,
 // methods
-    mapperFromSize:  mapperFromSize,
+    mapperFromSize : mapperFromSize,
     planeFromScreen: planeFromScreen,
 // constants
-    colors:          colors
+    colors         : colors
 };

@@ -3,6 +3,8 @@
  * <ds303077135@gmail.com>
  */
 
+import Color from '../core/color';
+
 class Canvas {
     constructor(canvas) {
         this.cvs     = canvas;
@@ -26,8 +28,11 @@ class Canvas {
     }
 
     fillBlack() {
-        for (var i = 0; i < this.imgData.data.length; ++i) {
+        for (var i = 0; i < this.imgData.data.length; i += 4) {
             this._imgData_[i] = 0;
+            this._imgData_[i + 1] = 0;
+            this._imgData_[i + 2] = 0;
+            this._imgData_[i + 3] = 255;
         }
     }
 
@@ -36,13 +41,18 @@ class Canvas {
             return;
         }
 
-        var index = ((this.height - y - 1) * this.width + x) * 4;
-        var imgData = this._imgData_;
+        let index = ((this.height - y - 1) * this.width + x) * 4;
 
-        imgData[index]     = ~~(color.r * 255);
-        imgData[index + 1] = ~~(color.g * 255);
-        imgData[index + 2] = ~~(color.b * 255);
-        imgData[index + 3] = ~~(color.a * 255);
+        this._imgData_[index]     = ~~(color.r * 255);
+        this._imgData_[index + 1] = ~~(color.g * 255);
+        this._imgData_[index + 2] = ~~(color.b * 255);
+        this._imgData_[index + 3] = ~~(color.a * 255);
+    }
+
+    getPoint(x, y) {
+        let index = ((this.height - y - 1) * this.width + x) * 4;
+        let imgData = this._imgData_;
+        return new Color(imgData[index] / 255.0, imgData[index + 1] / 255.0, imgData[index + 2] / 255.0, imgData[index + 3] / 255.0);
     }
 
 // Interactions binding fn
@@ -50,7 +60,7 @@ class Canvas {
         if (!this.mouseDownFn.length) {
             // If not initialized, then init the event listener
             this.cvs.addEventListener('mousedown', (event) => {
-                var self = this;
+                let self = this;
                 this.mouseDownFn.forEach(function (fn) {
                     fn.call(self, event);
                 });
@@ -64,7 +74,7 @@ class Canvas {
         if (!this.mouseUpFn.length) {
             // If not initialized, then init the event listener
             this.cvs.addEventListener('mouseup', (event) => {
-                var self = this;
+                let self = this;
                 this.mouseUpFn.forEach(function (fn) {
                     fn.call(self, event);
                 });
@@ -78,7 +88,7 @@ class Canvas {
         if (!this.mouseMoveFn.length) {
             // If not initialized, then init the event listener
             this.cvs.addEventListener('mousemove', (event) => {
-                var self = this;
+                let self = this;
                 this.mouseMoveFn.forEach(function (fn) {
                     fn.call(self, event);
                 });
@@ -102,7 +112,7 @@ class Canvas {
             });
             this.bindMouseMove((event) => {
                 if (this.mouseDown) {
-                    var self            = this;
+                    let self            = this;
                     this.dragFn.forEach(function (fn) {
                         fn.apply(self, [event, self._lastDragData_]);
                     });

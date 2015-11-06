@@ -6,6 +6,8 @@
 import Cons from '../core/constant';
 import Ray from '../core/ray';
 import Color, {colors} from '../core/color';
+import RandomCoor from '../utility/pseudoRandom';
+import GaussianPattern from '../utility/gaussianPattern';
 
 var pow    = Math.pow;
 var random = Math.random;
@@ -21,6 +23,31 @@ class Raytracer {
         this.output = output;
 
         this.lights = [];
+        this.width = camera.width;
+        this.height = camera.height;
+        this.screen_size = this.width * this.height;
+        this.rand_coor = new RandomCoor(camera.width, camera.height);
+        this.time_stamp_arr = new Array();
+        this.stage = new Array();
+        this.acc = new Array();
+        for (var y = 0; y < this.height; ++y) {
+            this.time_stamp_arr[y] = new Array();
+            this.stage[y] = new Array();
+            this.acc[y] = new Array();
+            for (var x = 0; x < this.width; ++x) {
+                this.time_stamp_arr[y][x] = 0;
+                this.stage[y][x] = 4;
+                this.acc[y][x] = 0;
+            }
+        }
+        this.time_stamp = 1;
+        this.rcount = 0;
+        this.scount = 0;
+        this.sigma = 16;
+        this.cur_stage = 4;
+        this.r = 24;
+        this.rlimit = [1280, 640, 320, 160, 40];
+        this.pattern = new GaussianPattern(this.r, this.sigma);
     }
 
     /**
@@ -139,7 +166,7 @@ class Raytracer {
      * @param stepX
      * @param stepY
      */
-    render(scene, x0 = 0, y0 = 0, stepX = 1, stepY = 1) {
+    /*render(scene, x0 = 0, y0 = 0, stepX = 1, stepY = 1) {
         let output = this.output;
 
         for (let pixel of this.camera.eachRay(x0, y0, stepX, stepY)) {
@@ -152,6 +179,65 @@ class Raytracer {
         }
 
         output.updateCanvas();
+    }*/
+
+    render() {
+        let output = this.output;
+        while (true) {
+            if (this.rcount >= this.screen_size)
+                break;
+            let coor = this.rand_coor.getNext();
+            let x = coor[0];
+            let y = coor[1];
+            let ray = this.camera.rayAt(x, y);
+            let c = this.trace(scene, ray, Cons.DEEP);
+            for (var dx = -this.r + 1; dx < this.r; ++dx)
+                for (var dy = -this.r + 1; dy < this.r; ++dy) {
+                    let nx = x + dx;
+                    let ny = y + dy;
+                    if (nx < 0 || nx >= this.width || ny < 0 || ny >= this.height)
+                        continue;
+                    if (this.stage[ny][nx] == 0)
+                        continue;
+                    if (dx == 0 && dy == 0) {
+                        this.output.setPoint(x, y, c);
+                        this.stage[ny][nx] = 0;
+                        this.time_stamp_arr[ny][nx] = this.time_stamp;
+                    } else if (this.time_stamp_arr[ny][nx] < this.time_stamp) {
+                        let cn = c.mul(this.pattern.pat[dx][dy]);
+                        this.stage[ny][nx] = this.cur_stage;
+                        this.time_stamp_arr[ny][nx] = this.time_stamp;
+                        this.acc[ny][nx] = this.pattern.pat[dx][dy];
+                        this.output.setPoint(nx, ny, cn);
+                    } else {
+                        let co = this.output.getPoint(nx, ny);
+                        let rn = this.pattern.pat[dx][dy];
+                        let cn = c.mul(rn);
+                        while (this.stage[ny][nx] > this.cur_stage) {
+                            this.stage[ny][nx] --;
+                        }
+                        this.acc[ny][nx] += rn;
+                        rn /= this.acc[ny][nx];
+                        cn.mulBy(rn);
+                        co.mulBy(1.0 - rn);
+                        cn.addBy(co);
+                        this.output.setPoint(nx, ny, cn);
+                    }
+                }
+            this.rcount ++;
+            this.scount ++;
+            if (this.rcount % this.rlimit[this.cur_stage] == 0) {
+                output.updateCanvas();
+                if (this.scount * this.sigma * this.sigma > this.screen_size && this.cur_stage > 1) {
+                    this.scount = 0;
+                    this.sigma /= 2;
+                    this.r /= 2;
+                    this.pattern = new GaussianPattern(this.r, this.sigma);
+                    this.cur_stage--;
+                }
+                break;
+            }
+        }
     }
 }
 

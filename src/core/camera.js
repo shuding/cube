@@ -5,6 +5,7 @@
 
 import Ray from './ray';
 import Cons from '../core/constant';
+import Vector from '../object/vector';
 
 class Camera {
     /**
@@ -93,11 +94,16 @@ class Camera {
     * eachRay(x0, y0, stepX, stepY) {
         for (let pixel of this.eachPixel(x0, y0, stepX, stepY)) {
             yield {
-                x:   pixel.x,
-                y:   pixel.y,
+                x  : pixel.x,
+                y  : pixel.y,
                 ray: new Ray(this.eye, pixel.v.minus(this.eye))
             };
         }
+    }
+
+    rayAt(x, y) {
+        let v = this.widthInc.mul(x).add(this.heightInc.mul(y)).add(this._screen_[0]);
+        return new Ray(this.eye, v.minus(this.eye));
     }
 }
 

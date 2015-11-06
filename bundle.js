@@ -4253,7 +4253,7 @@ module.exports = require('./modules/$.core');
 );
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":209}],187:[function(require,module,exports){
+},{"_process":211}],187:[function(require,module,exports){
 module.exports = require("./lib/polyfill");
 
 },{"./lib/polyfill":1}],188:[function(require,module,exports){
@@ -4284,6 +4284,10 @@ var _ray2 = _interopRequireDefault(_ray);
 var _coreConstant = require('../core/constant');
 
 var _coreConstant2 = _interopRequireDefault(_coreConstant);
+
+var _objectVector = require('../object/vector');
+
+var _objectVector2 = _interopRequireDefault(_objectVector);
 
 var Camera = (function () {
     /**
@@ -4469,6 +4473,12 @@ var Camera = (function () {
             }, eachRay, this, [[3, 14, 18, 26], [19,, 21, 25]]);
         })
     }, {
+        key: 'rayAt',
+        value: function rayAt(x, y) {
+            var v = this.widthInc.mul(x).add(this.heightInc.mul(y)).add(this._screen_[0]);
+            return new _ray2['default'](this.eye, v.minus(this.eye));
+        }
+    }, {
         key: 'screen',
         get: function get() {
             return this._screen_;
@@ -4495,7 +4505,7 @@ var Camera = (function () {
 exports['default'] = Camera;
 module.exports = exports['default'];
 
-},{"../core/constant":191,"./ray":192}],190:[function(require,module,exports){
+},{"../core/constant":191,"../object/vector":205,"./ray":192}],190:[function(require,module,exports){
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
@@ -5171,6 +5181,14 @@ var _drawerPolygon = require('./drawer/polygon');
 
 var _drawerPolygon2 = _interopRequireDefault(_drawerPolygon);
 
+var _utilityPseudoRandom = require('./utility/pseudoRandom');
+
+var _utilityPseudoRandom2 = _interopRequireDefault(_utilityPseudoRandom);
+
+var _utilityGaussianPattern = require('./utility/gaussianPattern');
+
+var _utilityGaussianPattern2 = _interopRequireDefault(_utilityGaussianPattern);
+
 exports['default'] = {
     // classes
     Camera: _coreCamera2['default'],
@@ -5191,6 +5209,8 @@ exports['default'] = {
     Mapper: _rendererMapper2['default'],
     Bresenham: _drawerLine2['default'],
     MarkFiller: _drawerPolygon2['default'],
+    RandomCoor: _utilityPseudoRandom2['default'],
+    GaussianPattern: _utilityGaussianPattern2['default'],
     // methods
     mapperFromSize: _rendererMapper.mapperFromSize,
     planeFromScreen: _objectPlane.planeFromScreen,
@@ -5199,7 +5219,7 @@ exports['default'] = {
 };
 module.exports = exports['default'];
 
-},{"./core/camera":189,"./core/color":190,"./core/ray":192,"./core/scene":193,"./drawer/line":194,"./drawer/polygon":195,"./interface/canvas":197,"./interface/index":198,"./object/ball":199,"./object/cuboid":200,"./object/face":201,"./object/face4":202,"./object/line":203,"./object/plane":204,"./object/vector":205,"./renderer/linescanner":206,"./renderer/mapper":207,"./renderer/raytracer":208,"babel/polyfill":188}],197:[function(require,module,exports){
+},{"./core/camera":189,"./core/color":190,"./core/ray":192,"./core/scene":193,"./drawer/line":194,"./drawer/polygon":195,"./interface/canvas":197,"./interface/index":198,"./object/ball":199,"./object/cuboid":200,"./object/face":201,"./object/face4":202,"./object/line":203,"./object/plane":204,"./object/vector":205,"./renderer/linescanner":206,"./renderer/mapper":207,"./renderer/raytracer":208,"./utility/gaussianPattern":209,"./utility/pseudoRandom":210,"babel/polyfill":188}],197:[function(require,module,exports){
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
@@ -5213,7 +5233,13 @@ Object.defineProperty(exports, '__esModule', {
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var _coreColor = require('../core/color');
+
+var _coreColor2 = _interopRequireDefault(_coreColor);
 
 var Canvas = (function () {
     function Canvas(canvas) {
@@ -5242,8 +5268,11 @@ var Canvas = (function () {
     _createClass(Canvas, [{
         key: 'fillBlack',
         value: function fillBlack() {
-            for (var i = 0; i < this.imgData.data.length; ++i) {
+            for (var i = 0; i < this.imgData.data.length; i += 4) {
                 this._imgData_[i] = 0;
+                this._imgData_[i + 1] = 0;
+                this._imgData_[i + 2] = 0;
+                this._imgData_[i + 3] = 255;
             }
         }
     }, {
@@ -5254,12 +5283,18 @@ var Canvas = (function () {
             }
 
             var index = ((this.height - y - 1) * this.width + x) * 4;
-            var imgData = this._imgData_;
 
-            imgData[index] = ~ ~(color.r * 255);
-            imgData[index + 1] = ~ ~(color.g * 255);
-            imgData[index + 2] = ~ ~(color.b * 255);
-            imgData[index + 3] = ~ ~(color.a * 255);
+            this._imgData_[index] = ~ ~(color.r * 255);
+            this._imgData_[index + 1] = ~ ~(color.g * 255);
+            this._imgData_[index + 2] = ~ ~(color.b * 255);
+            this._imgData_[index + 3] = ~ ~(color.a * 255);
+        }
+    }, {
+        key: 'getPoint',
+        value: function getPoint(x, y) {
+            var index = ((this.height - y - 1) * this.width + x) * 4;
+            var imgData = this._imgData_;
+            return new _coreColor2['default'](imgData[index] / 255.0, imgData[index + 1] / 255.0, imgData[index + 2] / 255.0, imgData[index + 3] / 255.0);
         }
 
         // Interactions binding fn
@@ -5332,15 +5367,17 @@ var Canvas = (function () {
                 });
                 this.bindMouseMove(function (event) {
                     if (_this4.mouseDown) {
-                        var self = _this4;
-                        _this4.dragFn.forEach(function (fn) {
-                            fn.apply(self, [event, self._lastDragData_]);
-                        });
-                        self.dragData = {
-                            x: event.x,
-                            y: event.y
-                        };
-                        self._lastDragData_ = self.dragData;
+                        (function () {
+                            var self = _this4;
+                            _this4.dragFn.forEach(function (fn) {
+                                fn.apply(self, [event, self._lastDragData_]);
+                            });
+                            self.dragData = {
+                                x: event.x,
+                                y: event.y
+                            };
+                            self._lastDragData_ = self.dragData;
+                        })();
                     }
                 });
             }
@@ -5366,7 +5403,7 @@ var Canvas = (function () {
 exports['default'] = Canvas;
 module.exports = exports['default'];
 
-},{}],198:[function(require,module,exports){
+},{"../core/color":190}],198:[function(require,module,exports){
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
@@ -6239,6 +6276,14 @@ var _coreColor = require('../core/color');
 
 var _coreColor2 = _interopRequireDefault(_coreColor);
 
+var _utilityPseudoRandom = require('../utility/pseudoRandom');
+
+var _utilityPseudoRandom2 = _interopRequireDefault(_utilityPseudoRandom);
+
+var _utilityGaussianPattern = require('../utility/gaussianPattern');
+
+var _utilityGaussianPattern2 = _interopRequireDefault(_utilityGaussianPattern);
+
 var pow = Math.pow;
 var random = Math.random;
 
@@ -6256,6 +6301,31 @@ var Raytracer = (function () {
         this.output = output;
 
         this.lights = [];
+        this.width = camera.width;
+        this.height = camera.height;
+        this.screen_size = this.width * this.height;
+        this.rand_coor = new _utilityPseudoRandom2['default'](camera.width, camera.height);
+        this.time_stamp_arr = new Array();
+        this.stage = new Array();
+        this.acc = new Array();
+        for (var y = 0; y < this.height; ++y) {
+            this.time_stamp_arr[y] = new Array();
+            this.stage[y] = new Array();
+            this.acc[y] = new Array();
+            for (var x = 0; x < this.width; ++x) {
+                this.time_stamp_arr[y][x] = 0;
+                this.stage[y][x] = 4;
+                this.acc[y][x] = 0;
+            }
+        }
+        this.time_stamp = 1;
+        this.rcount = 0;
+        this.scount = 0;
+        this.sigma = 16;
+        this.cur_stage = 4;
+        this.r = 24;
+        this.rlimit = [1280, 640, 320, 160, 40];
+        this.pattern = new _utilityGaussianPattern2['default'](this.r, this.sigma);
     }
 
     /**
@@ -6425,47 +6495,74 @@ var Raytracer = (function () {
          * @param stepX
          * @param stepY
          */
-    }, {
-        key: 'render',
-        value: function render(scene) {
-            var x0 = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
-            var y0 = arguments.length <= 2 || arguments[2] === undefined ? 0 : arguments[2];
-            var stepX = arguments.length <= 3 || arguments[3] === undefined ? 1 : arguments[3];
-            var stepY = arguments.length <= 4 || arguments[4] === undefined ? 1 : arguments[4];
-
-            var output = this.output;
-
-            var _iteratorNormalCompletion3 = true;
-            var _didIteratorError3 = false;
-            var _iteratorError3 = undefined;
-
-            try {
-                for (var _iterator3 = this.camera.eachRay(x0, y0, stepX, stepY)[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-                    var pixel = _step3.value;
-
-                    var c = this.trace(scene, pixel.ray, _coreConstant2['default'].DEEP);
-                    for (var x = 0; x < stepX - x0; ++x) {
-                        for (var y = 0; y < stepY - y0; ++y) {
-                            output.setPoint(pixel.x + x, pixel.y + y, c);
-                        }
-                    }
-                }
-            } catch (err) {
-                _didIteratorError3 = true;
-                _iteratorError3 = err;
-            } finally {
-                try {
-                    if (!_iteratorNormalCompletion3 && _iterator3['return']) {
-                        _iterator3['return']();
-                    }
-                } finally {
-                    if (_didIteratorError3) {
-                        throw _iteratorError3;
+        /*render(scene, x0 = 0, y0 = 0, stepX = 1, stepY = 1) {
+            let output = this.output;
+             for (let pixel of this.camera.eachRay(x0, y0, stepX, stepY)) {
+                let c = this.trace(scene, pixel.ray, Cons.DEEP);
+                for (let x = 0; x < stepX - x0; ++x) {
+                    for (let y = 0; y < stepY - y0; ++y) {
+                        output.setPoint(pixel.x + x, pixel.y + y, c);
                     }
                 }
             }
+             output.updateCanvas();
+        }*/
 
-            output.updateCanvas();
+    }, {
+        key: 'render',
+        value: function render() {
+            var output = this.output;
+            while (true) {
+                if (this.rcount >= this.screen_size) break;
+                var coor = this.rand_coor.getNext();
+                var x = coor[0];
+                var y = coor[1];
+                var ray = this.camera.rayAt(x, y);
+                var c = this.trace(scene, ray, _coreConstant2['default'].DEEP);
+                for (var dx = -this.r + 1; dx < this.r; ++dx) for (var dy = -this.r + 1; dy < this.r; ++dy) {
+                    var nx = x + dx;
+                    var ny = y + dy;
+                    if (nx < 0 || nx >= this.width || ny < 0 || ny >= this.height) continue;
+                    if (this.stage[ny][nx] == 0) continue;
+                    if (dx == 0 && dy == 0) {
+                        this.output.setPoint(x, y, c);
+                        this.stage[ny][nx] = 0;
+                        this.time_stamp_arr[ny][nx] = this.time_stamp;
+                    } else if (this.time_stamp_arr[ny][nx] < this.time_stamp) {
+                        var cn = c.mul(this.pattern.pat[dx][dy]);
+                        this.stage[ny][nx] = this.cur_stage;
+                        this.time_stamp_arr[ny][nx] = this.time_stamp;
+                        this.acc[ny][nx] = this.pattern.pat[dx][dy];
+                        this.output.setPoint(nx, ny, cn);
+                    } else {
+                        var co = this.output.getPoint(nx, ny);
+                        var rn = this.pattern.pat[dx][dy];
+                        var cn = c.mul(rn);
+                        while (this.stage[ny][nx] > this.cur_stage) {
+                            this.stage[ny][nx]--;
+                        }
+                        this.acc[ny][nx] += rn;
+                        rn /= this.acc[ny][nx];
+                        cn.mulBy(rn);
+                        co.mulBy(1.0 - rn);
+                        cn.addBy(co);
+                        this.output.setPoint(nx, ny, cn);
+                    }
+                }
+                this.rcount++;
+                this.scount++;
+                if (this.rcount % this.rlimit[this.cur_stage] == 0) {
+                    output.updateCanvas();
+                    if (this.scount * this.sigma * this.sigma > this.screen_size && this.cur_stage > 1) {
+                        this.scount = 0;
+                        this.sigma /= 2;
+                        this.r /= 2;
+                        this.pattern = new _utilityGaussianPattern2['default'](this.r, this.sigma);
+                        this.cur_stage--;
+                    }
+                    break;
+                }
+            }
         }
     }]);
 
@@ -6475,7 +6572,82 @@ var Raytracer = (function () {
 exports['default'] = Raytracer;
 module.exports = exports['default'];
 
-},{"../core/color":190,"../core/constant":191,"../core/ray":192}],209:[function(require,module,exports){
+},{"../core/color":190,"../core/constant":191,"../core/ray":192,"../utility/gaussianPattern":209,"../utility/pseudoRandom":210}],209:[function(require,module,exports){
+/**
+ * Created by ziyang on 15/11/6.
+ */
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var GaussianPattern = function GaussianPattern(r, sigma) {
+    _classCallCheck(this, GaussianPattern);
+
+    this.r = ~ ~r;
+    this.sigma = sigma;
+    this.pat = new Array();
+    for (var x = -r + 1; x < r; ++x) {
+        this.pat[x] = new Array();
+        for (var y = -r + 1; y < r; ++y) this.pat[x][y] = Math.exp(-0.5 * (x * x + y * y) / (sigma * sigma));
+    }
+};
+
+exports["default"] = GaussianPattern;
+module.exports = exports["default"];
+
+},{}],210:[function(require,module,exports){
+/**
+ * Created by ziyang on 15/11/6.
+ */
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var RandomCoor = (function () {
+    function RandomCoor(w, h) {
+        _classCallCheck(this, RandomCoor);
+
+        this.w = w;
+        this.h = h;
+        this.s = w * h;
+        this.n = 0;
+        this.coor = new Array();
+        for (var y = 0; y < h; ++y) for (var x = 0; x < w; ++x) this.coor[this.n++] = [x, y];
+        this.n = 0;
+    }
+
+    _createClass(RandomCoor, [{
+        key: "getNext",
+        value: function getNext() {
+            this.n--;
+            if (this.n < 0) this.n = this.h * this.w - 1;
+            var id = ~ ~(Math.random() * this.n);
+            var t = this.coor[this.n];
+            this.coor[this.n] = this.coor[id];
+            this.coor[id] = t;
+            return this.coor[this.n];
+        }
+    }]);
+
+    return RandomCoor;
+})();
+
+exports["default"] = RandomCoor;
+module.exports = exports["default"];
+
+},{}],211:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};

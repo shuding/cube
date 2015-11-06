@@ -61,7 +61,7 @@
 
   var threads = 8;
 
-  var render = function (offsetX, offsetY) {
+  /*var render = function (offsetX, offsetY) {
     if (offsetX == threads && offsetY == threads) {
       var p = document.createElement('p');
       p.innerHTML = ((new Date()).getTime() - t.getTime()) + 'ms';
@@ -78,7 +78,26 @@
     }, 0, offsetX, offsetY);
   };
 
-  render(0, 0);
+  render(0, 0);*/
+
+  raytracer.output.fillBlack();
+  raytracer.output.updateCanvas();
+  var now = 0;
+  var render = function() {
+    raytracer.render();
+    if (raytracer.rcount > raytracer.screen_size - 2) {
+      var p = document.createElement('p');
+      p.innerHTML = ((new Date()).getTime() - t.getTime()) + 'ms';
+      document.body.appendChild(p);
+      return;
+    }
+    setTimeout(function () {
+      render();
+    }, 0);
+  }
+
+  render();
+  //raytracer.render();
 
   /*
   canvas.bindDrag(function (event, data) {
