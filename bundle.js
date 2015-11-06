@@ -4572,6 +4572,17 @@ var Color = (function () {
         value: function brightness() {
             return this.r + this.g + this.b;
         }
+    }, {
+        key: "toMax",
+        value: function toMax() {
+            var m = this.r > this.g ? this.r : this.g;
+            m = this.b > m ? this.b : m;
+            if (m > 0) m = 1 / m;
+            this.r *= m;
+            this.g *= m;
+            this.b *= m;
+            return this;
+        }
     }]);
 
     return Color;
@@ -4604,6 +4615,7 @@ Object.defineProperty(exports, "__esModule", {
 exports["default"] = {
     DEEP: 3,
     NUMBER_SAMPLE: 5, // nxn
+    NUMBER_MONTE_CARLO: 5,
     MIN_BRIGHTNESS: 0.1,
     DELTA_EDGE: 3,
     FLAG_EDGE: -1,
@@ -5556,20 +5568,29 @@ var _coreRay = require('../core/ray');
 
 var _coreRay2 = _interopRequireDefault(_coreRay);
 
+var _coreColor = require('../core/color');
+
+var _coreColor2 = _interopRequireDefault(_coreColor);
+
 var Face = (function () {
     /**
      * Constructor of the Face class
      * @param {Vector} a
      * @param {Vector} b
      * @param {Vector} c
+     * @param {Color} co
      */
 
     function Face(a, b, c) {
+        var co = arguments.length <= 3 || arguments[3] === undefined ? _coreColor.colors.white : arguments[3];
+
         _classCallCheck(this, Face);
 
-        this.a = a;
-        this.b = b;
-        this.c = c;
+        this._a = a;
+        this._b = b;
+        this._c = c;
+
+        this.c = co;
 
         // Normal vector
         this.n = a.minus(b).det(c.minus(b)).normalize();
@@ -5583,12 +5604,35 @@ var Face = (function () {
     _createClass(Face, [{
         key: 'testInnerRay',
         value: function testInnerRay(ray) {
-            var a = this.a.minus(ray.s);
-            var b = this.b.minus(ray.s);
+            var dot = ray.t.dot(this.n);
+            if (dot > 0) {
+                return null;
+            }
+            var p = ray.t.mul(this._a.minus(ray.s).dot(this.n) / dot);
+
+            var u = this._b.minus(this._a);
+            var v = this._c.minus(this._a);
+            var w = p.minus(this._a);
+
+            var uv = u.dot(v);
+            var uu = u.dot(u);
+            var vv = v.dot(v);
+            var wu = w.dot(u);
+            var wv = w.dot(v);
+
+            //if (wv * (uv - uu) + wu * (uv - vv) < (uv * uv - uu * vv)) {
+            return new _coreRay2['default'](p.add(ray.s), p.minus(this.n.mul(p.dot(this.n) * 2)));
+            //}
+
+            //return null;
+
+            /*
+            let a = this._a.minus(ray.s);
+            let b = this._b.minus(ray.s);
             if (a.det(b).dot(ray.t) > 0) {
                 return null;
             }
-            var c = this.c.minus(ray.s);
+            let c = this._c.minus(ray.s);
             if (b.det(c).dot(ray.t) > 0) {
                 return null;
             }
@@ -5596,15 +5640,16 @@ var Face = (function () {
                 return null;
             }
             // Intersect point
-            var p = ray.t.mul(this.a.minus(ray.s).dot(this.n) / ray.t.dot(this.n)).addBy(ray.s);
-            return new _coreRay2['default'](p, p.minusBy(this.n.mul(p.dot(this.n) * 2)));
+            let p = ray.t.mul(this._a.minus(ray.s).dot(this.n) / ray.t.dot(this.n)).addBy(ray.s);
+            return new Ray(p, p.minusBy(this.n.mul(p.dot(this.n) * 2)));
+            */
         }
     }, {
         key: 'projection',
         value: function projection() {
             var _a, _b, _c;
 
-            return new Face((_a = this.a).projection.apply(_a, arguments), (_b = this.b).projection.apply(_b, arguments), (_c = this.c).projection.apply(_c, arguments));
+            return new Face((_a = this._a).projection.apply(_a, arguments), (_b = this._b).projection.apply(_b, arguments), (_c = this._c).projection.apply(_c, arguments));
         }
     }]);
 
@@ -5614,7 +5659,7 @@ var Face = (function () {
 exports['default'] = Face;
 module.exports = exports['default'];
 
-},{"../core/ray":192}],202:[function(require,module,exports){
+},{"../core/color":190,"../core/ray":192}],202:[function(require,module,exports){
 /**
  * Created by shuding on 10/16/15.
  * <ds303077135@gmail.com>
@@ -6260,17 +6305,13 @@ var Raytracer = (function () {
 
     /**
      * Add point light source
-     * @param {Vector} p Position
-     * @param {Color} c Color
+     * @param {Ball} b
      */
 
     _createClass(Raytracer, [{
         key: 'addLight',
-        value: function addLight(p, c) {
-            this.lights.push({
-                p: p,
-                c: c
-            });
+        value: function addLight(b) {
+            this.lights.push(b);
         }
 
         /**
@@ -6358,17 +6399,26 @@ var Raytracer = (function () {
             }
 
             if (minObj) {
-                var ret = undefined;
+                var ret = _coreColor.colors.black.clone();
 
                 // Reflection
                 minP.c = ray.c.mask(minObj.c);
-                ret = this.trace(scene, minP, depth - 1, false).mulBy(0.5);
+                /*
+                for (let i = 0; i < Cons.NUMBER_MONTE_CARLO; ++i) {
+                    let randRay = minP.clone();
+                    randRay.t.rotateBy(random() * 0.1, random() * 0.1, random() * 0.1);
+                    ret.addBy(this.trace(scene, randRay, depth - 1, false));
+                }
+                ret.mulBy(0.25 / Cons.NUMBER_MONTE_CARLO);
+                */
+                ret.addBy(this.trace(scene, minP, depth - 1, true).mulBy(0.5));
 
                 // Shadow
                 for (var i = 0; i < this.lights.length; ++i) {
                     var light = this.lights[i];
-                    var rayToLight = new _coreRay2['default'](minP.s.clone(), light.p.clone());
+                    var rayToLight = new _coreRay2['default'](minP.s.clone(), light.o.clone());
                     var shadow = false;
+                    var edge = false;
                     var _iteratorNormalCompletion2 = true;
                     var _didIteratorError2 = false;
                     var _iteratorError2 = undefined;
@@ -6382,6 +6432,8 @@ var Raytracer = (function () {
                                 if (test != null && test != _coreConstant2['default'].FLAG_EDGE) {
                                     shadow = true;
                                     break;
+                                } else if (test == _coreConstant2['default'].FLAG_EDGE) {
+                                    edge = true;
                                 }
                             }
                         }
@@ -6402,16 +6454,50 @@ var Raytracer = (function () {
 
                     var cosAngle = 0;
                     if (!shadow) {
-                        cosAngle = light.p.minus(minP.s).normalize().dot(minP.t.normal());
+                        cosAngle = light.o.minus(minP.s).normalize().dot(minP.t.normal());
                         if (cosAngle < 0) {
                             cosAngle = 0;
                         }
                         ret.addBy(minObj.c.mul(cosAngle * cosAngle).mask(light.c).mask(ray.c));
                         //ret = ret.add(minObj.c.mul(pow(cosAngle, 10)));
                     }
+                    if (edge) {
+                        /*
+                        if (sample) {
+                            // Samples
+                            let c = colors.black.clone();
+                            let rayY = minP.clone();
+                            // Top-left
+                            for (let j = 0; j + 1 < Cons.NUMBER_SAMPLE; ++j) {
+                                rayY.t.minusBy(this.camera.widthIncPerSubPixel);
+                                rayY.t.minusBy(this.camera.heightIncPerSubPixel);
+                            }
+                            for (let j = 0; j < Cons.NUMBER_SAMPLE; ++j) {
+                                let randRay = rayY.clone();
+                                for (let k = 0; k < Cons.NUMBER_SAMPLE; ++k) {
+                                    c.addBy(this.trace(scene, randRay, depth - 1, false));
+                                    randRay.t.addBy(this.camera.widthIncPerSubPixel);
+                                    randRay.t.addBy(this.camera.widthIncPerSubPixel);
+                                }
+                                rayY.t.addBy(this.camera.heightIncPerSubPixel);
+                                rayY.t.addBy(this.camera.heightIncPerSubPixel);
+                            }
+                            c.mulBy(1.0 / (Cons.NUMBER_SAMPLE * Cons.NUMBER_SAMPLE)).mask(ray.c);
+                            ret.addBy(c);
+                        }*/
+                    }
                 }
 
                 return ret;
+            } else {
+                for (var i = 0; i < this.lights.length; ++i) {
+                    var light = this.lights[i];
+                    p = light.testInnerRay(ray);
+                    if (p !== null && p !== _coreConstant2['default'].FLAG_EDGE) {
+                        return _coreColor.colors.green;
+                        //return light.c.mask(ray.c).toMax();
+                    }
+                }
             }
 
             return _coreColor.colors.black.clone();

@@ -51,6 +51,16 @@ class Color {
     brightness() {
         return this.r + this.g + this.b;
     }
+
+    toMax() {
+        var m = this.r > this.g ? this.r : this.g;
+        m = this.b > m ? this.b : m;
+        if (m > 0) m = 1 / m;
+        this.r *= m;
+        this.g *= m;
+        this.b *= m;
+        return this;
+    }
 }
 
 export var colors = {

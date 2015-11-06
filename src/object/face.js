@@ -4,6 +4,7 @@
  */
 
 import Ray from '../core/ray';
+import Color, {colors} from '../core/color';
 
 class Face {
     /**
@@ -11,11 +12,14 @@ class Face {
      * @param {Vector} a
      * @param {Vector} b
      * @param {Vector} c
+     * @param {Color} co
      */
-    constructor(a, b, c) {
-        this.a = a;
-        this.b = b;
-        this.c = c;
+    constructor(a, b, c, co = colors.white) {
+        this._a = a;
+        this._b = b;
+        this._c = c;
+
+        this.c = co;
 
         // Normal vector
         this.n = a.minus(b).det(c.minus(b)).normalize();
@@ -26,12 +30,35 @@ class Face {
      * @param ray
      */
     testInnerRay(ray) {
-        let a = this.a.minus(ray.s);
-        let b = this.b.minus(ray.s);
+        let dot = ray.t.dot(this.n);
+        if (dot > 0) {
+            return null;
+        }
+        let p = ray.t.mul(this._a.minus(ray.s).dot(this.n) / dot);
+
+        var u = this._b.minus(this._a);
+        var v = this._c.minus(this._a);
+        var w = p.minus(this._a);
+
+        var uv = u.dot(v);
+        var uu = u.dot(u);
+        var vv = v.dot(v);
+        var wu = w.dot(u);
+        var wv = w.dot(v);
+
+        //if (wv * (uv - uu) + wu * (uv - vv) < (uv * uv - uu * vv)) {
+            return new Ray(p.add(ray.s), p.minus(this.n.mul(p.dot(this.n) * 2)));
+        //}
+
+        //return null;
+
+        /*
+        let a = this._a.minus(ray.s);
+        let b = this._b.minus(ray.s);
         if (a.det(b).dot(ray.t) > 0) {
             return null;
         }
-        let c = this.c.minus(ray.s);
+        let c = this._c.minus(ray.s);
         if (b.det(c).dot(ray.t) > 0) {
             return null;
         }
@@ -39,15 +66,16 @@ class Face {
             return null;
         }
         // Intersect point
-        let p = ray.t.mul(this.a.minus(ray.s).dot(this.n) / ray.t.dot(this.n)).addBy(ray.s);
+        let p = ray.t.mul(this._a.minus(ray.s).dot(this.n) / ray.t.dot(this.n)).addBy(ray.s);
         return new Ray(p, p.minusBy(this.n.mul(p.dot(this.n) * 2)));
+        */
     }
 
     projection() {
         return new Face(
-            this.a.projection(...arguments),
-            this.b.projection(...arguments),
-            this.c.projection(...arguments)
+            this._a.projection(...arguments),
+            this._b.projection(...arguments),
+            this._c.projection(...arguments)
         );
     }
 }

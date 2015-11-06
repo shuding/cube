@@ -25,14 +25,10 @@ class Raytracer {
 
     /**
      * Add point light source
-     * @param {Vector} p Position
-     * @param {Color} c Color
+     * @param {Ball} b
      */
-    addLight(p, c) {
-        this.lights.push({
-            p: p,
-            c: c
-        });
+    addLight(b) {
+        this.lights.push(b);
     }
 
     /**
@@ -94,38 +90,83 @@ class Raytracer {
         }
 
         if (minObj) {
-            let ret;
+            let ret = colors.black.clone();
 
             // Reflection
             minP.c = ray.c.mask(minObj.c);
-            ret    = this.trace(scene, minP, depth - 1, false).mulBy(0.5);
+            /*
+            for (let i = 0; i < Cons.NUMBER_MONTE_CARLO; ++i) {
+                let randRay = minP.clone();
+                randRay.t.rotateBy(random() * 0.1, random() * 0.1, random() * 0.1);
+                ret.addBy(this.trace(scene, randRay, depth - 1, false));
+            }
+            ret.mulBy(0.25 / Cons.NUMBER_MONTE_CARLO);
+            */
+            ret.addBy(this.trace(scene, minP, depth - 1, true).mulBy(0.5));
 
             // Shadow
             for (let i = 0; i < this.lights.length; ++i) {
                 let light = this.lights[i];
-                let rayToLight = new Ray(minP.s.clone(), light.p.clone());
+                let rayToLight = new Ray(minP.s.clone(), light.o.clone());
                 let shadow     = false;
+                let edge       = false;
                 for (let obj of scene.eachObject()) {
                     if (obj !== minObj) {
                         let test = obj.testInnerRay(rayToLight);
                         if (test != null && test != Cons.FLAG_EDGE) {
                             shadow = true;
                             break;
+                        } else if (test == Cons.FLAG_EDGE) {
+                            edge = true;
                         }
                     }
                 }
                 let cosAngle = 0;
                 if (!shadow) {
-                    cosAngle = light.p.minus(minP.s).normalize().dot(minP.t.normal());
+                    cosAngle = light.o.minus(minP.s).normalize().dot(minP.t.normal());
                     if (cosAngle < 0) {
                         cosAngle = 0;
                     }
                     ret.addBy(minObj.c.mul(cosAngle * cosAngle).mask(light.c).mask(ray.c));
                     //ret = ret.add(minObj.c.mul(pow(cosAngle, 10)));
                 }
+                if (edge) {
+                    /*
+                    if (sample) {
+                        // Samples
+                        let c = colors.black.clone();
+                        let rayY = minP.clone();
+                        // Top-left
+                        for (let j = 0; j + 1 < Cons.NUMBER_SAMPLE; ++j) {
+                            rayY.t.minusBy(this.camera.widthIncPerSubPixel);
+                            rayY.t.minusBy(this.camera.heightIncPerSubPixel);
+                        }
+                        for (let j = 0; j < Cons.NUMBER_SAMPLE; ++j) {
+                            let randRay = rayY.clone();
+                            for (let k = 0; k < Cons.NUMBER_SAMPLE; ++k) {
+                                c.addBy(this.trace(scene, randRay, depth - 1, false));
+                                randRay.t.addBy(this.camera.widthIncPerSubPixel);
+                                randRay.t.addBy(this.camera.widthIncPerSubPixel);
+                            }
+                            rayY.t.addBy(this.camera.heightIncPerSubPixel);
+                            rayY.t.addBy(this.camera.heightIncPerSubPixel);
+                        }
+                        c.mulBy(1.0 / (Cons.NUMBER_SAMPLE * Cons.NUMBER_SAMPLE)).mask(ray.c);
+                        ret.addBy(c);
+                    }*/
+                }
             }
 
             return ret;
+        } else {
+            for (let i = 0; i < this.lights.length; ++i) {
+                let light = this.lights[i];
+                p = light.testInnerRay(ray);
+                if (p !== null && p !== Cons.FLAG_EDGE) {
+                    return colors.green;
+                    //return light.c.mask(ray.c).toMax();
+                }
+            }
         }
 
         return colors.black.clone();
