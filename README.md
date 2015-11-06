@@ -18,3 +18,12 @@ Open html files in folder `examples`.
 
 1. edit codes in folder `src` (ES6)
 2. `npm run build` (which generates `bundle.js`)
+
+### Results
+![](results/cubic.png)
+
+![](results/1.png)
+
+![](results/9.png)
+
+![](results/10.png)
