@@ -4253,7 +4253,7 @@ module.exports = require('./modules/$.core');
 );
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":208}],187:[function(require,module,exports){
+},{"_process":209}],187:[function(require,module,exports){
 module.exports = require("./lib/polyfill");
 
 },{"./lib/polyfill":1}],188:[function(require,module,exports){
@@ -4280,6 +4280,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var _ray = require('./ray');
 
 var _ray2 = _interopRequireDefault(_ray);
+
+var _coreConstant = require('../core/constant');
+
+var _coreConstant2 = _interopRequireDefault(_coreConstant);
 
 var Camera = (function () {
     /**
@@ -4312,6 +4316,9 @@ var Camera = (function () {
 
         this.widthInc = r2l.mulBy(this.widthPerPx / this.width);
         this.heightInc = b2t.mulBy(this.heightPerPx / this.height);
+
+        this.widthIncPerSubPixel = this.widthInc.mul(1.0 / _coreConstant2['default'].NUMBER_SAMPLE);
+        this.heightIncPerSubPixel = this.heightInc.mul(1.0 / _coreConstant2['default'].NUMBER_SAMPLE);
     }
 
     _createClass(Camera, [{
@@ -4328,53 +4335,57 @@ var Camera = (function () {
          */
     }, {
         key: 'eachPixel',
-        value: regeneratorRuntime.mark(function eachPixel() {
-            var posY, y, posX, x;
+        value: regeneratorRuntime.mark(function eachPixel(x0, y0, stepX, stepY) {
+            var widthInc, heightInc, widthOffset, heightOffset, posY, y, posX, x;
             return regeneratorRuntime.wrap(function eachPixel$(context$2$0) {
                 while (1) switch (context$2$0.prev = context$2$0.next) {
                     case 0:
-                        posY = this._screen_[0].clone();
-                        y = 0;
+                        widthInc = this.widthInc.mul(stepX);
+                        heightInc = this.heightInc.mul(stepY);
+                        widthOffset = this.widthInc.mul(x0);
+                        heightOffset = this.heightInc.mul(y0);
+                        posY = this._screen_[0].add(heightOffset);
+                        y = y0;
 
-                    case 2:
+                    case 6:
                         if (!(y < this.pxHeight)) {
+                            context$2$0.next = 20;
+                            break;
+                        }
+
+                        posX = posY.add(widthOffset);
+                        x = x0;
+
+                    case 9:
+                        if (!(x < this.pxWidth)) {
                             context$2$0.next = 16;
                             break;
                         }
 
-                        posX = posY.clone();
-                        x = 0;
-
-                    case 5:
-                        if (!(x < this.pxWidth)) {
-                            context$2$0.next = 12;
-                            break;
-                        }
-
-                        context$2$0.next = 8;
+                        context$2$0.next = 12;
                         return {
                             x: x,
                             y: y,
                             v: posX
                         };
 
-                    case 8:
-                        posX.addBy(this.widthInc);
-
-                    case 9:
-                        ++x;
-                        context$2$0.next = 5;
-                        break;
-
                     case 12:
-                        posY.addBy(this.heightInc);
+                        posX.addBy(widthInc);
 
                     case 13:
-                        ++y;
-                        context$2$0.next = 2;
+                        x += stepX;
+                        context$2$0.next = 9;
                         break;
 
                     case 16:
+                        posY.addBy(heightInc);
+
+                    case 17:
+                        y += stepY;
+                        context$2$0.next = 6;
+                        break;
+
+                    case 20:
                     case 'end':
                         return context$2$0.stop();
                 }
@@ -4386,7 +4397,7 @@ var Camera = (function () {
          */
     }, {
         key: 'eachRay',
-        value: regeneratorRuntime.mark(function eachRay() {
+        value: regeneratorRuntime.mark(function eachRay(x0, y0, stepX, stepY) {
             var _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, pixel;
 
             return regeneratorRuntime.wrap(function eachRay$(context$2$0) {
@@ -4396,7 +4407,7 @@ var Camera = (function () {
                         _didIteratorError = false;
                         _iteratorError = undefined;
                         context$2$0.prev = 3;
-                        _iterator = this.eachPixel()[Symbol.iterator]();
+                        _iterator = this.eachPixel(x0, y0, stepX, stepY)[Symbol.iterator]();
 
                     case 5:
                         if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
@@ -4409,7 +4420,7 @@ var Camera = (function () {
                         return {
                             x: pixel.x,
                             y: pixel.y,
-                            ray: new _ray2['default'](this.eye, pixel.v.clone().minusBy(this.eye))
+                            ray: new _ray2['default'](this.eye, pixel.v.minus(this.eye))
                         };
 
                     case 9:
@@ -4484,7 +4495,7 @@ var Camera = (function () {
 exports['default'] = Camera;
 module.exports = exports['default'];
 
-},{"./ray":191}],190:[function(require,module,exports){
+},{"../core/constant":191,"./ray":192}],190:[function(require,module,exports){
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
@@ -4503,13 +4514,15 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Color = (function () {
     /**
      * Color constructor
-     * @param {Number} r Red [0, 255]
-     * @param {Number} g Green [0, 255]
-     * @param {Number} b Blue [0, 255]
+     * @param {Number} r Red [0, 1]
+     * @param {Number} g Green [0, 1]
+     * @param {Number} b Blue [0, 1]
      * @param {Number} a Alpha [0, 1]
      */
 
-    function Color(r, g, b, a) {
+    function Color(r, g, b) {
+        var a = arguments.length <= 3 || arguments[3] === undefined ? 1 : arguments[3];
+
         _classCallCheck(this, Color);
 
         this.r = r;
@@ -4522,6 +4535,42 @@ var Color = (function () {
         key: "mul",
         value: function mul(r) {
             return new Color(this.r * r, this.g * r, this.b * r, this.a);
+        }
+    }, {
+        key: "mulBy",
+        value: function mulBy(r) {
+            this.r *= r;
+            this.g *= r;
+            this.b *= r;
+            return this;
+        }
+    }, {
+        key: "add",
+        value: function add(r) {
+            return new Color(this.r + r.r, this.g + r.g, this.b + r.b, this.a);
+        }
+    }, {
+        key: "addBy",
+        value: function addBy(r) {
+            this.r += r.r;
+            this.g += r.g;
+            this.b += r.b;
+            return this;
+        }
+    }, {
+        key: "mask",
+        value: function mask(r) {
+            return new Color(this.r * r.r, this.g * r.g, this.b * r.b, this.a);
+        }
+    }, {
+        key: "clone",
+        value: function clone() {
+            return new Color(this.r, this.g, this.b, this.a);
+        }
+    }, {
+        key: "brightness",
+        value: function brightness() {
+            return this.r + this.g + this.b;
         }
     }]);
 
@@ -4543,6 +4592,27 @@ exports["default"] = Color;
 
 },{}],191:[function(require,module,exports){
 /**
+ * Created by shuding on 11/2/15.
+ * <ds303077135@gmail.com>
+ */
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports["default"] = {
+    DEEP: 3,
+    NUMBER_SAMPLE: 5, // nxn
+    MIN_BRIGHTNESS: 0.1,
+    DELTA_EDGE: 3,
+    FLAG_EDGE: -1,
+    RATE_EDGE: 0.1
+};
+module.exports = exports["default"];
+
+},{}],192:[function(require,module,exports){
+/**
  * Created by shuding on 10/8/15.
  * <ds303077135@gmail.com>
  */
@@ -4550,8 +4620,10 @@ exports["default"] = Color;
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
-  value: true
+    value: true
 });
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -4561,27 +4633,38 @@ var _color = require('./color');
 
 var _color2 = _interopRequireDefault(_color);
 
-var Ray =
-/**
- * Constructor of the Ray class
- * @param {Vector} s  start point
- * @param {Vector} t the direction vector
- * @param {Color} c color of the ray source
- */
-function Ray(s, t) {
-  var c = arguments.length <= 2 || arguments[2] === undefined ? _color.colors.white : arguments[2];
+var Ray = (function () {
+    /**
+     * Constructor of the Ray class
+     * @param {Vector} s  start point
+     * @param {Vector} t the direction vector
+     * @param {Color} c color of the ray source
+     */
 
-  _classCallCheck(this, Ray);
+    function Ray(s, t) {
+        var c = arguments.length <= 2 || arguments[2] === undefined ? _color.colors.white : arguments[2];
 
-  this.s = s;
-  this.t = t;
-  this.c = c;
-};
+        _classCallCheck(this, Ray);
+
+        this.s = s;
+        this.t = t;
+        this.c = c;
+    }
+
+    _createClass(Ray, [{
+        key: 'clone',
+        value: function clone() {
+            return new Ray(this.s.clone(), this.t.clone(), this.c.clone());
+        }
+    }]);
+
+    return Ray;
+})();
 
 exports['default'] = Ray;
 module.exports = exports['default'];
 
-},{"./color":190}],192:[function(require,module,exports){
+},{"./color":190}],193:[function(require,module,exports){
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
@@ -4650,7 +4733,7 @@ var Scene = (function () {
 exports["default"] = Scene;
 module.exports = exports["default"];
 
-},{}],193:[function(require,module,exports){
+},{}],194:[function(require,module,exports){
 /**
  * Created by ziyang on 15/10/10.
  * <carbon941030@gmai.com>
@@ -4800,7 +4883,7 @@ var Bresenham = (function () {
 exports['default'] = Bresenham;
 module.exports = exports['default'];
 
-},{"../interface/canvas":196}],194:[function(require,module,exports){
+},{"../interface/canvas":197}],195:[function(require,module,exports){
 /**
  * Created by ziyang on 15/10/23.
  */
@@ -5000,7 +5083,7 @@ var MarkFiller = (function () {
 exports['default'] = MarkFiller;
 module.exports = exports['default'];
 
-},{"../interface/canvas":196,"./line":193}],195:[function(require,module,exports){
+},{"../interface/canvas":197,"./line":194}],196:[function(require,module,exports){
 /**
  * Created by shuding on 10/8/15.
  * <ds303077135@gmail.com>
@@ -5116,7 +5199,7 @@ exports['default'] = {
 };
 module.exports = exports['default'];
 
-},{"./core/camera":189,"./core/color":190,"./core/ray":191,"./core/scene":192,"./drawer/line":193,"./drawer/polygon":194,"./interface/canvas":196,"./interface/index":197,"./object/ball":198,"./object/cuboid":199,"./object/face":200,"./object/face4":201,"./object/line":202,"./object/plane":203,"./object/vector":204,"./renderer/linescanner":205,"./renderer/mapper":206,"./renderer/raytracer":207,"babel/polyfill":188}],196:[function(require,module,exports){
+},{"./core/camera":189,"./core/color":190,"./core/ray":192,"./core/scene":193,"./drawer/line":194,"./drawer/polygon":195,"./interface/canvas":197,"./interface/index":198,"./object/ball":199,"./object/cuboid":200,"./object/face":201,"./object/face4":202,"./object/line":203,"./object/plane":204,"./object/vector":205,"./renderer/linescanner":206,"./renderer/mapper":207,"./renderer/raytracer":208,"babel/polyfill":188}],197:[function(require,module,exports){
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
@@ -5141,6 +5224,8 @@ var Canvas = (function () {
         this.width = canvas.width;
         this.height = canvas.height;
         this.imgData = this.context.getImageData(0, 0, canvas.width, canvas.height);
+        // http://www.onaluf.org/en/entry/13
+        this._imgData_ = this.imgData.data;
 
         // State flags
         this.mouseDown = false;
@@ -5155,6 +5240,13 @@ var Canvas = (function () {
     }
 
     _createClass(Canvas, [{
+        key: 'fillBlack',
+        value: function fillBlack() {
+            for (var i = 0; i < this.imgData.data.length; ++i) {
+                this._imgData_[i] = 0;
+            }
+        }
+    }, {
         key: 'setPoint',
         value: function setPoint(x, y, color) {
             if (x < 0 || y < 0 || x >= this.width || y >= this.height) {
@@ -5163,10 +5255,10 @@ var Canvas = (function () {
 
             var index = ((this.height - y - 1) * this.width + x) * 4;
 
-            this.imgData.data[index] = ~ ~(color.r * 255);
-            this.imgData.data[index + 1] = ~ ~(color.g * 255);
-            this.imgData.data[index + 2] = ~ ~(color.b * 255);
-            this.imgData.data[index + 3] = ~ ~(color.a * 255);
+            this._imgData_[index] = ~ ~(color.r * 255);
+            this._imgData_[index + 1] = ~ ~(color.g * 255);
+            this._imgData_[index + 2] = ~ ~(color.b * 255);
+            this._imgData_[index + 3] = ~ ~(color.a * 255);
         }
 
         // Interactions binding fn
@@ -5263,6 +5355,7 @@ var Canvas = (function () {
         value: function clearCanvas() {
             this.context.clearRect(0, 0, this.width, this.height);
             this.imgData = this.context.getImageData(0, 0, canvas.width, canvas.height);
+            this._imgData_ = this.imgData.data;
         }
     }]);
 
@@ -5272,7 +5365,7 @@ var Canvas = (function () {
 exports['default'] = Canvas;
 module.exports = exports['default'];
 
-},{}],197:[function(require,module,exports){
+},{}],198:[function(require,module,exports){
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
@@ -5304,7 +5397,7 @@ var Output = (function () {
 exports["default"] = Output;
 module.exports = exports["default"];
 
-},{}],198:[function(require,module,exports){
+},{}],199:[function(require,module,exports){
 /**
  * Created by shuding on 10/29/15.
  * <ds303077135@gmail.com>
@@ -5322,31 +5415,70 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'd
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
+var _coreConstant = require('../core/constant');
+
+var _coreConstant2 = _interopRequireDefault(_coreConstant);
+
 var _coreRay = require('../core/ray');
 
 var _coreRay2 = _interopRequireDefault(_coreRay);
+
+var _coreColor = require('../core/color');
+
+var _coreColor2 = _interopRequireDefault(_coreColor);
+
+// Cache
+
+var sqrt = Math.sqrt;
 
 var Ball = (function () {
     /**
      * Constructor of the Ball class
      * @param {Vector} o the origin point
      * @param {Number} r the radius
+     * @param {Color} c
      */
 
     function Ball(o, r) {
+        var c = arguments.length <= 2 || arguments[2] === undefined ? _coreColor.colors.white : arguments[2];
+
         _classCallCheck(this, Ball);
 
         this.o = o;
         this.r = r;
+        this.c = c;
     }
 
     _createClass(Ball, [{
         key: 'testInnerRay',
         value: function testInnerRay(ray) {
             var os = this.o.minus(ray.s);
-            var dis = os.normalize().det(ray.t.normalize()).length() * os.length();
-            if (dis > this.r) return null;
-            return 1;
+            var osn = os.normal();
+            var rayT = ray.t.normal();
+            var sin = osn.det(rayT).length();
+
+            var dis = sin * os.length();
+            if (dis > this.r) {
+                if (dis < this.r + _coreConstant2['default'].DELTA_EDGE) {
+                    return _coreConstant2['default'].FLAG_EDGE;
+                }
+                return null;
+            }
+
+            // ray.t is already normalized here!
+            var oscos = os.dot(rayT);
+
+            if (oscos < 0) {
+                return null;
+            }
+
+            var delta = sqrt(this.r * this.r - dis * dis);
+            var x = rayT.mul(oscos - delta);
+            var p = ray.s.add(x);
+            var r = os.minus(x).normalize();
+            var d = x.add(r.mulBy(-2 * x.dot(r)));
+
+            return new _coreRay2['default'](p, d);
         }
     }]);
 
@@ -5356,7 +5488,7 @@ var Ball = (function () {
 exports['default'] = Ball;
 module.exports = exports['default'];
 
-},{"../core/ray":191}],199:[function(require,module,exports){
+},{"../core/color":190,"../core/constant":191,"../core/ray":192}],200:[function(require,module,exports){
 /**
  * Created by shuding on 10/16/15.
  * <ds303077135@gmail.com>
@@ -5401,7 +5533,7 @@ var Cuboid = (function () {
 exports["default"] = Cuboid;
 module.exports = exports["default"];
 
-},{}],200:[function(require,module,exports){
+},{}],201:[function(require,module,exports){
 /**
  * Created by shuding on 10/8/15.
  * <ds303077135@gmail.com>
@@ -5481,7 +5613,7 @@ var Face = (function () {
 exports['default'] = Face;
 module.exports = exports['default'];
 
-},{"../core/ray":191}],201:[function(require,module,exports){
+},{"../core/ray":192}],202:[function(require,module,exports){
 /**
  * Created by shuding on 10/16/15.
  * <ds303077135@gmail.com>
@@ -5530,7 +5662,7 @@ var Face4 = (function () {
 exports["default"] = Face4;
 module.exports = exports["default"];
 
-},{}],202:[function(require,module,exports){
+},{}],203:[function(require,module,exports){
 /**
  * Created by shuding on 10/8/15.
  * <ds303077135@gmail.com>
@@ -5575,7 +5707,7 @@ var Line = (function () {
 exports["default"] = Line;
 module.exports = exports["default"];
 
-},{}],203:[function(require,module,exports){
+},{}],204:[function(require,module,exports){
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
@@ -5597,18 +5729,26 @@ var _coreRay = require('../core/ray');
 
 var _coreRay2 = _interopRequireDefault(_coreRay);
 
+var _coreColor = require('../core/color');
+
+var _coreColor2 = _interopRequireDefault(_coreColor);
+
 var Plane = (function () {
     /**
      * The Plane constructor
      * @param {Vector} p Origin point
      * @param {Vector} n The normal vector
+     * @param c
      */
 
     function Plane(p, n) {
+        var c = arguments.length <= 2 || arguments[2] === undefined ? _coreColor.colors.white : arguments[2];
+
         _classCallCheck(this, Plane);
 
         this.p = p;
-        this.n = n;
+        this.n = n.normalize();
+        this.c = c;
     }
 
     /**
@@ -5619,8 +5759,12 @@ var Plane = (function () {
     _createClass(Plane, [{
         key: 'testInnerRay',
         value: function testInnerRay(ray) {
-            var p = ray.t.mul(this.p.minus(ray.s).dot(this.n) / ray.t.dot(this.n)).addBy(ray.s);
-            return new _coreRay2['default'](p, p.minusBy(this.n.mul(p.dot(this.n) * 2)));
+            var dot = ray.t.dot(this.n);
+            if (dot > 0) {
+                return null;
+            }
+            var p = ray.t.mul(this.p.minus(ray.s).dot(this.n) / dot);
+            return new _coreRay2['default'](p.add(ray.s), p.minus(this.n.mul(p.dot(this.n) * 2)));
         }
     }]);
 
@@ -5633,24 +5777,52 @@ var planeFromScreen = function planeFromScreen(screen) {
 exports.planeFromScreen = planeFromScreen;
 exports['default'] = Plane;
 
-},{"../core/ray":191}],204:[function(require,module,exports){
+},{"../core/color":190,"../core/ray":192}],205:[function(require,module,exports){
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
  */
 
-// Cache methods
-'use strict';
+// http://media.tojicode.com/sfjs-vectors/#1
 
-Object.defineProperty(exports, '__esModule', {
+// Cache methods
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var sqrt = Math.sqrt;
+
+//var sin = Math.sin;
+//var cos = Math.cos;
+// fast cos
+var cos = function cos(x) {
+    var x2 = x * x;
+    var x4 = x2 * x2;
+    var x6 = x4 * x2;
+    var x8 = x6 * x2;
+    var x10 = x8 * x2;
+    return 1 - (1814400 * x2 - 151200 * x4 + 5040 * x6 - 90 * x8 + x10) / 3628800;
+};
+
+// fast sin
+var sin = function sin(inValue) {
+    // See  for graph and equations
+    // https://www.desmos.com/calculator/8nkxlrmp7a
+    // logic explained here : http://devmaster.net/posts/9648/fast-and-accurate-sine-cosine
+    var B = 1.2732395; // 4/pi
+    var C = -0.40528473; // -4 / (pi²)
+
+    if (inValue > 0) {
+        return B * inValue - C * inValue * inValue;
+    }
+    return B * inValue + C * inValue * inValue;
+};
 
 var Vector = (function () {
     function Vector(x, y, z) {
@@ -5668,7 +5840,7 @@ var Vector = (function () {
      */
 
     _createClass(Vector, [{
-        key: 'dot',
+        key: "dot",
         value: function dot(v) {
             return this.x * v.x + this.y * v.y + this.z * v.z;
         }
@@ -5678,54 +5850,51 @@ var Vector = (function () {
          * @param v
          */
     }, {
-        key: 'det',
+        key: "det",
         value: function det(v) {
             return new Vector(this.y * v.z - this.z * v.y, -this.x * v.z + this.z * v.x, this.x * v.y - this.y * v.x);
         }
     }, {
-        key: 'add',
+        key: "add",
         value: function add(v) {
             return new Vector(this.x + v.x, this.y + v.y, this.z + v.z);
         }
     }, {
-        key: 'addBy',
+        key: "addBy",
         value: function addBy(v) {
             this.x += v.x;
             this.y += v.y;
             this.z += v.z;
-            delete this.len;
             return this;
         }
     }, {
-        key: 'minus',
+        key: "minus",
         value: function minus(v) {
             return new Vector(this.x - v.x, this.y - v.y, this.z - v.z);
         }
     }, {
-        key: 'minusBy',
+        key: "minusBy",
         value: function minusBy(v) {
             this.x -= v.x;
             this.y -= v.y;
             this.z -= v.z;
-            delete this.len;
             return this;
         }
     }, {
-        key: 'mul',
+        key: "mul",
         value: function mul(r) {
             return new Vector(this.x * r, this.y * r, this.z * r);
         }
     }, {
-        key: 'mulBy',
+        key: "mulBy",
         value: function mulBy(r) {
             this.x *= r;
             this.y *= r;
             this.z *= r;
-            delete this.len;
             return this;
         }
     }, {
-        key: 'rotateBy',
+        key: "rotateBy",
         value: function rotateBy(x, y, z) {
             if (x !== 0) {
                 this.rotateByX(x);
@@ -5739,55 +5908,66 @@ var Vector = (function () {
             return this;
         }
     }, {
-        key: 'rotateByX',
+        key: "rotateByX",
         value: function rotateByX(angle) {
             var y = this.y;
             var z = this.z;
-            var cos = Math.cos(angle);
-            var sin = Math.sin(angle);
-            this.y = y * cos - z * sin;
-            this.z = y * sin + z * cos;
+            var _cos = cos(angle);
+            var _sin = sin(angle);
+            this.y = y * _cos - z * _sin;
+            this.z = y * _sin + z * _cos;
             return this;
         }
     }, {
-        key: 'rotateByY',
+        key: "rotateByY",
         value: function rotateByY(angle) {
             var x = this.x;
             var z = this.z;
-            var cos = Math.cos(angle);
-            var sin = Math.sin(angle);
-            this.x = x * cos + z * sin;
-            this.z = -x * sin + z * cos;
+            var _cos = cos(angle);
+            var _sin = sin(angle);
+            this.x = x * _cos + z * _sin;
+            this.z = -x * _sin + z * _cos;
             return this;
         }
     }, {
-        key: 'rotateByZ',
+        key: "rotateByZ",
         value: function rotateByZ(angle) {
             var x = this.x;
             var y = this.y;
-            var cos = Math.cos(angle);
-            var sin = Math.sin(angle);
-            this.x = x * cos - y * sin;
-            this.y = x * sin + y * cos;
+            var _cos = cos(angle);
+            var _sin = sin(angle);
+            this.x = x * _cos - y * _sin;
+            this.y = x * _sin + y * _cos;
             return this;
         }
     }, {
-        key: 'length',
+        key: "length",
         value: function length() {
-            if (typeof this.len === 'undefined') {
-                this.len = sqrt(this.dot(this));
-            }
-            return this.len;
+            // Inline code
+            var x = this.x,
+                y = this.y,
+                z = this.z;
+            return sqrt(x * x + y * y + z * z);
         }
     }, {
-        key: 'normalize',
+        key: "normal",
+        value: function normal() {
+            return this.clone().normalize();
+        }
+    }, {
+        key: "normalize",
         value: function normalize() {
-            this.mulBy(1 / this.length());
-            this.len = 1;
+            var x = this.x,
+                y = this.y,
+                z = this.z;
+            var len = 1 / sqrt(x * x + y * y + z * z);
+            this.x *= len;
+            this.y *= len;
+            this.z *= len;
             return this;
         }
     }, {
-        key: 'clone',
+        key: "clone",
         value: function clone() {
             return new Vector(this.x, this.y, this.z);
         }
@@ -5797,7 +5977,7 @@ var Vector = (function () {
          * @param {Plane} p
          */
     }, {
-        key: 'projection',
+        key: "projection",
         value: function projection(p) {
             var v = this.minus(p.p);
             var len = v.dot(p.n);
@@ -5807,7 +5987,7 @@ var Vector = (function () {
             return ret;
         }
     }, {
-        key: 'projectionLength',
+        key: "projectionLength",
         value: function projectionLength(v) {
             var len = this.dot(v);
             return len / v.length();
@@ -5817,10 +5997,10 @@ var Vector = (function () {
     return Vector;
 })();
 
-exports['default'] = Vector;
-module.exports = exports['default'];
+exports["default"] = Vector;
+module.exports = exports["default"];
 
-},{}],205:[function(require,module,exports){
+},{}],206:[function(require,module,exports){
 "use strict";
 
 /**
@@ -5828,7 +6008,7 @@ module.exports = exports['default'];
  * <ds303077135@gmail.com>
  */
 
-},{}],206:[function(require,module,exports){
+},{}],207:[function(require,module,exports){
 /**
  * Created by shuding on 10/15/15.
  * <ds303077135@gmail.com>
@@ -6028,7 +6208,7 @@ var mapperFromSize = function mapperFromSize(width, height, output) {
 exports.mapperFromSize = mapperFromSize;
 exports['default'] = Mapper;
 
-},{"../core/camera":189,"../core/color":190,"../drawer/line":193,"../drawer/polygon":194,"../object/line":202,"../object/plane":203,"../object/vector":204}],207:[function(require,module,exports){
+},{"../core/camera":189,"../core/color":190,"../drawer/line":194,"../drawer/polygon":195,"../object/line":203,"../object/plane":204,"../object/vector":205}],208:[function(require,module,exports){
 /**
  * Created by shuding on 10/9/15.
  * <ds303077135@gmail.com>
@@ -6046,9 +6226,20 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'd
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
+var _coreConstant = require('../core/constant');
+
+var _coreConstant2 = _interopRequireDefault(_coreConstant);
+
+var _coreRay = require('../core/ray');
+
+var _coreRay2 = _interopRequireDefault(_coreRay);
+
 var _coreColor = require('../core/color');
 
 var _coreColor2 = _interopRequireDefault(_coreColor);
+
+var pow = Math.pow;
+var random = Math.random;
 
 var Raytracer = (function () {
     /**
@@ -6062,6 +6253,8 @@ var Raytracer = (function () {
 
         this.camera = camera;
         this.output = output;
+
+        this.lights = [];
     }
 
     /**
@@ -6073,28 +6266,39 @@ var Raytracer = (function () {
     _createClass(Raytracer, [{
         key: 'addLight',
         value: function addLight(p, c) {
-            this.light = {
+            this.lights.push({
                 p: p,
                 c: c
-            };
-        }
-    }, {
-        key: 'addPlane',
-        value: function addPlane(p) {
-            this.plane = p;
+            });
         }
 
         /**
          * Tracy specific ray and returns color
          * @param {Scene} scene
-         * @param {ray} ray
+         * @param {Ray} ray
+         * @param {Number} depth
+         * @param {Boolean} sample
          * @returns {Color}
          */
     }, {
         key: 'trace',
         value: function trace(scene, ray) {
-            // TODO
-            var p = undefined;
+            var depth = arguments.length <= 2 || arguments[2] === undefined ? 1 : arguments[2];
+            var sample = arguments.length <= 3 || arguments[3] === undefined ? true : arguments[3];
+
+            if (depth <= 0) {
+                return _coreColor.colors.black.clone();
+            }
+            /*
+            if (ray.c.brightness() < Cons.MIN_BRIGHTNESS) {
+                return colors.black;
+            }
+            */
+
+            var p = null;
+            var minP = null;
+            var minDis = Infinity;
+            var minObj = null;
             var _iteratorNormalCompletion = true;
             var _didIteratorError = false;
             var _iteratorError = undefined;
@@ -6103,33 +6307,40 @@ var Raytracer = (function () {
                 for (var _iterator = scene.eachObject()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
                     var obj = _step.value;
 
-                    switch (obj.constructor.name) {
-                        case 'Face':
-                            p = obj.testInnerRay(ray);
-                            if (p) {
-                                var cosAngle = this.light.p.minus(p.s).normalize().dot(p.t.normalize());
-                                return _coreColor.colors.white.mul(cosAngle * cosAngle);
+                    p = obj.testInnerRay(ray);
+                    if (p !== null) {
+                        if (p == _coreConstant2['default'].FLAG_EDGE) {
+                            if (sample) {
+                                // Samples
+                                var c = _coreColor.colors.black.clone();
+                                var rayY = ray.clone();
+                                // Top-left
+                                for (var i = 0; i + 1 < _coreConstant2['default'].NUMBER_SAMPLE; ++i) {
+                                    rayY.t.minusBy(this.camera.widthIncPerSubPixel);
+                                    rayY.t.minusBy(this.camera.heightIncPerSubPixel);
+                                }
+                                for (var i = 0; i < _coreConstant2['default'].NUMBER_SAMPLE; ++i) {
+                                    var randRay = rayY.clone();
+                                    for (var j = 0; j < _coreConstant2['default'].NUMBER_SAMPLE; ++j) {
+                                        c.addBy(this.trace(scene, randRay, depth, false));
+                                        randRay.t.addBy(this.camera.widthIncPerSubPixel);
+                                        randRay.t.addBy(this.camera.widthIncPerSubPixel);
+                                    }
+                                    rayY.t.addBy(this.camera.heightIncPerSubPixel);
+                                    rayY.t.addBy(this.camera.heightIncPerSubPixel);
+                                }
+                                return c.mulBy(1.0 / (_coreConstant2['default'].NUMBER_SAMPLE * _coreConstant2['default'].NUMBER_SAMPLE)).mask(ray.c);
                             }
-                            break;
-                        case 'Ball':
-                            p = obj.testInnerRay(ray);
-                            if (p) {
-                                return _coreColor.colors.white;
+                        } else {
+                            var dis = ray.s.minus(p.s);
+                            if (dis.length() < minDis) {
+                                minDis = dis.length();
+                                minObj = obj;
+                                minP = p;
                             }
-                            break;
+                        }
                     }
                 }
-                /*
-                if (this.plane) {
-                    let p        = this.plane.testInnerRay(ray);
-                    if (p) {
-                        let cosAngle = this.light.p.minus(p.s).normalize().dot(p.t.normalize());
-                        return colors.white.mul(Math.pow(cosAngle, 100));
-                    }
-                    //return colors.red.mul(cosAngle);
-                    //return colors.red;
-                }
-                */
             } catch (err) {
                 _didIteratorError = true;
                 _iteratorError = err;
@@ -6145,42 +6356,115 @@ var Raytracer = (function () {
                 }
             }
 
-            return _coreColor.colors.black;
+            if (minObj) {
+                var ret = undefined;
+
+                // Reflection
+                minP.c = ray.c.mask(minObj.c);
+                ret = this.trace(scene, minP, depth - 1, false).mulBy(0.5);
+
+                // Shadow
+                for (var i = 0; i < this.lights.length; ++i) {
+                    var light = this.lights[i];
+                    var rayToLight = new _coreRay2['default'](minP.s.clone(), light.p.clone());
+                    var shadow = false;
+                    var _iteratorNormalCompletion2 = true;
+                    var _didIteratorError2 = false;
+                    var _iteratorError2 = undefined;
+
+                    try {
+                        for (var _iterator2 = scene.eachObject()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                            var obj = _step2.value;
+
+                            if (obj !== minObj) {
+                                var test = obj.testInnerRay(rayToLight);
+                                if (test != null && test != _coreConstant2['default'].FLAG_EDGE) {
+                                    shadow = true;
+                                    break;
+                                }
+                            }
+                        }
+                    } catch (err) {
+                        _didIteratorError2 = true;
+                        _iteratorError2 = err;
+                    } finally {
+                        try {
+                            if (!_iteratorNormalCompletion2 && _iterator2['return']) {
+                                _iterator2['return']();
+                            }
+                        } finally {
+                            if (_didIteratorError2) {
+                                throw _iteratorError2;
+                            }
+                        }
+                    }
+
+                    var cosAngle = 0;
+                    if (!shadow) {
+                        cosAngle = light.p.minus(minP.s).normalize().dot(minP.t.normal());
+                        if (cosAngle < 0) {
+                            cosAngle = 0;
+                        }
+                        ret.addBy(minObj.c.mul(cosAngle * cosAngle).mask(light.c).mask(ray.c));
+                        //ret = ret.add(minObj.c.mul(pow(cosAngle, 10)));
+                    }
+                }
+
+                return ret;
+            }
+
+            return _coreColor.colors.black.clone();
         }
 
         /**
          * Render particular scene with camera to output
          * @param {Scene} scene
+         * @param x0
+         * @param y0
+         * @param stepX
+         * @param stepY
          */
     }, {
         key: 'render',
         value: function render(scene) {
-            var _iteratorNormalCompletion2 = true;
-            var _didIteratorError2 = false;
-            var _iteratorError2 = undefined;
+            var x0 = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
+            var y0 = arguments.length <= 2 || arguments[2] === undefined ? 0 : arguments[2];
+            var stepX = arguments.length <= 3 || arguments[3] === undefined ? 1 : arguments[3];
+            var stepY = arguments.length <= 4 || arguments[4] === undefined ? 1 : arguments[4];
 
-            try {
-                for (var _iterator2 = this.camera.eachRay()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-                    var pixel = _step2.value;
+            var output = this.output;
 
-                    this.output.setPoint(pixel.x, pixel.y, this.trace(scene, pixel.ray));
-                }
-            } catch (err) {
-                _didIteratorError2 = true;
-                _iteratorError2 = err;
-            } finally {
-                try {
-                    if (!_iteratorNormalCompletion2 && _iterator2['return']) {
-                        _iterator2['return']();
+            var _iteratorNormalCompletion3 = true;
+            var _didIteratorError3 = false;
+            var _iteratorError3 = undefined;
+
+            //try {
+                for (var _iterator3 = this.camera.eachRay(x0, y0, stepX, stepY)[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+                    var pixel = _step3.value;
+
+                    var c = this.trace(scene, pixel.ray, _coreConstant2['default'].DEEP);
+                    for (var x = 0; x < stepX - x0; ++x) {
+                        for (var y = 0; y < stepY - y0; ++y) {
+                            output.setPoint(pixel.x + x, pixel.y + y, c);
+                        }
                     }
-                } finally {
-                    if (_didIteratorError2) {
-                        throw _iteratorError2;
-                    }
                 }
-            }
+            //} catch (err) {
+//                _didIteratorError3 = true;
+//                _iteratorError3 = err;
+//            } finally {
+//                try {
+//                    if (!_iteratorNormalCompletion3 && _iterator3['return']) {
+//                        _iterator3['return']();
+//                    }
+//                } finally {
+//                    if (_didIteratorError3) {
+//                        throw _iteratorError3;
+//                    }
+//                }
+//            }
 
-            this.output.updateCanvas();
+            output.updateCanvas();
         }
     }]);
 
@@ -6190,7 +6474,7 @@ var Raytracer = (function () {
 exports['default'] = Raytracer;
 module.exports = exports['default'];
 
-},{"../core/color":190}],208:[function(require,module,exports){
+},{"../core/color":190,"../core/constant":191,"../core/ray":192}],209:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -6223,9 +6507,7 @@ function drainQueue() {
         currentQueue = queue;
         queue = [];
         while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
+            currentQueue[queueIndex].run();
         }
         queueIndex = -1;
         len = queue.length;
@@ -6277,11 +6559,12 @@ process.binding = function (name) {
     throw new Error('process.binding is not supported');
 };
 
+// TODO(shtylman)
 process.cwd = function () { return '/' };
 process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 process.umask = function() { return 0; };
 
-},{}]},{},[195])(195)
+},{}]},{},[196])(196)
 });

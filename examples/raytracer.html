@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title></title>
+</head>
+<body>
+<canvas id="myCanvas" width="800" height="600" style="border: 1px solid #d3d3d3; width: 800px; height: 600px;">
+  Your browser does not support the HTML5 canvas tag.
+</canvas>
+<script src="../bundle.js"></script>
+<script type="text/javascript">
+  htmlcanvas = document.getElementById('myCanvas');
+  canvas = new cube.Canvas(htmlcanvas);
+
+  width = 800;
+  height = 600;
+
+  ball1 = new cube.Ball(
+      new cube.Vector(0, 0, 0),
+      100
+  );
+
+  ball2 = new cube.Ball(
+      new cube.Vector(200, 0, 0),
+      100,
+      cube.colors.red
+  );
+
+  ball3 = new cube.Ball(
+      new cube.Vector(-200, 0, 0),
+      100,
+      cube.colors.blue
+  );
+
+  scene = new cube.Scene(ball1, ball2, ball3);
+  scene.addObject(new cube.Plane(
+      new cube.Vector(0,  200, 0),
+      new cube.Vector(0,  -1, -1)
+  ));
+
+  // or specific viewport
+  camera = new cube.Camera(new cube.Vector(0, 0, -1000), [
+    new cube.Vector(-400, 300, 0),
+    new cube.Vector(400, 300, 0),
+    new cube.Vector(-400, -300, 0),
+    new cube.Vector(400, 300, 0)
+  ], width, height);
+
+  raytracer = new cube.Raytracer(camera, canvas);
+  raytracer.addLight(
+      new cube.Vector(400, -400, 0),
+      cube.colors.white
+  );
+
+  var t = new Date();
+
+  //raytracer.render(scene);
+
+  var threads = 8;
+
+  var render = function (offsetX, offsetY) {
+    if (offsetX == threads && offsetY == threads) {
+      var p = document.createElement('p');
+      p.innerHTML = ((new Date()).getTime() - t.getTime()) + 'ms';
+      document.body.appendChild(p);
+      return;
+    }
+    raytracer.render(scene, offsetX, offsetY, threads, threads);
+    setTimeout(function (offsetX, offsetY) {
+      if (offsetX == threads) {
+        render(0, offsetY + 1);
+      } else {
+        render(offsetX + 1, offsetY);
+      }
+    }, 0, offsetX, offsetY);
+  };
+
+  render(0, 0);
+
+  /*
+  canvas.bindDrag(function (event, data) {
+    var deltaY = 0.01 * (event.x - data.x);
+    var deltaX = 0.01 * (event.y - data.y);
+    raytracer.clear();
+    raytracer.rotate(deltaX, 0, deltaY);
+    raytracer.render(scene);
+  });
+  */
+</script>
+</body>
+</html>

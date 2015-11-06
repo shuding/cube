@@ -3,8 +3,36 @@
  * <ds303077135@gmail.com>
  */
 
+// http://media.tojicode.com/sfjs-vectors/#1
+
 // Cache methods
 var sqrt = Math.sqrt;
+
+//var sin = Math.sin;
+//var cos = Math.cos;
+// fast cos
+var cos = function (x) {
+    var x2 = x * x;
+    var x4 = x2 * x2;
+    var x6 = x4 * x2;
+    var x8 = x6 * x2;
+    var x10 = x8 * x2;
+    return 1 - (1814400 * x2 - 151200 * x4 + 5040 * x6 - 90 * x8 + x10) / 3628800;
+};
+
+// fast sin
+var sin = function(inValue) {
+    // See  for graph and equations
+    // https://www.desmos.com/calculator/8nkxlrmp7a
+    // logic explained here : http://devmaster.net/posts/9648/fast-and-accurate-sine-cosine
+    var B = 1.2732395; // 4/pi
+    var C = -0.40528473; // -4 / (pi²)
+
+    if (inValue > 0) {
+        return B*inValue - C * inValue*inValue;
+    }
+    return B*inValue + C * inValue*inValue;
+};
 
 class Vector {
     constructor(x, y, z) {
@@ -38,7 +66,6 @@ class Vector {
         this.x += v.x;
         this.y += v.y;
         this.z += v.z;
-        delete this.len;
         return this;
     }
 
@@ -50,7 +77,6 @@ class Vector {
         this.x -= v.x;
         this.y -= v.y;
         this.z -= v.z;
-        delete this.len;
         return this;
     }
 
@@ -62,7 +88,6 @@ class Vector {
         this.x *= r;
         this.y *= r;
         this.z *= r;
-        delete this.len;
         return this;
     }
 
@@ -80,45 +105,51 @@ class Vector {
     }
 
     rotateByX(angle) {
-        let y   = this.y;
-        let z   = this.z;
-        let cos = Math.cos(angle);
-        let sin = Math.sin(angle);
-        this.y  = y * cos - z * sin;
-        this.z  = y * sin + z * cos;
+        var y   = this.y;
+        var z   = this.z;
+        var _cos = cos(angle);
+        var _sin = sin(angle);
+        this.y  = y * _cos - z * _sin;
+        this.z  = y * _sin + z * _cos;
         return this;
     }
 
     rotateByY(angle) {
-        let x   = this.x;
-        let z   = this.z;
-        let cos = Math.cos(angle);
-        let sin = Math.sin(angle);
-        this.x  = x * cos + z * sin;
-        this.z  = -x * sin + z * cos;
+        var x   = this.x;
+        var z   = this.z;
+        var _cos = cos(angle);
+        var _sin = sin(angle);
+        this.x  = x * _cos + z * _sin;
+        this.z  = -x * _sin + z * _cos;
         return this;
     }
 
     rotateByZ(angle) {
-        let x   = this.x;
-        let y   = this.y;
-        let cos = Math.cos(angle);
-        let sin = Math.sin(angle);
-        this.x  = x * cos - y * sin;
-        this.y  = x * sin + y * cos;
+        var x   = this.x;
+        var y   = this.y;
+        var _cos = cos(angle);
+        var _sin = sin(angle);
+        this.x  = x * _cos - y * _sin;
+        this.y  = x * _sin + y * _cos;
         return this;
     }
 
     length() {
-        if (typeof this.len === 'undefined') {
-            this.len = sqrt(this.dot(this));
-        }
-        return this.len;
+        // Inline code
+        var x = this.x, y = this.y, z = this.z;
+        return sqrt(x * x + y * y + z * z);
+    }
+
+    normal() {
+        return this.clone().normalize();
     }
 
     normalize() {
-        this.mulBy(1 / this.length());
-        this.len = 1;
+        var x = this.x, y = this.y, z = this.z;
+        var len = 1 / sqrt(x * x + y * y + z * z);
+        this.x *= len;
+        this.y *= len;
+        this.z *= len;
         return this;
     }
 
