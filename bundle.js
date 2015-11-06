@@ -5254,11 +5254,12 @@ var Canvas = (function () {
             }
 
             var index = ((this.height - y - 1) * this.width + x) * 4;
+            var imgData = this._imgData_;
 
-            this._imgData_[index] = ~ ~(color.r * 255);
-            this._imgData_[index + 1] = ~ ~(color.g * 255);
-            this._imgData_[index + 2] = ~ ~(color.b * 255);
-            this._imgData_[index + 3] = ~ ~(color.a * 255);
+            imgData[index] = ~ ~(color.r * 255);
+            imgData[index + 1] = ~ ~(color.g * 255);
+            imgData[index + 2] = ~ ~(color.b * 255);
+            imgData[index + 3] = ~ ~(color.a * 255);
         }
 
         // Interactions binding fn
@@ -5807,7 +5808,7 @@ var cos = function cos(x) {
     var x6 = x4 * x2;
     var x8 = x6 * x2;
     var x10 = x8 * x2;
-    return 1 - (1814400 * x2 - 151200 * x4 + 5040 * x6 - 90 * x8 + x10) / 3628800;
+    return 1.0 - (1814400.0 * x2 - 151200.0 * x4 + 5040.0 * x6 - 90.0 * x8 + x10) / 3628800.0;
 };
 
 // fast sin
@@ -5912,8 +5913,8 @@ var Vector = (function () {
         value: function rotateByX(angle) {
             var y = this.y;
             var z = this.z;
-            var _cos = cos(angle);
-            var _sin = sin(angle);
+            var _cos = Math.cos(angle);
+            var _sin = Math.sin(angle);
             this.y = y * _cos - z * _sin;
             this.z = y * _sin + z * _cos;
             return this;
@@ -5923,8 +5924,8 @@ var Vector = (function () {
         value: function rotateByY(angle) {
             var x = this.x;
             var z = this.z;
-            var _cos = cos(angle);
-            var _sin = sin(angle);
+            var _cos = Math.cos(angle);
+            var _sin = Math.sin(angle);
             this.x = x * _cos + z * _sin;
             this.z = -x * _sin + z * _cos;
             return this;
@@ -5934,8 +5935,8 @@ var Vector = (function () {
         value: function rotateByZ(angle) {
             var x = this.x;
             var y = this.y;
-            var _cos = cos(angle);
-            var _sin = sin(angle);
+            var _cos = Math.cos(angle);
+            var _sin = Math.sin(angle);
             this.x = x * _cos - y * _sin;
             this.y = x * _sin + y * _cos;
             return this;
@@ -6438,7 +6439,7 @@ var Raytracer = (function () {
             var _didIteratorError3 = false;
             var _iteratorError3 = undefined;
 
-            //try {
+            try {
                 for (var _iterator3 = this.camera.eachRay(x0, y0, stepX, stepY)[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
                     var pixel = _step3.value;
 
@@ -6449,20 +6450,20 @@ var Raytracer = (function () {
                         }
                     }
                 }
-            //} catch (err) {
-//                _didIteratorError3 = true;
-//                _iteratorError3 = err;
-//            } finally {
-//                try {
-//                    if (!_iteratorNormalCompletion3 && _iterator3['return']) {
-//                        _iterator3['return']();
-//                    }
-//                } finally {
-//                    if (_didIteratorError3) {
-//                        throw _iteratorError3;
-//                    }
-//                }
-//            }
+            } catch (err) {
+                _didIteratorError3 = true;
+                _iteratorError3 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion3 && _iterator3['return']) {
+                        _iterator3['return']();
+                    }
+                } finally {
+                    if (_didIteratorError3) {
+                        throw _iteratorError3;
+                    }
+                }
+            }
 
             output.updateCanvas();
         }
@@ -6507,7 +6508,9 @@ function drainQueue() {
         currentQueue = queue;
         queue = [];
         while (++queueIndex < len) {
-            currentQueue[queueIndex].run();
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
         }
         queueIndex = -1;
         len = queue.length;
@@ -6559,7 +6562,6 @@ process.binding = function (name) {
     throw new Error('process.binding is not supported');
 };
 
-// TODO(shtylman)
 process.cwd = function () { return '/' };
 process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');

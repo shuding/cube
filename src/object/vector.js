@@ -17,7 +17,7 @@ var cos = function (x) {
     var x6 = x4 * x2;
     var x8 = x6 * x2;
     var x10 = x8 * x2;
-    return 1 - (1814400 * x2 - 151200 * x4 + 5040 * x6 - 90 * x8 + x10) / 3628800;
+    return 1.0 - (1814400.0 * x2 - 151200.0 * x4 + 5040.0 * x6 - 90.0 * x8 + x10) / 3628800.0;
 };
 
 // fast sin
@@ -107,8 +107,8 @@ class Vector {
     rotateByX(angle) {
         var y   = this.y;
         var z   = this.z;
-        var _cos = cos(angle);
-        var _sin = sin(angle);
+        var _cos = Math.cos(angle);
+        var _sin = Math.sin(angle);
         this.y  = y * _cos - z * _sin;
         this.z  = y * _sin + z * _cos;
         return this;
@@ -117,8 +117,8 @@ class Vector {
     rotateByY(angle) {
         var x   = this.x;
         var z   = this.z;
-        var _cos = cos(angle);
-        var _sin = sin(angle);
+        var _cos = Math.cos(angle);
+        var _sin = Math.sin(angle);
         this.x  = x * _cos + z * _sin;
         this.z  = -x * _sin + z * _cos;
         return this;
@@ -127,8 +127,8 @@ class Vector {
     rotateByZ(angle) {
         var x   = this.x;
         var y   = this.y;
-        var _cos = cos(angle);
-        var _sin = sin(angle);
+        var _cos = Math.cos(angle);
+        var _sin = Math.sin(angle);
         this.x  = x * _cos - y * _sin;
         this.y  = x * _sin + y * _cos;
         return this;
