@@ -24,29 +24,29 @@
   );
 
   ball2 = new cube.Ball(
-      new cube.Vector(200, 0, 0),
+      new cube.Vector(100, 100, 200),
       100,
       cube.colors.red
   );
 
   ball3 = new cube.Ball(
-      new cube.Vector(-200, 0, 0),
+      new cube.Vector(-100, -100, -200),
       100,
       cube.colors.blue
   );
 
   scene = new cube.Scene(ball1, ball2, ball3);
   scene.addObject(new cube.Plane(
-      new cube.Vector(0,  200, 0),
+      new cube.Vector(0, 600, 0),
       new cube.Vector(0,  -1, -1)
   ));
 
   // or specific viewport
-  camera = new cube.Camera(new cube.Vector(0, 0, -1000), [
-    new cube.Vector(-400, 300, 0),
-    new cube.Vector(400, 300, 0),
-    new cube.Vector(-400, -300, 0),
-    new cube.Vector(400, 300, 0)
+  camera = new cube.Camera(new cube.Vector(0.0, 0.0, -600.0), [
+    new cube.Vector(-400.0, 300.0, -200.0),
+    new cube.Vector(400.0, 300.0, -200.0),
+    new cube.Vector(-400.0, -300.0, -200.0),
+    new cube.Vector(400.0, -300.0, -200.0)
   ], width, height);
 
   raytracer = new cube.Raytracer(camera, canvas);
@@ -86,18 +86,24 @@
   var now = 0;
   var render = function() {
     raytracer.render();
-    if (raytracer.rcount > raytracer.screen_size - 2) {
-      var p = document.createElement('p');
-      p.innerHTML = ((new Date()).getTime() - t.getTime()) + 'ms';
-      document.body.appendChild(p);
-      return;
-    }
     setTimeout(function () {
       render();
     }, 0);
   }
 
   render();
+
+  canvas.bindDrag(function (event, data) {
+    var deltaY = 0.005 * (event.x - data.x);
+    var deltaX = 0.005 * (event.y - data.y);
+    var x = raytracer.camera._screen_[0].minus(raytracer.camera._screen_[1]);
+    var y = raytracer.camera._screen_[0].minus(raytracer.camera._screen_[2]);
+    x.normalize();
+    y.normalize();
+    var v = x.mul(deltaX).add(y.mul(deltaY));
+    raytracer.camera.rotate(v.x, v.y, v.z);
+    raytracer.sceneChange();
+  });
   //raytracer.render();
 
   /*

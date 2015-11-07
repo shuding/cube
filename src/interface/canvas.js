@@ -51,8 +51,7 @@ class Canvas {
 
     getPoint(x, y) {
         let index = ((this.height - y - 1) * this.width + x) * 4;
-        let imgData = this._imgData_;
-        return new Color(imgData[index] / 255.0, imgData[index + 1] / 255.0, imgData[index + 2] / 255.0, imgData[index + 3] / 255.0);
+        return new Color(this._imgData_[index] / 255.0, this._imgData_[index + 1] / 255.0, this._imgData_[index + 2] / 255.0, this._imgData_[index + 3] / 255.0);
     }
 
 // Interactions binding fn

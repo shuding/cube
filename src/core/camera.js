@@ -61,6 +61,17 @@ class Camera {
         this._screen_.forEach(function (p) {
             p.rotateBy(x, y, z);
         });
+        let r2l       = this._screen_[1].minus(this._screen_[0]);
+        let b2t       = this._screen_[2].minus(this._screen_[0]);
+
+        this.width  = r2l.length();
+        this.height = b2t.length();
+
+        this.widthPerPx  = this.width / this.pxWidth;
+        this.heightPerPx = this.height / this.pxHeight;
+
+        this.widthInc  = r2l.mulBy(this.widthPerPx / this.width);
+        this.heightInc = b2t.mulBy(this.heightPerPx / this.height);
     }
 
     /**

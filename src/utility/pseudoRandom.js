@@ -12,6 +12,12 @@ class RandomCoor {
         for (var y = 0; y < h; ++y)
             for (var x = 0; x < w; ++x)
                 this.coor[this.n++] = [x, y];
+        for (var n = this.s - 1; n > 0; --n) {
+            let id = ~~(Math.random() * n);
+            let t = this.coor[n];
+            this.coor[n] = this.coor[id];
+            this.coor[id] = t;
+        }
         this.n = 0;
     }
 
@@ -19,10 +25,6 @@ class RandomCoor {
         this.n--;
         if (this.n < 0)
             this.n = this.h * this.w - 1;
-        let id = ~~(Math.random() * this.n);
-        let t = this.coor[this.n];
-        this.coor[this.n] = this.coor[id];
-        this.coor[id] = t;
         return this.coor[this.n];
     }
 }

@@ -40,14 +40,16 @@ class Raytracer {
                 this.acc[y][x] = 0;
             }
         }
+        this.rlimit = [4800, 2400, 320, 80];
+        this.slimit = [2, 2, 1, 4];
+        this.sigmas = [1, 1, 4, 8];
+        this.rs = [1, 1, 4, 8];
         this.time_stamp = 1;
         this.rcount = 0;
         this.scount = 0;
         this.sigma = 20;
-        this.cur_stage = 5;
+        this.cur_stage = 1;
         this.r = 24;
-        this.rlimit = [4800, 2400, 800, 320, 80, 20];
-        this.slimit = [2, 4, 4, 4, 3, 2];
         this.pattern = new GaussianPattern(this.r, this.sigma);
     }
 
@@ -223,11 +225,26 @@ class Raytracer {
         output.updateCanvas();
     }*/
 
+    sceneChange() {
+        this.time_stamp ++;
+        this.sigma = this.sigmas[3];
+        this.r = this.rs[3];
+        this.cur_stage = 3;
+        this.scount = 0;
+        this.pattern = new GaussianPattern(this.r, this.sigma);
+        for (var y = 0; y < this.height; ++y)
+            for (var x = 0; x < this.width; ++x) {
+                let c = this.output.getPoint(x, y);
+                c.mulBy(0.95);
+                this.acc[y][x] = 0.95;
+                this.output.setPoint(x, y, c);
+            }
+        this.output.updateCanvas();
+    }
+
     render() {
         let output = this.output;
         while (true) {
-            if (this.rcount >= this.screen_size)
-                break;
             let coor = this.rand_coor.getNext();
             let x = coor[0];
             let y = coor[1];
@@ -242,19 +259,18 @@ class Raytracer {
                         let ny = y + dy;
                         if (nx < 0 || nx >= this.width || ny < 0 || ny >= this.height)
                             continue;
-                        if (this.stage[ny][nx] == 0)
-                            continue;
                         if (dx == 0 && dy == 0) {
                             this.output.setPoint(x, y, c);
                             this.stage[ny][nx] = 0;
                             this.time_stamp_arr[ny][nx] = this.time_stamp;
-                        } else if (this.time_stamp_arr[ny][nx] < this.time_stamp) {
-                            let cn = c.mul(this.pattern.pat[dx][dy]);
-                            this.stage[ny][nx] = this.cur_stage;
-                            this.time_stamp_arr[ny][nx] = this.time_stamp;
-                            this.acc[ny][nx] = this.pattern.pat[dx][dy];
-                            this.output.setPoint(nx, ny, cn);
                         } else {
+                            if (this.time_stamp_arr[ny][nx] < this.time_stamp) {
+                                this.stage[ny][nx] = this.cur_stage;
+                                this.time_stamp_arr[ny][nx] = this.time_stamp;
+                                this.acc[ny][nx] *= 0.8;
+                            }
+                            if (this.stage[ny][nx] == 0)
+                                continue;
                             let co = this.output.getPoint(nx, ny);
                             let rn = this.pattern.pat[dx][dy];
                             let cn = c.mul(rn);
@@ -277,10 +293,10 @@ class Raytracer {
                 output.updateCanvas();
                 if (this.scount * this.sigma * this.sigma > this.slimit[this.cur_stage] * this.screen_size && this.cur_stage > 1) {
                     this.scount = 0;
-                    this.sigma /= 2.0;
-                    this.r /= 2;
-                    this.pattern = new GaussianPattern(this.r, this.sigma);
                     this.cur_stage--;
+                    this.sigma = this.sigmas[this.cur_stage];
+                    this.r = this.rs[this.cur_stage];
+                    this.pattern = new GaussianPattern(this.r, this.sigma);
                 }
                 break;
             }

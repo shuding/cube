@@ -4332,6 +4332,17 @@ var Camera = (function () {
             this._screen_.forEach(function (p) {
                 p.rotateBy(x, y, z);
             });
+            var r2l = this._screen_[1].minus(this._screen_[0]);
+            var b2t = this._screen_[2].minus(this._screen_[0]);
+
+            this.width = r2l.length();
+            this.height = b2t.length();
+
+            this.widthPerPx = this.width / this.pxWidth;
+            this.heightPerPx = this.height / this.pxHeight;
+
+            this.widthInc = r2l.mulBy(this.widthPerPx / this.width);
+            this.heightInc = b2t.mulBy(this.heightPerPx / this.height);
         }
 
         /**
@@ -5305,8 +5316,7 @@ var Canvas = (function () {
         key: 'getPoint',
         value: function getPoint(x, y) {
             var index = ((this.height - y - 1) * this.width + x) * 4;
-            var imgData = this._imgData_;
-            return new _coreColor2['default'](imgData[index] / 255.0, imgData[index + 1] / 255.0, imgData[index + 2] / 255.0, imgData[index + 3] / 255.0);
+            return new _coreColor2['default'](this._imgData_[index] / 255.0, this._imgData_[index + 1] / 255.0, this._imgData_[index + 2] / 255.0, this._imgData_[index + 3] / 255.0);
         }
 
         // Interactions binding fn
@@ -6363,14 +6373,16 @@ var Raytracer = (function () {
                 this.acc[y][x] = 0;
             }
         }
+        this.rlimit = [4800, 2400, 320, 80];
+        this.slimit = [2, 2, 1, 4];
+        this.sigmas = [1, 1, 4, 8];
+        this.rs = [1, 1, 4, 8];
         this.time_stamp = 1;
         this.rcount = 0;
         this.scount = 0;
         this.sigma = 20;
-        this.cur_stage = 5;
+        this.cur_stage = 1;
         this.r = 24;
-        this.rlimit = [4800, 2400, 800, 320, 80, 20];
-        this.slimit = [2, 4, 4, 4, 3, 2];
         this.pattern = new _utilityGaussianPattern2['default'](this.r, this.sigma);
     }
 
@@ -6596,11 +6608,27 @@ var Raytracer = (function () {
         }*/
 
     }, {
+        key: 'sceneChange',
+        value: function sceneChange() {
+            this.time_stamp++;
+            this.sigma = this.sigmas[3];
+            this.r = this.rs[3];
+            this.cur_stage = 3;
+            this.scount = 0;
+            this.pattern = new _utilityGaussianPattern2['default'](this.r, this.sigma);
+            for (var y = 0; y < this.height; ++y) for (var x = 0; x < this.width; ++x) {
+                var c = this.output.getPoint(x, y);
+                c.mulBy(0.95);
+                this.acc[y][x] = 0.95;
+                this.output.setPoint(x, y, c);
+            }
+            this.output.updateCanvas();
+        }
+    }, {
         key: 'render',
         value: function render() {
             var output = this.output;
             while (true) {
-                if (this.rcount >= this.screen_size) break;
                 var coor = this.rand_coor.getNext();
                 var x = coor[0];
                 var y = coor[1];
@@ -6613,18 +6641,17 @@ var Raytracer = (function () {
                         var nx = x + dx;
                         var ny = y + dy;
                         if (nx < 0 || nx >= this.width || ny < 0 || ny >= this.height) continue;
-                        if (this.stage[ny][nx] == 0) continue;
                         if (dx == 0 && dy == 0) {
                             this.output.setPoint(x, y, c);
                             this.stage[ny][nx] = 0;
                             this.time_stamp_arr[ny][nx] = this.time_stamp;
-                        } else if (this.time_stamp_arr[ny][nx] < this.time_stamp) {
-                            var cn = c.mul(this.pattern.pat[dx][dy]);
-                            this.stage[ny][nx] = this.cur_stage;
-                            this.time_stamp_arr[ny][nx] = this.time_stamp;
-                            this.acc[ny][nx] = this.pattern.pat[dx][dy];
-                            this.output.setPoint(nx, ny, cn);
                         } else {
+                            if (this.time_stamp_arr[ny][nx] < this.time_stamp) {
+                                this.stage[ny][nx] = this.cur_stage;
+                                this.time_stamp_arr[ny][nx] = this.time_stamp;
+                                this.acc[ny][nx] *= 0.8;
+                            }
+                            if (this.stage[ny][nx] == 0) continue;
                             var co = this.output.getPoint(nx, ny);
                             var rn = this.pattern.pat[dx][dy];
                             var cn = c.mul(rn);
@@ -6647,10 +6674,10 @@ var Raytracer = (function () {
                     output.updateCanvas();
                     if (this.scount * this.sigma * this.sigma > this.slimit[this.cur_stage] * this.screen_size && this.cur_stage > 1) {
                         this.scount = 0;
-                        this.sigma /= 2.0;
-                        this.r /= 2;
-                        this.pattern = new _utilityGaussianPattern2['default'](this.r, this.sigma);
                         this.cur_stage--;
+                        this.sigma = this.sigmas[this.cur_stage];
+                        this.r = this.rs[this.cur_stage];
+                        this.pattern = new _utilityGaussianPattern2['default'](this.r, this.sigma);
                     }
                     break;
                 }
@@ -6717,6 +6744,12 @@ var RandomCoor = (function () {
         this.n = 0;
         this.coor = new Array();
         for (var y = 0; y < h; ++y) for (var x = 0; x < w; ++x) this.coor[this.n++] = [x, y];
+        for (var n = this.s - 1; n > 0; --n) {
+            var id = ~ ~(Math.random() * n);
+            var t = this.coor[n];
+            this.coor[n] = this.coor[id];
+            this.coor[id] = t;
+        }
         this.n = 0;
     }
 
@@ -6725,10 +6758,6 @@ var RandomCoor = (function () {
         value: function getNext() {
             this.n--;
             if (this.n < 0) this.n = this.h * this.w - 1;
-            var id = ~ ~(Math.random() * this.n);
-            var t = this.coor[this.n];
-            this.coor[this.n] = this.coor[id];
-            this.coor[id] = t;
             return this.coor[this.n];
         }
     }]);
