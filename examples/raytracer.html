@@ -37,8 +37,8 @@
 
   scene = new cube.Scene(ball1, ball2, ball3);
   scene.addObject(new cube.Plane(
-      new cube.Vector(0, 600, 0),
-      new cube.Vector(0,  -1, -1)
+      new cube.Vector(0, 400, 0),
+      new cube.Vector(0, -2, -1)
   ));
 
   // or specific viewport
@@ -51,7 +51,7 @@
 
   raytracer = new cube.Raytracer(camera, canvas);
   raytracer.addLight(new cube.Ball(
-      new cube.Vector(400, -400, 0),
+      new cube.Vector(000, -600, 0),
       200,
       cube.colors.white
   ));

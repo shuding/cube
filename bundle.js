@@ -6375,8 +6375,8 @@ var Raytracer = (function () {
         }
         this.rlimit = [4800, 2400, 320, 80];
         this.slimit = [2, 2, 1, 4];
-        this.sigmas = [1, 1, 4, 8];
-        this.rs = [1, 1, 4, 8];
+        this.sigmas = [1, 1, 5, 9];
+        this.rs = [1, 1, 5, 9];
         this.time_stamp = 1;
         this.rcount = 0;
         this.scount = 0;
@@ -6654,7 +6654,7 @@ var Raytracer = (function () {
                             if (this.stage[ny][nx] == 0) continue;
                             var co = this.output.getPoint(nx, ny);
                             var rn = this.pattern.pat[dx][dy];
-                            var cn = c.mul(rn);
+                            var cn = c.clone();
                             rn = Math.pow(rn, 5);
                             while (this.stage[ny][nx] > this.cur_stage) {
                                 this.stage[ny][nx]--;
