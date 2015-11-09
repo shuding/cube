@@ -6379,7 +6379,8 @@ var Raytracer = (function () {
         this.rs = [1, 1, 5, 9];
         this.time_stamp = 1;
         this.rcount = 0;
-        this.scount = 0;
+        this.stcount = 0;
+        this.sccount = 0;
         this.sigma = 20;
         this.cur_stage = 1;
         this.r = 24;
@@ -6614,7 +6615,8 @@ var Raytracer = (function () {
             this.sigma = this.sigmas[3];
             this.r = this.rs[3];
             this.cur_stage = 3;
-            this.scount = 0;
+            this.stcount = 0;
+            this.sccount = 0;
             this.pattern = new _utilityGaussianPattern2['default'](this.r, this.sigma);
             for (var y = 0; y < this.height; ++y) for (var x = 0; x < this.width; ++x) {
                 var c = this.output.getPoint(x, y);
@@ -6628,6 +6630,7 @@ var Raytracer = (function () {
         key: 'render',
         value: function render() {
             var output = this.output;
+            if (this.sccount >= this.screen_size) return;
             while (true) {
                 var coor = this.rand_coor.getNext();
                 var x = coor[0];
@@ -6669,11 +6672,12 @@ var Raytracer = (function () {
                     }
                 }
                 this.rcount++;
-                this.scount++;
+                this.stcount++;
+                this.sccount++;
                 if (this.rcount % this.rlimit[this.cur_stage] == 0) {
                     output.updateCanvas();
-                    if (this.scount * this.sigma * this.sigma > this.slimit[this.cur_stage] * this.screen_size && this.cur_stage > 1) {
-                        this.scount = 0;
+                    if (this.stcount * this.sigma * this.sigma > this.slimit[this.cur_stage] * this.screen_size && this.cur_stage > 1) {
+                        this.stcount = 0;
                         this.cur_stage--;
                         this.sigma = this.sigmas[this.cur_stage];
                         this.r = this.rs[this.cur_stage];

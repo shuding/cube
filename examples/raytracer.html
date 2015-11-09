@@ -86,9 +86,14 @@
   var now = 0;
   var render = function() {
     raytracer.render();
-    setTimeout(function () {
-      render();
-    }, 0);
+    if (raytracer.sccount >= raytracer.screen_size)
+      setTimeout(function () {
+        render();
+      }, 30);
+    else
+      setTimeout(function () {
+        render();
+      }, 0);
   }
 
   render();
