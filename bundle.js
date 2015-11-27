@@ -5640,7 +5640,7 @@ var Face = (function () {
         this.c = co;
 
         // Normal vector
-        this.n = a.minus(b).det(c.minus(b)).normalize();
+        this.n = b.minus(a).det(c.minus(a)).normalize();
     }
 
     /**
@@ -5655,22 +5655,26 @@ var Face = (function () {
             if (dot > 0) {
                 return null;
             }
-            var p = ray.t.mul(this._a.minus(ray.s).dot(this.n) / dot);
-
-            var u = this._b.minus(this._a);
+            var len = ray.s.minus(this._a).dot(this.n);
+            if (len < 0) return null;
+            var p = ray.s.add(ray.t.mul(-len / dot));
+            if (this._b.minus(this._a).det(p.minus(this._a)).dot(this.n) < 0) return null;
+            if (this._c.minus(this._b).det(p.minus(this._b)).dot(this.n) < 0) return null;
+            if (this._a.minus(this._c).det(p.minus(this._c)).dot(this.n) < 0) return null;
+            return new _coreRay2['default'](p, ray.t.add(this.n.mul(-2.0 * dot)));
+            /*let p = ray.t.mul(this._a.minus(ray.s).dot(this.n) / dot);
+             var u = this._b.minus(this._a);
             var v = this._c.minus(this._a);
             var w = p.minus(this._a);
-
-            var uv = u.dot(v);
+             var uv = u.dot(v);
             var uu = u.dot(u);
             var vv = v.dot(v);
             var wu = w.dot(u);
             var wv = w.dot(v);
-
-            //if (wv * (uv - uu) + wu * (uv - vv) < (uv * uv - uu * vv)) {
-            return new _coreRay2['default'](p.add(ray.s), p.minus(this.n.mul(p.dot(this.n) * 2)));
-            //}
-
+             if (wv * (uv - uu) + wu * (uv - vv) < (uv * uv - uu * vv)) {
+                return new Ray(p.add(ray.s), p.minus(this.n.mul(p.dot(this.n) * 2)));
+            }
+            */
             //return null;
 
             /*
@@ -5712,15 +5716,25 @@ module.exports = exports['default'];
  * <ds303077135@gmail.com>
  */
 
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
+Object.defineProperty(exports, '__esModule', {
     value: true
 });
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var _coreRay = require('../core/ray');
+
+var _coreRay2 = _interopRequireDefault(_coreRay);
+
+var _coreColor = require('../core/color');
+
+var _coreColor2 = _interopRequireDefault(_coreColor);
 
 var Face4 = (function () {
     /**
@@ -5732,30 +5746,50 @@ var Face4 = (function () {
      */
 
     function Face4(a, b, c, d) {
+        var co = arguments.length <= 4 || arguments[4] === undefined ? _coreColor.colors.white : arguments[4];
+
         _classCallCheck(this, Face4);
 
         this.a = a;
         this.b = b;
         this.c = c;
         this.d = d;
+        this.n = b.minus(a).det(d.minus(a)).normalize();
+        this.co = co;
     }
 
     _createClass(Face4, [{
-        key: "projection",
+        key: 'projection',
         value: function projection() {
             var _a, _b, _c, _d;
 
-            return new Face4((_a = this.a).projection.apply(_a, arguments), (_b = this.b).projection.apply(_b, arguments), (_c = this.c).projection.apply(_c, arguments), (_d = this.d).projection.apply(_d, arguments));
+            return new Face4((_a = this.a).projection.apply(_a, arguments), (_b = this.b).projection.apply(_b, arguments), (_c = this.c).projection.apply(_c, arguments), (_d = this.d).projection.apply(_d, arguments), this.co);
+        }
+    }, {
+        key: 'testInnerRay',
+        value: function testInnerRay(ray) {
+            var dot = ray.t.dot(this.n);
+            if (dot > 0) {
+                return null;
+            }
+            var len = ray.s.minus(this.a).dot(this.n);
+            if (len < 0) return null;
+            var p = ray.s.add(ray.t.mul(-len / dot));
+            if (this.b.minus(this.a).det(p.minus(this.a)).dot(this.n) < 0) return null;
+            if (this.c.minus(this.b).det(p.minus(this.b)).dot(this.n) < 0) return null;
+            if (this.d.minus(this.c).det(p.minus(this.c)).dot(this.n) < 0) return null;
+            if (this.a.minus(this.d).det(p.minus(this.d)).dot(this.n) < 0) return null;
+            return new _coreRay2['default'](p, ray.t.add(this.n.mul(-2.0 * dot)));
         }
     }]);
 
     return Face4;
 })();
 
-exports["default"] = Face4;
-module.exports = exports["default"];
+exports['default'] = Face4;
+module.exports = exports['default'];
 
-},{}],203:[function(require,module,exports){
+},{"../core/color":190,"../core/ray":192}],203:[function(require,module,exports){
 /**
  * Created by shuding on 10/8/15.
  * <ds303077135@gmail.com>

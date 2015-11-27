@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+<canvas id="myCanvas" width="800" height="600" style="border: 1px solid #d3d3d3; width: 800px; height: 600px;">
+    Your browser does not support the HTML5 canvas tag.
+</canvas>
+<script src="../bundle.js"></script>
+
+<script type="text/javascript">
+    htmlcanvas = document.getElementById('myCanvas');
+    canvas = new cube.Canvas(htmlcanvas);
+
+    width = 800;
+    height = 600;
+
+    f0 = new cube.Face4(
+            new cube.Vector(-200, 0, -200),
+            new cube.Vector(200, 0, -200),
+            new cube.Vector(200, 0, 200),
+            new cube.Vector(-200, 0, 200)
+    );
+
+    /*f1 = new cube.Face4(
+            new cube.Vector(-200, -200, 0),
+            new cube.Vector(200, -200, 0),
+            new cube.Vector(200, 200, 0),
+            new cube.Vector(-200, 200, 0)
+    );
+
+    f2 = new cube.Face4(
+            new cube.Vector(-200, -200, 0),
+            new cube.Vector(200, -200, 0),
+            new cube.Vector(200, 200, 0),
+            new cube.Vector(-200, 200, 0)
+    );
+
+    f3 = new cube.Face4(
+            new cube.Vector(-200, -200, 0),
+            new cube.Vector(200, -200, 0),
+            new cube.Vector(200, 200, 0),
+            new cube.Vector(-200, 200, 0)
+    );
+
+    f4 = new cube.Face4(
+            new cube.Vector(-200, -200, 0),
+            new cube.Vector(200, -200, 0),
+            new cube.Vector(200, 200, 0),
+            new cube.Vector(-200, 200, 0)
+    );
+
+    f5 = new cube.Face4(
+            new cube.Vector(-200, -200, 0),
+            new cube.Vector(200, -200, 0),
+            new cube.Vector(200, 200, 0),
+            new cube.Vector(-200, 200, 0)
+    );*/
+
+    scene = new cube.Scene(f0);
+    /*scene.addObject(new cube.Plane(
+            new cube.Vector(0, 400, 0),
+            new cube.Vector(0, -2, -1)
+    ));*/
+
+    // or specific viewport
+    camera = new cube.Camera(new cube.Vector(0.0, 0.0, -600.0), [
+        new cube.Vector(-400.0, 300.0, -200.0),
+        new cube.Vector(400.0, 300.0, -200.0),
+        new cube.Vector(-400.0, -300.0, -200.0),
+        new cube.Vector(400.0, -300.0, -200.0)
+    ], width, height);
+
+    raytracer = new cube.Raytracer(camera, canvas);
+    raytracer.addLight(new cube.Ball(
+            new cube.Vector(000, -600, 0),
+            200,
+            cube.colors.white
+    ));
+
+    var t = new Date();
+
+    //raytracer.render(scene);
+
+    var threads = 8;
+
+    /*var render = function (offsetX, offsetY) {
+     if (offsetX == threads && offsetY == threads) {
+     var p = document.createElement('p');
+     p.innerHTML = ((new Date()).getTime() - t.getTime()) + 'ms';
+     document.body.appendChild(p);
+     return;
+     }
+     raytracer.render(scene, offsetX, offsetY, threads, threads);
+     setTimeout(function (offsetX, offsetY) {
+     if (offsetX == threads) {
+     render(0, offsetY + 1);
+     } else {
+     render(offsetX + 1, offsetY);
+     }
+     }, 0, offsetX, offsetY);
+     };
+
+     render(0, 0);*/
+
+    raytracer.output.fillBlack();
+    raytracer.output.updateCanvas();
+    var now = 0;
+    var render = function() {
+        raytracer.render();
+        if (raytracer.sccount >= raytracer.screen_size)
+            setTimeout(function () {
+                render();
+            }, 30);
+        else
+            setTimeout(function () {
+                render();
+            }, 0);
+    }
+
+    render();
+
+    canvas.bindDrag(function (event, data) {
+        var deltaY = 0.005 * (event.x - data.x);
+        var deltaX = 0.005 * (event.y - data.y);
+        var x = raytracer.camera._screen_[0].minus(raytracer.camera._screen_[1]);
+        var y = raytracer.camera._screen_[0].minus(raytracer.camera._screen_[2]);
+        x.normalize();
+        y.normalize();
+        var v = x.mul(deltaX).add(y.mul(deltaY));
+        raytracer.camera.rotate(v.x, v.y, v.z);
+        raytracer.sceneChange();
+    });
+    //raytracer.render();
+
+    /*
+     canvas.bindDrag(function (event, data) {
+     var deltaY = 0.01 * (event.x - data.x);
+     var deltaX = 0.01 * (event.y - data.y);
+     raytracer.clear();
+     raytracer.rotate(deltaX, 0, deltaY);
+     raytracer.render(scene);
+     });
+     */
+</script>
+
+</body>
+</html>
