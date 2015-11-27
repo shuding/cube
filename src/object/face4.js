@@ -15,21 +15,21 @@ class Face4 {
      * @param {Vector} d
      */
     constructor(a, b, c, d, co = colors.white) {
-        this.a = a;
-        this.b = b;
-        this.c = c;
-        this.d = d;
+        this._a = a;
+        this._b = b;
+        this._c = c;
+        this._d = d;
         this.n = b.minus(a).det(d.minus(a)).normalize();
-        this.co = co;
+        this.c = co;
     }
 
     projection() {
         return new Face4(
-            this.a.projection(...arguments),
-            this.b.projection(...arguments),
-            this.c.projection(...arguments),
-            this.d.projection(...arguments),
-            this.co
+            this._a.projection(...arguments),
+            this._b.projection(...arguments),
+            this._c.projection(...arguments),
+            this._d.projection(...arguments),
+            this.c
         );
     }
 
@@ -38,17 +38,17 @@ class Face4 {
         if (dot > 0) {
             return null;
         }
-        let len = ray.s.minus(this.a).dot(this.n);
+        let len = ray.s.minus(this._a).dot(this.n);
         if (len < 0)
             return null;
         let p = ray.s.add(ray.t.mul(-len / dot));
-        if (this.b.minus(this.a).det(p.minus(this.a)).dot(this.n) < 0)
+        if (this._b.minus(this._a).det(p.minus(this._a)).dot(this.n) < 0)
             return null;
-        if (this.c.minus(this.b).det(p.minus(this.b)).dot(this.n) < 0)
+        if (this._c.minus(this._b).det(p.minus(this._b)).dot(this.n) < 0)
             return null;
-        if (this.d.minus(this.c).det(p.minus(this.c)).dot(this.n) < 0)
+        if (this._d.minus(this._c).det(p.minus(this._c)).dot(this.n) < 0)
             return null;
-        if (this.a.minus(this.d).det(p.minus(this.d)).dot(this.n) < 0)
+        if (this._a.minus(this._d).det(p.minus(this._d)).dot(this.n) < 0)
             return null;
         return new Ray(p, ray.t.add(this.n.mul(-2.0 * dot)));
     }

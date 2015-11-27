@@ -5750,12 +5750,12 @@ var Face4 = (function () {
 
         _classCallCheck(this, Face4);
 
-        this.a = a;
-        this.b = b;
-        this.c = c;
-        this.d = d;
+        this._a = a;
+        this._b = b;
+        this._c = c;
+        this._d = d;
         this.n = b.minus(a).det(d.minus(a)).normalize();
-        this.co = co;
+        this.c = co;
     }
 
     _createClass(Face4, [{
@@ -5763,7 +5763,7 @@ var Face4 = (function () {
         value: function projection() {
             var _a, _b, _c, _d;
 
-            return new Face4((_a = this.a).projection.apply(_a, arguments), (_b = this.b).projection.apply(_b, arguments), (_c = this.c).projection.apply(_c, arguments), (_d = this.d).projection.apply(_d, arguments), this.co);
+            return new Face4((_a = this._a).projection.apply(_a, arguments), (_b = this._b).projection.apply(_b, arguments), (_c = this._c).projection.apply(_c, arguments), (_d = this._d).projection.apply(_d, arguments), this.c);
         }
     }, {
         key: 'testInnerRay',
@@ -5772,13 +5772,13 @@ var Face4 = (function () {
             if (dot > 0) {
                 return null;
             }
-            var len = ray.s.minus(this.a).dot(this.n);
+            var len = ray.s.minus(this._a).dot(this.n);
             if (len < 0) return null;
             var p = ray.s.add(ray.t.mul(-len / dot));
-            if (this.b.minus(this.a).det(p.minus(this.a)).dot(this.n) < 0) return null;
-            if (this.c.minus(this.b).det(p.minus(this.b)).dot(this.n) < 0) return null;
-            if (this.d.minus(this.c).det(p.minus(this.c)).dot(this.n) < 0) return null;
-            if (this.a.minus(this.d).det(p.minus(this.d)).dot(this.n) < 0) return null;
+            if (this._b.minus(this._a).det(p.minus(this._a)).dot(this.n) < 0) return null;
+            if (this._c.minus(this._b).det(p.minus(this._b)).dot(this.n) < 0) return null;
+            if (this._d.minus(this._c).det(p.minus(this._c)).dot(this.n) < 0) return null;
+            if (this._a.minus(this._d).det(p.minus(this._d)).dot(this.n) < 0) return null;
             return new _coreRay2['default'](p, ray.t.add(this.n.mul(-2.0 * dot)));
         }
     }]);
