@@ -54,11 +54,11 @@ class Mapper {
     render(scene) {
         var coorA, coorB, coorC, coorD, coorE, coorF, coorG, coorH;
 
-        let screenPlane = planeFromScreen(this.camera.screen);
-        let origin      = this.camera.screen[2];
-        let x           = this.camera.screen[1].minus(this.camera.screen[0]);
-        let y           = this.camera.screen[0].minus(this.camera.screen[2]);
-        let z           = this.camera.screen[2].add(x.mul(.5)).addBy(y.mul(.5)).minusBy(this.camera.eye);
+        let screenPlane = planeFromScreen(this.camera._screen_);
+        let origin      = this.camera._screen_[2];
+        let x           = this.camera._screen_[1].minus(this.camera._screen_[0]);
+        let y           = this.camera._screen_[0].minus(this.camera._screen_[2]);
+        let z           = this.camera._screen_[2].add(x.mul(.5)).addBy(y.mul(.5)).minusBy(this.camera.eye);
 
         let bresenham  = new Bresenham(this.output);
         let markfiller = new MarkFiller(this.output);
@@ -73,29 +73,29 @@ class Mapper {
                     drawProjectLine(bresenham, coorA, coorB, x, y);
                     break;
                 case 'Face':
-                    coorA = objProject.a.minus(origin);
-                    coorB = objProject.b.minus(origin);
-                    coorC = objProject.c.minus(origin);
+                    coorA = objProject._a.minus(origin);
+                    coorB = objProject._b.minus(origin);
+                    coorC = objProject._c.minus(origin);
                     drawProjectLine(bresenham, coorA, coorB, x, y);
                     drawProjectLine(bresenham, coorA, coorC, x, y);
                     drawProjectLine(bresenham, coorB, coorC, x, y);
                     break;
                 case 'Face4':
-                    coorA = objProject.a.minus(origin);
-                    coorB = objProject.b.minus(origin);
-                    coorC = objProject.c.minus(origin);
-                    coorD = objProject.d.minus(origin);
+                    coorA = objProject._a.minus(origin);
+                    coorB = objProject._b.minus(origin);
+                    coorC = objProject._c.minus(origin);
+                    coorD = objProject._d.minus(origin);
                     drawProjectFace(markfiller, [coorA, coorB, coorC, coorD], x, y);
                     break;
                 case 'Cuboid':
-                    coorA     = objProject.a.a.minus(origin);
-                    coorB     = objProject.a.b.minus(origin);
-                    coorC     = objProject.a.c.minus(origin);
-                    coorD     = objProject.a.d.minus(origin);
-                    coorE     = objProject.b.a.minus(origin);
-                    coorF     = objProject.b.b.minus(origin);
-                    coorG     = objProject.b.c.minus(origin);
-                    coorH     = objProject.b.d.minus(origin);
+                    coorA     = objProject.a._a.minus(origin);
+                    coorB     = objProject.a._b.minus(origin);
+                    coorC     = objProject.a._c.minus(origin);
+                    coorD     = objProject.a._d.minus(origin);
+                    coorE     = objProject.b._a.minus(origin);
+                    coorF     = objProject.b._b.minus(origin);
+                    coorG     = objProject.b._c.minus(origin);
+                    coorH     = objProject.b._d.minus(origin);
 
                     // Sort by z-index
                     let faces = [
