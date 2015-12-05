@@ -62,10 +62,20 @@
             new cube.Vector(-100, -100, 100)
     );*/
 
-    scene = new cube.Scene(f0, f1);
+    scene = new cube.Scene();
     /*scene.addObject(new cube.Plane(
             new cube.Vector(0, 400, 0),
             new cube.Vector(0, -2, -1)
+    ));*/
+
+    scene.addObject(new cube.Plane(
+            new cube.Vector(-400, 0, 0),
+            new cube.Vector(1, -1, 1)
+    ));
+
+    /*scene.addObject(new cube.Plane(
+            new cube.Vector(400, 0, 0),
+            new cube.Vector(-1, -1, 1)
     ));*/
 
     // or specific viewport
@@ -79,6 +89,12 @@
     raytracer = new cube.Raytracer(camera, canvas);
     raytracer.addLight(new cube.Ball(
             new cube.Vector(0, -600, 0),
+            200,
+            cube.colors.white
+    ));
+
+    raytracer.addLight(new cube.Ball(
+            new cube.Vector(0, -600, -600),
             200,
             cube.colors.white
     ));
