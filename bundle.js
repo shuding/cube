@@ -6226,11 +6226,11 @@ var Mapper = (function () {
         value: function render(scene) {
             var coorA, coorB, coorC, coorD, coorE, coorF, coorG, coorH;
 
-            var screenPlane = (0, _objectPlane.planeFromScreen)(this.camera.screen);
-            var origin = this.camera.screen[2];
-            var x = this.camera.screen[1].minus(this.camera.screen[0]);
-            var y = this.camera.screen[0].minus(this.camera.screen[2]);
-            var z = this.camera.screen[2].add(x.mul(.5)).addBy(y.mul(.5)).minusBy(this.camera.eye);
+            var screenPlane = (0, _objectPlane.planeFromScreen)(this.camera._screen_);
+            var origin = this.camera._screen_[2];
+            var x = this.camera._screen_[1].minus(this.camera._screen_[0]);
+            var y = this.camera._screen_[0].minus(this.camera._screen_[2]);
+            var z = this.camera._screen_[2].add(x.mul(.5)).addBy(y.mul(.5)).minusBy(this.camera.eye);
 
             var bresenham = new _drawerLine2['default'](this.output);
             var markfiller = new _drawerPolygon2['default'](this.output);
@@ -6252,29 +6252,29 @@ var Mapper = (function () {
                             drawProjectLine(bresenham, coorA, coorB, x, y);
                             break;
                         case 'Face':
-                            coorA = objProject.a.minus(origin);
-                            coorB = objProject.b.minus(origin);
-                            coorC = objProject.c.minus(origin);
+                            coorA = objProject._a.minus(origin);
+                            coorB = objProject._b.minus(origin);
+                            coorC = objProject._c.minus(origin);
                             drawProjectLine(bresenham, coorA, coorB, x, y);
                             drawProjectLine(bresenham, coorA, coorC, x, y);
                             drawProjectLine(bresenham, coorB, coorC, x, y);
                             break;
                         case 'Face4':
-                            coorA = objProject.a.minus(origin);
-                            coorB = objProject.b.minus(origin);
-                            coorC = objProject.c.minus(origin);
-                            coorD = objProject.d.minus(origin);
+                            coorA = objProject._a.minus(origin);
+                            coorB = objProject._b.minus(origin);
+                            coorC = objProject._c.minus(origin);
+                            coorD = objProject._d.minus(origin);
                             drawProjectFace(markfiller, [coorA, coorB, coorC, coorD], x, y);
                             break;
                         case 'Cuboid':
-                            coorA = objProject.a.a.minus(origin);
-                            coorB = objProject.a.b.minus(origin);
-                            coorC = objProject.a.c.minus(origin);
-                            coorD = objProject.a.d.minus(origin);
-                            coorE = objProject.b.a.minus(origin);
-                            coorF = objProject.b.b.minus(origin);
-                            coorG = objProject.b.c.minus(origin);
-                            coorH = objProject.b.d.minus(origin);
+                            coorA = objProject.a._a.minus(origin);
+                            coorB = objProject.a._b.minus(origin);
+                            coorC = objProject.a._c.minus(origin);
+                            coorD = objProject.a._d.minus(origin);
+                            coorE = objProject.b._a.minus(origin);
+                            coorF = objProject.b._b.minus(origin);
+                            coorG = objProject.b._c.minus(origin);
+                            coorH = objProject.b._d.minus(origin);
 
                             // Sort by z-index
                             var faces = [[coorA, coorB, coorC, coorD], [coorE, coorF, coorG, coorH], [coorA, coorB, coorF, coorE], [coorB, coorC, coorG, coorF], [coorC, coorD, coorH, coorG], [coorD, coorA, coorE, coorH]];
@@ -6394,13 +6394,13 @@ var Raytracer = (function () {
         this.height = camera.height;
         this.screen_size = this.width * this.height;
         this.rand_coor = new _utilityPseudoRandom2['default'](camera.width, camera.height);
-        this.time_stamp_arr = new Array();
-        this.stage = new Array();
-        this.acc = new Array();
+        this.time_stamp_arr = [];
+        this.stage = [];
+        this.acc = [];
         for (var y = 0; y < this.height; ++y) {
-            this.time_stamp_arr[y] = new Array();
-            this.stage[y] = new Array();
-            this.acc[y] = new Array();
+            this.time_stamp_arr[y] = [];
+            this.stage[y] = [];
+            this.acc[y] = [];
             for (var x = 0; x < this.width; ++x) {
                 this.time_stamp_arr[y][x] = 0;
                 this.stage[y][x] = 4;
@@ -6747,10 +6747,12 @@ var GaussianPattern = function GaussianPattern(r, sigma) {
 
     this.r = ~ ~r;
     this.sigma = sigma;
-    this.pat = new Array();
+    this.pat = [];
     for (var x = -r + 1; x < r; ++x) {
-        this.pat[x] = new Array();
-        for (var y = -r + 1; y < r; ++y) this.pat[x][y] = Math.exp(-0.5 * (x * x + y * y) / (sigma * sigma));
+        this.pat[x] = [];
+        for (var y = -r + 1; y < r; ++y) {
+            this.pat[x][y] = Math.exp(-0.5 * (x * x + y * y) / (sigma * sigma));
+        }
     }
 };
 
@@ -6780,8 +6782,12 @@ var RandomCoor = (function () {
         this.h = h;
         this.s = w * h;
         this.n = 0;
-        this.coor = new Array();
-        for (var y = 0; y < h; ++y) for (var x = 0; x < w; ++x) this.coor[this.n++] = [x, y];
+        this.coor = [];
+        for (var y = 0; y < h; ++y) {
+            for (var x = 0; x < w; ++x) {
+                this.coor[this.n++] = [x, y];
+            }
+        }
         for (var n = this.s - 1; n > 0; --n) {
             var id = ~ ~(Math.random() * n);
             var t = this.coor[n];
@@ -6795,7 +6801,9 @@ var RandomCoor = (function () {
         key: "getNext",
         value: function getNext() {
             this.n--;
-            if (this.n < 0) this.n = this.h * this.w - 1;
+            if (this.n < 0) {
+                this.n = this.h * this.w - 1;
+            }
             return this.coor[this.n];
         }
     }]);
@@ -6839,9 +6847,7 @@ function drainQueue() {
         currentQueue = queue;
         queue = [];
         while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
+            currentQueue[queueIndex].run();
         }
         queueIndex = -1;
         len = queue.length;
@@ -6893,6 +6899,7 @@ process.binding = function (name) {
     throw new Error('process.binding is not supported');
 };
 
+// TODO(shtylman)
 process.cwd = function () { return '/' };
 process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
