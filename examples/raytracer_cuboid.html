@@ -18,48 +18,51 @@
     height = 600;
 
     f0 = new cube.Face4(
-            new cube.Vector(-200, 0, -200),
-            new cube.Vector(200, 0, -200),
-            new cube.Vector(200, 0, 200),
-            new cube.Vector(-200, 0, 200)
+            new cube.Vector(-100, -100, -100),
+            new cube.Vector(100, -100, -100),
+            new cube.Vector(100, -100, 100),
+            new cube.Vector(-100, -100, 100),
+            cube.colors.white
     );
 
-    /*f1 = new cube.Face4(
-            new cube.Vector(-200, -200, 0),
-            new cube.Vector(200, -200, 0),
-            new cube.Vector(200, 200, 0),
-            new cube.Vector(-200, 200, 0)
+    f1 = new cube.Face4(
+            new cube.Vector(-100, -100, -100),
+            new cube.Vector(-100, 100, -100),
+            new cube.Vector(100, 100, -100),
+            new cube.Vector(100, -100, -100),
+            cube.colors.blue
     );
 
+    /*
     f2 = new cube.Face4(
-            new cube.Vector(-200, -200, 0),
-            new cube.Vector(200, -200, 0),
-            new cube.Vector(200, 200, 0),
-            new cube.Vector(-200, 200, 0)
+            new cube.Vector(-100, -100, -100),
+            new cube.Vector(100, -100, -100),
+            new cube.Vector(100, -100, 100),
+            new cube.Vector(-100, -100, 100)
     );
 
     f3 = new cube.Face4(
-            new cube.Vector(-200, -200, 0),
-            new cube.Vector(200, -200, 0),
-            new cube.Vector(200, 200, 0),
-            new cube.Vector(-200, 200, 0)
+            new cube.Vector(-100, -100, -100),
+            new cube.Vector(100, -100, -100),
+            new cube.Vector(100, -100, 100),
+            new cube.Vector(-100, -100, 100)
     );
 
     f4 = new cube.Face4(
-            new cube.Vector(-200, -200, 0),
-            new cube.Vector(200, -200, 0),
-            new cube.Vector(200, 200, 0),
-            new cube.Vector(-200, 200, 0)
+            new cube.Vector(-100, -100, -100),
+            new cube.Vector(100, -100, -100),
+            new cube.Vector(100, -100, 100),
+            new cube.Vector(-100, -100, 100)
     );
 
     f5 = new cube.Face4(
-            new cube.Vector(-200, -200, 0),
-            new cube.Vector(200, -200, 0),
-            new cube.Vector(200, 200, 0),
-            new cube.Vector(-200, 200, 0)
+            new cube.Vector(-100, -100, -100),
+            new cube.Vector(100, -100, -100),
+            new cube.Vector(100, -100, 100),
+            new cube.Vector(-100, -100, 100)
     );*/
 
-    scene = new cube.Scene(f0);
+    scene = new cube.Scene(f0, f1);
     /*scene.addObject(new cube.Plane(
             new cube.Vector(0, 400, 0),
             new cube.Vector(0, -2, -1)
@@ -75,8 +78,8 @@
 
     raytracer = new cube.Raytracer(camera, canvas);
     raytracer.addLight(new cube.Ball(
-            new cube.Vector(000, -600, 0),
-            200,
+            new cube.Vector(0, -600, 0),
+            400,
             cube.colors.white
     ));
 
