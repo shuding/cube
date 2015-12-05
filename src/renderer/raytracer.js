@@ -63,6 +63,34 @@ class Raytracer {
     }
 
     /**
+     * Anti-aliasing
+     * @param scene
+     * @param ray
+     * @param depth
+     * @returns {*}
+     */
+    antialiasing(scene, ray, depth) {
+        let c = colors.black.clone();
+        let rayY = ray.clone();
+        // Top-left
+        for (let i = 0; i + 1 < Cons.NUMBER_SAMPLE; ++i) {
+            rayY.t.minusBy(this.camera.widthIncPerSubPixel);
+            rayY.t.minusBy(this.camera.heightIncPerSubPixel);
+        }
+        for (let i = 0; i < Cons.NUMBER_SAMPLE; ++i) {
+            let randRay = rayY.clone();
+            for (let j = 0; j < Cons.NUMBER_SAMPLE; ++j) {
+                c.addBy(this.trace(scene, randRay, depth, false));
+                randRay.t.addBy(this.camera.widthIncPerSubPixel);
+                randRay.t.addBy(this.camera.widthIncPerSubPixel);
+            }
+            rayY.t.addBy(this.camera.heightIncPerSubPixel);
+            rayY.t.addBy(this.camera.heightIncPerSubPixel);
+        }
+        return c.mulBy(1.0 / (Cons.NUMBER_SAMPLE * Cons.NUMBER_SAMPLE)).mask(ray.c);
+    }
+
+    /**
      * Tracy specific ray and returns color
      * @param {Scene} scene
      * @param {Ray} ray
@@ -74,11 +102,10 @@ class Raytracer {
         if (depth <= 0) {
             return colors.black.clone();
         }
-        /*
+
         if (ray.c.brightness() < Cons.MIN_BRIGHTNESS) {
             return colors.black;
         }
-        */
 
         let p      = null;
         let minP   = null;
@@ -90,25 +117,7 @@ class Raytracer {
                 if (p == Cons.FLAG_EDGE) {
                     /*
                     if (sample) {
-                        // Samples
-                        let c = colors.black.clone();
-                        let rayY = ray.clone();
-                        // Top-left
-                        for (let i = 0; i + 1 < Cons.NUMBER_SAMPLE; ++i) {
-                            rayY.t.minusBy(this.camera.widthIncPerSubPixel);
-                            rayY.t.minusBy(this.camera.heightIncPerSubPixel);
-                        }
-                        for (let i = 0; i < Cons.NUMBER_SAMPLE; ++i) {
-                            let randRay = rayY.clone();
-                            for (let j = 0; j < Cons.NUMBER_SAMPLE; ++j) {
-                                c.addBy(this.trace(scene, randRay, depth, false));
-                                randRay.t.addBy(this.camera.widthIncPerSubPixel);
-                                randRay.t.addBy(this.camera.widthIncPerSubPixel);
-                            }
-                            rayY.t.addBy(this.camera.heightIncPerSubPixel);
-                            rayY.t.addBy(this.camera.heightIncPerSubPixel);
-                        }
-                        return c.mulBy(1.0 / (Cons.NUMBER_SAMPLE * Cons.NUMBER_SAMPLE)).mask(ray.c);
+                        return this.antialiasing(scene, ray, depth);
                     }
                     */
                 } else {
@@ -122,48 +131,72 @@ class Raytracer {
             }
         }
 
+        for (let i = 0; i < this.lights.length; ++i) {
+            let light = this.lights[i];
+            p = light.testInnerRay(ray);
+            if (p !== null && p !== Cons.FLAG_EDGE) {
+                if (!minObj) {
+                    return this.lights[i].c.clone();
+                } else if (ray.s.minus(p.s).length() < minDis) {
+                    return this.lights[i].c.clone();
+                }
+            }
+        }
+
         if (minObj) {
             let ret = colors.black.clone();
 
             // Reflection
             minP.c = ray.c.mask(minObj.c);
-            /*
+
+            let diffuse = minObj.diffuse || 0.2;
             for (let i = 0; i < Cons.NUMBER_MONTE_CARLO; ++i) {
                 let randRay = minP.clone();
-                randRay.t.rotateBy(random() * 0.1, random() * 0.1, random() * 0.1);
+                randRay.t.rotateBy(random() * diffuse, random() * diffuse, random() * diffuse);
                 ret.addBy(this.trace(scene, randRay, depth - 1, false));
             }
             ret.mulBy(0.25 / Cons.NUMBER_MONTE_CARLO);
-            */
-            ret.addBy(this.trace(scene, minP, depth - 1, true).mulBy(0.5));
+
+            ret.addBy(this.trace(scene, minP, depth - 1, true).mulBy(minObj.reflection * 0.75));
 
             // Shadow
             for (let i = 0; i < this.lights.length; ++i) {
                 let light = this.lights[i];
-                let rayToLight = new Ray(minP.s.clone(), light.o.clone());
+                let rayToLight = new Ray(minP.s.clone(), light.o.minus(minP.s));
                 let shadow     = false;
                 let edge       = false;
+
                 let disToLight = minP.s.minus(light.o).length();
                 for (let obj of scene.eachObject()) {
                     if (obj !== minObj) {
                         let test = obj.testInnerRay(rayToLight);
-                        if (test != null && test != Cons.FLAG_EDGE && test.s.minus(minP.s).length() < disToLight) {
-                            shadow = true;
-                            break;
+                        if (test != null && test != Cons.FLAG_EDGE) {
+                            if (minP.s.minus(test.s).length() < disToLight) {
+                                shadow = true;
+                                break;
+                            }
                         } else if (test == Cons.FLAG_EDGE) {
                             edge = true;
                         }
                     }
                 }
-                let cosAngle = 0;
                 if (!shadow) {
-                    cosAngle = light.o.minus(minP.s).normalize().dot(minP.t.normal());
+                    let cosAngle = light.o.minus(minP.s).normalize().dot(minP.t.normal());
                     if (cosAngle < 0) {
                         cosAngle = 0;
                     }
-                    ret.addBy(minObj.c.mul(cosAngle * cosAngle).mask(light.c).mask(ray.c));
+                    /*
+                    else if (cosAngle < Cons.MIN_COSINE) {
+                        cosAngle = Cons.MIN_COSINE;
+                    }
+                    */
+                    let cosAngle2 = cosAngle * cosAngle;
+                    let rate = Math.min(cosAngle * (1 + cosAngle2 * cosAngle2 * cosAngle2) * 1.2, 1);
+                    let colorFromLight = minObj.c.mul(rate).mask(light.c).mask(ray.c);
+                    ret.addBy(colorFromLight);
                     //ret = ret.add(minObj.c.mul(pow(cosAngle, 10)));
                 }
+
                 /*
                 if (edge) {
                     if (sample) {
