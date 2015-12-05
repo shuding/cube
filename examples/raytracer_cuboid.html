@@ -63,20 +63,23 @@
     );*/
 
     scene = new cube.Scene();
-    /*scene.addObject(new cube.Plane(
-            new cube.Vector(0, 400, 0),
-            new cube.Vector(0, -2, -1)
-    ));*/
 
     scene.addObject(new cube.Plane(
-            new cube.Vector(-400, 0, 0),
-            new cube.Vector(1, 0, 0)
+            new cube.Vector(0, 400, 0),
+            new cube.Vector(0, -1, 0)
     ));
 
-    /*scene.addObject(new cube.Plane(
+    scene.addObject(new cube.Plane(
+        new cube.Vector(-400, 0, 0),
+        new cube.Vector(1, 0, 0),
+        cube.colors.green
+    ));
+
+    scene.addObject(new cube.Plane(
             new cube.Vector(400, 0, 0),
-            new cube.Vector(-1, 0, 0)
-    ));*/
+            new cube.Vector(-1, 0, 0),
+            cube.colors.red
+    ));
 
     // or specific viewport
     camera = new cube.Camera(new cube.Vector(0.0, 0.0, -600.0), [

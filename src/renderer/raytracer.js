@@ -88,6 +88,7 @@ class Raytracer {
             p = obj.testInnerRay(ray);
             if (p !== null) {
                 if (p == Cons.FLAG_EDGE) {
+                    /*
                     if (sample) {
                         // Samples
                         let c = colors.black.clone();
@@ -109,6 +110,7 @@ class Raytracer {
                         }
                         return c.mulBy(1.0 / (Cons.NUMBER_SAMPLE * Cons.NUMBER_SAMPLE)).mask(ray.c);
                     }
+                    */
                 } else {
                     let dis = ray.s.minus(p.s);
                     if (dis.length() < minDis) {
@@ -141,10 +143,11 @@ class Raytracer {
                 let rayToLight = new Ray(minP.s.clone(), light.o.clone());
                 let shadow     = false;
                 let edge       = false;
+                let disToLight = minP.s.minus(light.o).length();
                 for (let obj of scene.eachObject()) {
                     if (obj !== minObj) {
                         let test = obj.testInnerRay(rayToLight);
-                        if (test != null && test != Cons.FLAG_EDGE) {
+                        if (test != null && test != Cons.FLAG_EDGE && test.s.minus(minP.s).length() < disToLight) {
                             shadow = true;
                             break;
                         } else if (test == Cons.FLAG_EDGE) {
@@ -161,8 +164,8 @@ class Raytracer {
                     ret.addBy(minObj.c.mul(cosAngle * cosAngle).mask(light.c).mask(ray.c));
                     //ret = ret.add(minObj.c.mul(pow(cosAngle, 10)));
                 }
+                /*
                 if (edge) {
-                    /*
                     if (sample) {
                         // Samples
                         let c = colors.black.clone();
@@ -184,21 +187,23 @@ class Raytracer {
                         }
                         c.mulBy(1.0 / (Cons.NUMBER_SAMPLE * Cons.NUMBER_SAMPLE)).mask(ray.c);
                         ret.addBy(c);
-                    }*/
-                }
+                    }
+                }*/
             }
 
             return ret;
-        } else {
+        }
+        /*
+        else {
             for (let i = 0; i < this.lights.length; ++i) {
                 let light = this.lights[i];
                 p = light.testInnerRay(ray);
                 if (p !== null && p !== Cons.FLAG_EDGE) {
-                    return colors.green;
+                    return this.lights[i].c;
                     //return light.c.mask(ray.c).toMax();
                 }
             }
-        }
+        }*/
 
         return colors.black.clone();
     }

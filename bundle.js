@@ -6474,18 +6474,19 @@ var Raytracer = (function () {
                     p = obj.testInnerRay(ray);
                     if (p !== null) {
                         if (p == _coreConstant2['default'].FLAG_EDGE) {
+                            /*
                             if (sample) {
                                 // Samples
-                                var c = _coreColor.colors.black.clone();
-                                var rayY = ray.clone();
+                                let c = colors.black.clone();
+                                let rayY = ray.clone();
                                 // Top-left
-                                for (var i = 0; i + 1 < _coreConstant2['default'].NUMBER_SAMPLE; ++i) {
+                                for (let i = 0; i + 1 < Cons.NUMBER_SAMPLE; ++i) {
                                     rayY.t.minusBy(this.camera.widthIncPerSubPixel);
                                     rayY.t.minusBy(this.camera.heightIncPerSubPixel);
                                 }
-                                for (var i = 0; i < _coreConstant2['default'].NUMBER_SAMPLE; ++i) {
-                                    var randRay = rayY.clone();
-                                    for (var j = 0; j < _coreConstant2['default'].NUMBER_SAMPLE; ++j) {
+                                for (let i = 0; i < Cons.NUMBER_SAMPLE; ++i) {
+                                    let randRay = rayY.clone();
+                                    for (let j = 0; j < Cons.NUMBER_SAMPLE; ++j) {
                                         c.addBy(this.trace(scene, randRay, depth, false));
                                         randRay.t.addBy(this.camera.widthIncPerSubPixel);
                                         randRay.t.addBy(this.camera.widthIncPerSubPixel);
@@ -6493,16 +6494,17 @@ var Raytracer = (function () {
                                     rayY.t.addBy(this.camera.heightIncPerSubPixel);
                                     rayY.t.addBy(this.camera.heightIncPerSubPixel);
                                 }
-                                return c.mulBy(1.0 / (_coreConstant2['default'].NUMBER_SAMPLE * _coreConstant2['default'].NUMBER_SAMPLE)).mask(ray.c);
+                                return c.mulBy(1.0 / (Cons.NUMBER_SAMPLE * Cons.NUMBER_SAMPLE)).mask(ray.c);
                             }
+                            */
                         } else {
-                            var dis = ray.s.minus(p.s);
-                            if (dis.length() < minDis) {
-                                minDis = dis.length();
-                                minObj = obj;
-                                minP = p;
+                                var dis = ray.s.minus(p.s);
+                                if (dis.length() < minDis) {
+                                    minDis = dis.length();
+                                    minObj = obj;
+                                    minP = p;
+                                }
                             }
-                        }
                     }
                 }
             } catch (err) {
@@ -6541,6 +6543,7 @@ var Raytracer = (function () {
                     var rayToLight = new _coreRay2['default'](minP.s.clone(), light.o.clone());
                     var shadow = false;
                     var edge = false;
+                    var disToLight = minP.s.minus(light.o).length();
                     var _iteratorNormalCompletion2 = true;
                     var _didIteratorError2 = false;
                     var _iteratorError2 = undefined;
@@ -6551,7 +6554,7 @@ var Raytracer = (function () {
 
                             if (obj !== minObj) {
                                 var test = obj.testInnerRay(rayToLight);
-                                if (test != null && test != _coreConstant2['default'].FLAG_EDGE) {
+                                if (test != null && test != _coreConstant2['default'].FLAG_EDGE && test.s.minus(minP.s).length() < disToLight) {
                                     shadow = true;
                                     break;
                                 } else if (test == _coreConstant2['default'].FLAG_EDGE) {
@@ -6583,8 +6586,8 @@ var Raytracer = (function () {
                         ret.addBy(minObj.c.mul(cosAngle * cosAngle).mask(light.c).mask(ray.c));
                         //ret = ret.add(minObj.c.mul(pow(cosAngle, 10)));
                     }
+                    /*
                     if (edge) {
-                        /*
                         if (sample) {
                             // Samples
                             let c = colors.black.clone();
@@ -6606,21 +6609,23 @@ var Raytracer = (function () {
                             }
                             c.mulBy(1.0 / (Cons.NUMBER_SAMPLE * Cons.NUMBER_SAMPLE)).mask(ray.c);
                             ret.addBy(c);
-                        }*/
-                    }
+                        }
+                    }*/
                 }
 
                 return ret;
-            } else {
-                for (var i = 0; i < this.lights.length; ++i) {
-                    var light = this.lights[i];
+            }
+            /*
+            else {
+                for (let i = 0; i < this.lights.length; ++i) {
+                    let light = this.lights[i];
                     p = light.testInnerRay(ray);
-                    if (p !== null && p !== _coreConstant2['default'].FLAG_EDGE) {
-                        return _coreColor.colors.green;
+                    if (p !== null && p !== Cons.FLAG_EDGE) {
+                        return this.lights[i].c;
                         //return light.c.mask(ray.c).toMax();
                     }
                 }
-            }
+            }*/
 
             return _coreColor.colors.black.clone();
         }
@@ -6851,9 +6856,7 @@ function drainQueue() {
         currentQueue = queue;
         queue = [];
         while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
+            currentQueue[queueIndex].run();
         }
         queueIndex = -1;
         len = queue.length;
@@ -6905,6 +6908,7 @@ process.binding = function (name) {
     throw new Error('process.binding is not supported');
 };
 
+// TODO(shtylman)
 process.cwd = function () { return '/' };
 process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
