@@ -5890,8 +5890,12 @@ var Plane = (function () {
             if (dot > 0) {
                 return null;
             }
-            var p = ray.t.mul(this.p.minus(ray.s).dot(this.n) / dot);
-            return new _coreRay2['default'](p.add(ray.s), p.minus(this.n.mul(p.dot(this.n) * 2)));
+            var len = ray.s.minus(this.p).dot(this.n);
+            if (len < 0) return null;
+            var p = ray.s.add(ray.t.mul(-len / dot));
+            return new _coreRay2['default'](p, ray.t.add(this.n.mul(-2.0 * dot)));
+            //let p = ray.t.mul(this.p.minus(ray.s).dot(this.n) / dot);
+            //return new Ray(p.add(ray.s), p.minus(this.n.mul(p.dot(this.n) * 2)));
         }
     }]);
 
@@ -6847,7 +6851,9 @@ function drainQueue() {
         currentQueue = queue;
         queue = [];
         while (++queueIndex < len) {
-            currentQueue[queueIndex].run();
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
         }
         queueIndex = -1;
         len = queue.length;
@@ -6899,7 +6905,6 @@ process.binding = function (name) {
     throw new Error('process.binding is not supported');
 };
 
-// TODO(shtylman)
 process.cwd = function () { return '/' };
 process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');

@@ -70,13 +70,13 @@
 
     scene.addObject(new cube.Plane(
             new cube.Vector(-400, 0, 0),
-            new cube.Vector(1, -1, 1)
+            new cube.Vector(1, -1, -1)
     ));
 
-    /*scene.addObject(new cube.Plane(
+    scene.addObject(new cube.Plane(
             new cube.Vector(400, 0, 0),
-            new cube.Vector(-1, -1, 1)
-    ));*/
+            new cube.Vector(-1, -1, -1)
+    ));
 
     // or specific viewport
     camera = new cube.Camera(new cube.Vector(0.0, 0.0, -600.0), [

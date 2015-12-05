@@ -28,8 +28,13 @@ class Plane {
         if (dot > 0) {
             return null;
         }
-        let p = ray.t.mul(this.p.minus(ray.s).dot(this.n) / dot);
-        return new Ray(p.add(ray.s), p.minus(this.n.mul(p.dot(this.n) * 2)));
+        let len = ray.s.minus(this.p).dot(this.n);
+        if (len < 0)
+            return null;
+        let p = ray.s.add(ray.t.mul(-len / dot));
+        return new Ray(p, ray.t.add(this.n.mul(-2.0 * dot)));
+        //let p = ray.t.mul(this.p.minus(ray.s).dot(this.n) / dot);
+        //return new Ray(p.add(ray.s), p.minus(this.n.mul(p.dot(this.n) * 2)));
     }
 }
 
