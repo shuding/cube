@@ -4299,8 +4299,8 @@ var Camera = (function () {
      */
 
     function Camera(eye, screen) {
-        var width = arguments.length <= 2 || arguments[2] === undefined ? 800 : arguments[2];
-        var height = arguments.length <= 3 || arguments[3] === undefined ? 600 : arguments[3];
+        var width = arguments.length <= 2 || arguments[2] === undefined ? 400 : arguments[2];
+        var height = arguments.length <= 3 || arguments[3] === undefined ? 300 : arguments[3];
 
         _classCallCheck(this, Camera);
 
@@ -4636,8 +4636,9 @@ Object.defineProperty(exports, "__esModule", {
 exports["default"] = {
     DEEP: 3,
     NUMBER_SAMPLE: 5, // nxn
-    NUMBER_MONTE_CARLO: 5,
-    MIN_BRIGHTNESS: 0.1,
+    NUMBER_MONTE_CARLO: 10,
+    MIN_BRIGHTNESS: 0.0,
+    MIN_COSINE: 0.1,
     DELTA_EDGE: 3,
     FLAG_EDGE: -1,
     RATE_EDGE: 0.1
@@ -5497,16 +5498,22 @@ var Ball = (function () {
      * @param {Vector} o the origin point
      * @param {Number} r the radius
      * @param {Color} c
+     * @param {Number} ref Reflection
+     * @param {Number} dif Diffuse
      */
 
     function Ball(o, r) {
         var c = arguments.length <= 2 || arguments[2] === undefined ? _coreColor.colors.white : arguments[2];
+        var ref = arguments.length <= 3 || arguments[3] === undefined ? 0.5 : arguments[3];
+        var dif = arguments.length <= 4 || arguments[4] === undefined ? 0.2 : arguments[4];
 
         _classCallCheck(this, Ball);
 
         this.o = o;
         this.r = r;
         this.c = c;
+        this.reflection = ref;
+        this.diffuse = dif;
     }
 
     _createClass(Ball, [{
@@ -5866,16 +5873,22 @@ var Plane = (function () {
      * @param {Vector} p Origin point
      * @param {Vector} n The normal vector
      * @param c
+     * @param {Number} r Reflection
+     * @param {Number} d Diffuse
      */
 
     function Plane(p, n) {
         var c = arguments.length <= 2 || arguments[2] === undefined ? _coreColor.colors.white : arguments[2];
+        var r = arguments.length <= 3 || arguments[3] === undefined ? 0.5 : arguments[3];
+        var d = arguments.length <= 4 || arguments[4] === undefined ? 0.2 : arguments[4];
 
         _classCallCheck(this, Plane);
 
         this.p = p;
         this.n = n.normalize();
         this.c = c;
+        this.reflection = r;
+        this.diffuse = d;
     }
 
     /**
@@ -5891,7 +5904,9 @@ var Plane = (function () {
                 return null;
             }
             var len = ray.s.minus(this.p).dot(this.n);
-            if (len < 0) return null;
+            if (len < 0) {
+                return null;
+            }
             var p = ray.s.add(ray.t.mul(-len / dot));
             return new _coreRay2['default'](p, ray.t.add(this.n.mul(-2.0 * dot)));
             //let p = ray.t.mul(this.p.minus(ray.s).dot(this.n) / dot);
@@ -6437,6 +6452,36 @@ var Raytracer = (function () {
         }
 
         /**
+         * Anti-aliasing
+         * @param scene
+         * @param ray
+         * @param depth
+         * @returns {*}
+         */
+    }, {
+        key: 'antialiasing',
+        value: function antialiasing(scene, ray, depth) {
+            var c = _coreColor.colors.black.clone();
+            var rayY = ray.clone();
+            // Top-left
+            for (var i = 0; i + 1 < _coreConstant2['default'].NUMBER_SAMPLE; ++i) {
+                rayY.t.minusBy(this.camera.widthIncPerSubPixel);
+                rayY.t.minusBy(this.camera.heightIncPerSubPixel);
+            }
+            for (var i = 0; i < _coreConstant2['default'].NUMBER_SAMPLE; ++i) {
+                var randRay = rayY.clone();
+                for (var j = 0; j < _coreConstant2['default'].NUMBER_SAMPLE; ++j) {
+                    c.addBy(this.trace(scene, randRay, depth, false));
+                    randRay.t.addBy(this.camera.widthIncPerSubPixel);
+                    randRay.t.addBy(this.camera.widthIncPerSubPixel);
+                }
+                rayY.t.addBy(this.camera.heightIncPerSubPixel);
+                rayY.t.addBy(this.camera.heightIncPerSubPixel);
+            }
+            return c.mulBy(1.0 / (_coreConstant2['default'].NUMBER_SAMPLE * _coreConstant2['default'].NUMBER_SAMPLE)).mask(ray.c);
+        }
+
+        /**
          * Tracy specific ray and returns color
          * @param {Scene} scene
          * @param {Ray} ray
@@ -6453,11 +6498,10 @@ var Raytracer = (function () {
             if (depth <= 0) {
                 return _coreColor.colors.black.clone();
             }
-            /*
-            if (ray.c.brightness() < Cons.MIN_BRIGHTNESS) {
-                return colors.black;
+
+            if (ray.c.brightness() < _coreConstant2['default'].MIN_BRIGHTNESS) {
+                return _coreColor.colors.black;
             }
-            */
 
             var p = null;
             var minP = null;
@@ -6476,25 +6520,7 @@ var Raytracer = (function () {
                         if (p == _coreConstant2['default'].FLAG_EDGE) {
                             /*
                             if (sample) {
-                                // Samples
-                                let c = colors.black.clone();
-                                let rayY = ray.clone();
-                                // Top-left
-                                for (let i = 0; i + 1 < Cons.NUMBER_SAMPLE; ++i) {
-                                    rayY.t.minusBy(this.camera.widthIncPerSubPixel);
-                                    rayY.t.minusBy(this.camera.heightIncPerSubPixel);
-                                }
-                                for (let i = 0; i < Cons.NUMBER_SAMPLE; ++i) {
-                                    let randRay = rayY.clone();
-                                    for (let j = 0; j < Cons.NUMBER_SAMPLE; ++j) {
-                                        c.addBy(this.trace(scene, randRay, depth, false));
-                                        randRay.t.addBy(this.camera.widthIncPerSubPixel);
-                                        randRay.t.addBy(this.camera.widthIncPerSubPixel);
-                                    }
-                                    rayY.t.addBy(this.camera.heightIncPerSubPixel);
-                                    rayY.t.addBy(this.camera.heightIncPerSubPixel);
-                                }
-                                return c.mulBy(1.0 / (Cons.NUMBER_SAMPLE * Cons.NUMBER_SAMPLE)).mask(ray.c);
+                                return this.antialiasing(scene, ray, depth);
                             }
                             */
                         } else {
@@ -6522,27 +6548,41 @@ var Raytracer = (function () {
                 }
             }
 
+            for (var i = 0; i < this.lights.length; ++i) {
+                var light = this.lights[i];
+                p = light.testInnerRay(ray);
+                if (p !== null && p !== _coreConstant2['default'].FLAG_EDGE) {
+                    if (!minObj) {
+                        return this.lights[i].c.clone();
+                    } else if (ray.s.minus(p.s).length() < minDis) {
+                        return this.lights[i].c.clone();
+                    }
+                }
+            }
+
             if (minObj) {
                 var ret = _coreColor.colors.black.clone();
 
                 // Reflection
                 minP.c = ray.c.mask(minObj.c);
-                /*
-                for (let i = 0; i < Cons.NUMBER_MONTE_CARLO; ++i) {
-                    let randRay = minP.clone();
-                    randRay.t.rotateBy(random() * 0.1, random() * 0.1, random() * 0.1);
+
+                var diffuse = minObj.diffuse || 0.2;
+                for (var i = 0; i < _coreConstant2['default'].NUMBER_MONTE_CARLO; ++i) {
+                    var randRay = minP.clone();
+                    randRay.t.rotateBy(random() * diffuse, random() * diffuse, random() * diffuse);
                     ret.addBy(this.trace(scene, randRay, depth - 1, false));
                 }
-                ret.mulBy(0.25 / Cons.NUMBER_MONTE_CARLO);
-                */
-                ret.addBy(this.trace(scene, minP, depth - 1, true).mulBy(0.5));
+                ret.mulBy(0.25 / _coreConstant2['default'].NUMBER_MONTE_CARLO);
+
+                ret.addBy(this.trace(scene, minP, depth - 1, true).mulBy(minObj.reflection * 0.75));
 
                 // Shadow
                 for (var i = 0; i < this.lights.length; ++i) {
                     var light = this.lights[i];
-                    var rayToLight = new _coreRay2['default'](minP.s.clone(), light.o.clone());
+                    var rayToLight = new _coreRay2['default'](minP.s.clone(), light.o.minus(minP.s));
                     var shadow = false;
                     var edge = false;
+
                     var disToLight = minP.s.minus(light.o).length();
                     var _iteratorNormalCompletion2 = true;
                     var _didIteratorError2 = false;
@@ -6554,9 +6594,11 @@ var Raytracer = (function () {
 
                             if (obj !== minObj) {
                                 var test = obj.testInnerRay(rayToLight);
-                                if (test != null && test != _coreConstant2['default'].FLAG_EDGE && test.s.minus(minP.s).length() < disToLight) {
-                                    shadow = true;
-                                    break;
+                                if (test != null && test != _coreConstant2['default'].FLAG_EDGE) {
+                                    if (minP.s.minus(test.s).length() < disToLight) {
+                                        shadow = true;
+                                        break;
+                                    }
                                 } else if (test == _coreConstant2['default'].FLAG_EDGE) {
                                     edge = true;
                                 }
@@ -6577,15 +6619,23 @@ var Raytracer = (function () {
                         }
                     }
 
-                    var cosAngle = 0;
                     if (!shadow) {
-                        cosAngle = light.o.minus(minP.s).normalize().dot(minP.t.normal());
+                        var cosAngle = light.o.minus(minP.s).normalize().dot(minP.t.normal());
                         if (cosAngle < 0) {
                             cosAngle = 0;
                         }
-                        ret.addBy(minObj.c.mul(cosAngle * cosAngle).mask(light.c).mask(ray.c));
+                        /*
+                        else if (cosAngle < Cons.MIN_COSINE) {
+                            cosAngle = Cons.MIN_COSINE;
+                        }
+                        */
+                        var cosAngle2 = cosAngle * cosAngle;
+                        var rate = Math.min(cosAngle * (1 + cosAngle2 * cosAngle2 * cosAngle2) * 1.2, 1);
+                        var colorFromLight = minObj.c.mul(rate).mask(light.c).mask(ray.c);
+                        ret.addBy(colorFromLight);
                         //ret = ret.add(minObj.c.mul(pow(cosAngle, 10)));
                     }
+
                     /*
                     if (edge) {
                         if (sample) {

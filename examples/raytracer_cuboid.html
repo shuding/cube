@@ -64,21 +64,49 @@
 
     scene = new cube.Scene();
 
+    scene.addObject(new cube.Ball(
+        new cube.Vector(0, 300, 0),
+        100,
+        cube.colors.white,
+        0.8,
+        0.8
+    ));
+
     scene.addObject(new cube.Plane(
-            new cube.Vector(0, 400, 0),
-            new cube.Vector(0, -1, 0)
+        new cube.Vector(0, 0, 400),
+        new cube.Vector(0, 0, -1),
+        cube.colors.white,
+        0.8,
+        0.8
+    ));
+
+    scene.addObject(new cube.Plane(
+        new cube.Vector(0, -400, 0),
+        new cube.Vector(0, 1, 0),
+        cube.colors.white,
+        0.3,
+        0.8
+    ));
+
+    scene.addObject(new cube.Plane(
+        new cube.Vector(0, 400, 0),
+        new cube.Vector(0, -1, 0),
+        cube.colors.white,
+        0.3
     ));
 
     scene.addObject(new cube.Plane(
         new cube.Vector(-400, 0, 0),
         new cube.Vector(1, 0, 0),
-        cube.colors.green
+        cube.colors.green,
+        0.3
     ));
 
     scene.addObject(new cube.Plane(
-            new cube.Vector(400, 0, 0),
-            new cube.Vector(-1, 0, 0),
-            cube.colors.red
+        new cube.Vector(400, 0, 0),
+        new cube.Vector(-1, 0, 0),
+        cube.colors.red,
+        0.3
     ));
 
     // or specific viewport
@@ -91,9 +119,9 @@
 
     raytracer = new cube.Raytracer(camera, canvas);
     raytracer.addLight(new cube.Ball(
-            new cube.Vector(0, 0, 0),
-            100,
-            cube.colors.white
+        new cube.Vector(300, -300, 0),
+        10,
+        cube.colors.white
     ));
 
     var t = new Date();
@@ -134,7 +162,7 @@
             setTimeout(function () {
                 render();
             }, 0);
-    }
+    };
 
     render();
 

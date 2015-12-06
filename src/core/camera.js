@@ -15,7 +15,7 @@ class Camera {
      * @param {Number} width Pixel width
      * @param {Number} height Pixel height
      */
-    constructor(eye, screen, width = 800, height = 600) {
+    constructor(eye, screen, width = 400, height = 300) {
         this.eye      = eye;
         this._screen_ = screen;
         this.pxWidth  = width;

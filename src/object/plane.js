@@ -12,11 +12,15 @@ class Plane {
      * @param {Vector} p Origin point
      * @param {Vector} n The normal vector
      * @param c
+     * @param {Number} r Reflection
+     * @param {Number} d Diffuse
      */
-    constructor(p, n, c = colors.white) {
-        this.p = p;
-        this.n = n.normalize();
-        this.c = c;
+    constructor(p, n, c = colors.white, r = 0.5, d = 0.2) {
+        this.p          = p;
+        this.n          = n.normalize();
+        this.c          = c;
+        this.reflection = r;
+        this.diffuse    = d;
     }
 
     /**
@@ -29,8 +33,9 @@ class Plane {
             return null;
         }
         let len = ray.s.minus(this.p).dot(this.n);
-        if (len < 0)
+        if (len < 0) {
             return null;
+        }
         let p = ray.s.add(ray.t.mul(-len / dot));
         return new Ray(p, ray.t.add(this.n.mul(-2.0 * dot)));
         //let p = ray.t.mul(this.p.minus(ray.s).dot(this.n) / dot);

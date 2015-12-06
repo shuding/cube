@@ -17,11 +17,15 @@ class Ball {
      * @param {Vector} o the origin point
      * @param {Number} r the radius
      * @param {Color} c
+     * @param {Number} ref Reflection
+     * @param {Number} dif Diffuse
      */
-    constructor(o, r, c = colors.white) {
-        this.o = o;
-        this.r = r;
-        this.c = c;
+    constructor(o, r, c = colors.white, ref = 0.5, dif = 0.2) {
+        this.o          = o;
+        this.r          = r;
+        this.c          = c;
+        this.reflection = ref;
+        this.diffuse    = dif;
     }
 
     testInnerRay(ray) {
