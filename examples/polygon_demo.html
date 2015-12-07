@@ -20,11 +20,11 @@
   var Y = [];
 
   polygonDrawer = new cube.MarkFiller(canvas);
-  polygonDrawer.setColor(cube.colors.green, cube.colors.blue);
+  polygonDrawer.setColor(cube.colors.magenta, cube.colors.blue);
 
   canvas.bindMouseDown(function (event, data) {
-    X.push(data.x);
-    Y.push(canvas.height - data.y - 1);
+    X.push(data.x - 2);
+    Y.push(canvas.height - data.y + 2);
     canvas.clearCanvas();
     if (X.length > 2)
       polygonDrawer.draw(X, Y);
