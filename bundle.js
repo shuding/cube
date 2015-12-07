@@ -4617,7 +4617,8 @@ var colors = {
     red: new Color(1, 0, 0, 1),
     yellow: new Color(1, 1, 0, 1),
     cyan: new Color(0, 1, 1, 1),
-    magenta: new Color(1, 0, 1, 1)
+    magenta: new Color(1, 0, 1, 1),
+    gray: new Color(0.5, 0.5, 0.5, 1)
 };
 exports.colors = colors;
 exports["default"] = Color;
@@ -5659,7 +5660,7 @@ var Face = (function () {
         key: 'testInnerRay',
         value: function testInnerRay(ray) {
             var dot = ray.t.dot(this.n);
-            if (dot > 0) {
+            if (dot >= 0) {
                 return null;
             }
             var len = ray.s.minus(this._a).dot(this.n);
@@ -5776,7 +5777,7 @@ var Face4 = (function () {
         key: 'testInnerRay',
         value: function testInnerRay(ray) {
             var dot = ray.t.dot(this.n);
-            if (dot > 0) {
+            if (dot >= 0) {
                 return null;
             }
             var len = ray.s.minus(this._a).dot(this.n);
@@ -5900,7 +5901,7 @@ var Plane = (function () {
         key: 'testInnerRay',
         value: function testInnerRay(ray) {
             var dot = ray.t.dot(this.n);
-            if (dot > 0) {
+            if (dot >= 0) {
                 return null;
             }
             var len = ray.s.minus(this.p).dot(this.n);
@@ -6566,11 +6567,11 @@ var Raytracer = (function () {
                 // Reflection
                 minP.c = ray.c.mask(minObj.c);
 
-                var diffuse = minObj.diffuse || 0.2;
-                var delta = _coreColor.colors.white.clone();
-                var count = 0;
-                for (var i = 0; i < _coreConstant2['default'].NUMBER_MONTE_CARLO; ++i) {
-                    var randRay = minP.clone();
+                /*let diffuse = minObj.diffuse || 0.2;
+                let delta = colors.white.clone();
+                let count = 0;
+                for (let i = 0; i < Cons.NUMBER_MONTE_CARLO; ++i) {
+                    let randRay = minP.clone();
                     randRay.t.rotateBy(random() * diffuse, random() * diffuse, random() * diffuse);
                     delta = this.trace(scene, randRay, depth - 1, false);
                     if (!(isNaN(delta.r) || isNaN(delta.g) || isNaN(delta.b))) {
@@ -6578,11 +6579,9 @@ var Raytracer = (function () {
                         count += 1;
                     }
                 }
-                if (count == 0) count = 1;
-                ret.mulBy(0.25 / count);
-                if (isNaN(ret.r) || isNaN(ret.g) || isNaN(ret.b)) {
-                    console.log('NaN appear');
-                }
+                if (count == 0)
+                    count = 1;
+                ret.mulBy(0.25 / count);*/
 
                 ret.addBy(this.trace(scene, minP, depth - 1, true).mulBy(minObj.reflection * 0.75));
 
@@ -6673,6 +6672,10 @@ var Raytracer = (function () {
                     }*/
                 }
 
+                if (isNaN(ret.r) || isNaN(ret.g) || isNaN(ret.b)) {
+                    console.log('NaN appear');
+                    return _coreColor.colors.gray;
+                }
                 return ret;
             }
             /*

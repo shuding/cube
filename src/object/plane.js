@@ -29,7 +29,7 @@ class Plane {
      */
     testInnerRay(ray) {
         let dot = ray.t.dot(this.n);
-        if (dot > 0) {
+        if (dot >= 0) {
             return null;
         }
         let len = ray.s.minus(this.p).dot(this.n);

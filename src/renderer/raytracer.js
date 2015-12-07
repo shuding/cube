@@ -149,7 +149,7 @@ class Raytracer {
             // Reflection
             minP.c = ray.c.mask(minObj.c);
 
-            let diffuse = minObj.diffuse || 0.2;
+            /*let diffuse = minObj.diffuse || 0.2;
             let delta = colors.white.clone();
             let count = 0;
             for (let i = 0; i < Cons.NUMBER_MONTE_CARLO; ++i) {
@@ -163,10 +163,7 @@ class Raytracer {
             }
             if (count == 0)
                 count = 1;
-            ret.mulBy(0.25 / count);
-            if (isNaN(ret.r) || isNaN(ret.g) || isNaN(ret.b)) {
-                console.log('NaN appear');
-            }
+            ret.mulBy(0.25 / count);*/
 
             ret.addBy(this.trace(scene, minP, depth - 1, true).mulBy(minObj.reflection * 0.75));
 
@@ -235,6 +232,10 @@ class Raytracer {
                 }*/
             }
 
+            if (isNaN(ret.r) || isNaN(ret.g) || isNaN(ret.b)) {
+                console.log('NaN appear');
+                return colors.gray;
+            }
             return ret;
         }
         /*
