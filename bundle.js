@@ -5332,7 +5332,11 @@ var Canvas = (function () {
                 this.cvs.addEventListener('mousedown', function (event) {
                     var self = _this;
                     _this.mouseDownFn.forEach(function (fn) {
-                        fn.call(self, event);
+                        self._mouseDownData_ = {
+                            x: event.offsetX,
+                            y: event.offsetY
+                        };
+                        fn.call(self, event, self._mouseDownData_);
                     });
                 });
             }
