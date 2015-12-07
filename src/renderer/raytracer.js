@@ -150,12 +150,23 @@ class Raytracer {
             minP.c = ray.c.mask(minObj.c);
 
             let diffuse = minObj.diffuse || 0.2;
+            let delta = colors.white.clone();
+            let count = 0;
             for (let i = 0; i < Cons.NUMBER_MONTE_CARLO; ++i) {
                 let randRay = minP.clone();
                 randRay.t.rotateBy(random() * diffuse, random() * diffuse, random() * diffuse);
-                ret.addBy(this.trace(scene, randRay, depth - 1, false));
+                delta = this.trace(scene, randRay, depth - 1, false);
+                if (!(isNaN(delta.r) || isNaN(delta.g) || isNaN(delta.b))) {
+                    ret.addBy(delta);
+                    count += 1;
+                }
             }
-            ret.mulBy(0.25 / Cons.NUMBER_MONTE_CARLO);
+            if (count == 0)
+                count = 1;
+            ret.mulBy(0.25 / count);
+            if (isNaN(ret.r) || isNaN(ret.g) || isNaN(ret.b)) {
+                console.log('NaN appear');
+            }
 
             ret.addBy(this.trace(scene, minP, depth - 1, true).mulBy(minObj.reflection * 0.75));
 

@@ -6567,12 +6567,22 @@ var Raytracer = (function () {
                 minP.c = ray.c.mask(minObj.c);
 
                 var diffuse = minObj.diffuse || 0.2;
+                var delta = _coreColor.colors.white.clone();
+                var count = 0;
                 for (var i = 0; i < _coreConstant2['default'].NUMBER_MONTE_CARLO; ++i) {
                     var randRay = minP.clone();
                     randRay.t.rotateBy(random() * diffuse, random() * diffuse, random() * diffuse);
-                    ret.addBy(this.trace(scene, randRay, depth - 1, false));
+                    delta = this.trace(scene, randRay, depth - 1, false);
+                    if (!(isNaN(delta.r) || isNaN(delta.g) || isNaN(delta.b))) {
+                        ret.addBy(delta);
+                        count += 1;
+                    }
                 }
-                ret.mulBy(0.25 / _coreConstant2['default'].NUMBER_MONTE_CARLO);
+                if (count == 0) count = 1;
+                ret.mulBy(0.25 / count);
+                if (isNaN(ret.r) || isNaN(ret.g) || isNaN(ret.b)) {
+                    console.log('NaN appear');
+                }
 
                 ret.addBy(this.trace(scene, minP, depth - 1, true).mulBy(minObj.reflection * 0.75));
 
@@ -6906,7 +6916,9 @@ function drainQueue() {
         currentQueue = queue;
         queue = [];
         while (++queueIndex < len) {
-            currentQueue[queueIndex].run();
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
         }
         queueIndex = -1;
         len = queue.length;
@@ -6958,7 +6970,6 @@ process.binding = function (name) {
     throw new Error('process.binding is not supported');
 };
 
-// TODO(shtylman)
 process.cwd = function () { return '/' };
 process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
