@@ -69,7 +69,7 @@ export var colors = {
     green:  new Color(102.0 / 255.0, 187.0 / 255.0, 106.0 / 255.0, 1),
     blue:   new Color(63.0 / 255.0, 81.0 / 255.0, 181.0 / 255.0, 1),
     red:    new Color(240.0 / 255.0, 98.0 / 255.0, 146.0 / 255.0, 1),
-    yellow: new Color(1, 1, 0, 1),
+    yellow: new Color(255.0 / 255.0, 235.0 / 255.0, 59.0 / 255.0, 1),
     cyan:   new Color(0, 1, 1, 1),
     magenta:new Color(1, 0, 1, 1),
     gray:   new Color(0.5, 0.5, 0.5, 1)
