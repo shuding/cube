@@ -233,7 +233,7 @@ class Raytracer {
             }
 
             if (isNaN(ret.r) || isNaN(ret.g) || isNaN(ret.b)) {
-                console.log('NaN appear');
+                console.log("NaN");
                 return colors.gray;
             }
             return ret;

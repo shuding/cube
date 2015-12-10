@@ -40,7 +40,7 @@ class Plane {
         return new Ray(p, ray.t.add(this.n.mul(-2.0 * dot)));
         //let p = ray.t.mul(this.p.minus(ray.s).dot(this.n) / dot);
         //return new Ray(p.add(ray.s), p.minus(this.n.mul(p.dot(this.n) * 2)));
-    }1
+    }
 }
 
 export var planeFromScreen = function (screen) {

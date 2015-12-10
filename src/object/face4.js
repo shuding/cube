@@ -14,13 +14,15 @@ class Face4 {
      * @param {Vector} c
      * @param {Vector} d
      */
-    constructor(a, b, c, d, co = colors.white) {
+    constructor(a, b, c, d, co = colors.white, refl = 0.5, diff= 0.2) {
         this._a = a;
         this._b = b;
         this._c = c;
         this._d = d;
         this.n = b.minus(a).det(d.minus(a)).normalize();
         this.c = co;
+        this.reflection = refl;
+        this.diffuse = diff;
     }
 
     projection() {

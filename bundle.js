@@ -5759,6 +5759,8 @@ var Face4 = (function () {
 
     function Face4(a, b, c, d) {
         var co = arguments.length <= 4 || arguments[4] === undefined ? _coreColor.colors.white : arguments[4];
+        var refl = arguments.length <= 5 || arguments[5] === undefined ? 0.5 : arguments[5];
+        var diff = arguments.length <= 6 || arguments[6] === undefined ? 0.2 : arguments[6];
 
         _classCallCheck(this, Face4);
 
@@ -5768,6 +5770,8 @@ var Face4 = (function () {
         this._d = d;
         this.n = b.minus(a).det(d.minus(a)).normalize();
         this.c = co;
+        this.reflection = refl;
+        this.diffuse = diff;
     }
 
     _createClass(Face4, [{
@@ -6677,7 +6681,7 @@ var Raytracer = (function () {
                 }
 
                 if (isNaN(ret.r) || isNaN(ret.g) || isNaN(ret.b)) {
-                    console.log('NaN appear');
+                    console.log("NaN");
                     return _coreColor.colors.gray;
                 }
                 return ret;
