@@ -4,7 +4,7 @@
  */
 
 export default {
-    DEEP:               3,
+    DEEP:               1,
     NUMBER_SAMPLE:      5, // nxn
     NUMBER_MONTE_CARLO: 10,
     MIN_BRIGHTNESS:     0.0,

@@ -16,8 +16,8 @@
   htmlcanvas = document.getElementById('myCanvas');
   canvas = new cube.Canvas(htmlcanvas);
 
-  var X = [];
-  var Y = [];
+  var X = [0];
+  var Y = [0];
 
   polygonDrawer = new cube.MarkFiller(canvas);
   polygonDrawer.setColor(cube.colors.cyan, cube.colors.blue);
@@ -26,6 +26,17 @@
     X.push(data.x - 2);
     Y.push(canvas.height - data.y + 2);
     canvas.clearCanvas();
+    if (X.length > 2)
+      polygonDrawer.draw(X, Y);
+    if (X.length > 1)
+      polygonDrawer.drawBorder(X, Y);
+    polygonDrawer.updateCanvas();
+  });
+
+  htmlcanvas.addEventListener('mousemove', function (event) {
+    canvas.clearCanvas();
+    X.pop(); X.push(event.offsetX - 2);
+    Y.pop(); Y.push(canvas.height - event.offsetY + 2);
     if (X.length > 2)
       polygonDrawer.draw(X, Y);
     if (X.length > 1)
